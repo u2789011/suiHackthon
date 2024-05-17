@@ -159,6 +159,7 @@ const BasicContainer = () => {
   const handleAcceptTask = (taskId: number) => {
     // Logic for accepting task
     console.log(`Accepted task ${taskId}`);
+    toast.success(`接受任務成功!`);
   };
 
   const handlePublishTask = () => {

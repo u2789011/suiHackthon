@@ -4,7 +4,7 @@ import Image from "next/image";
 const Footer = () => {
   return (
     <div
-      className="fixed bottom-0 left-0 w-full backdrop-blur-md"
+      className="fixed bottom-0 left-0 w-full backdrop-blur-md z-50"
       style={{
         WebkitBackdropFilter: "blur(12px)",
       }}

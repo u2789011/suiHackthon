@@ -147,7 +147,6 @@ const BasicContainer = () => {
     },
   ]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     name: "",
     description: "",
@@ -165,7 +164,6 @@ const BasicContainer = () => {
     // Logic for publishing task
     console.log("New task published:", newTask);
     setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
-    setIsModalOpen(false);
     setNewTask({ name: "", description: "", image: "", fixedValue: "0x6" });
     toast.success(`任務創建成功!`);
   };
@@ -198,7 +196,7 @@ const BasicContainer = () => {
           buttonClass="w-70"
         />
       </div>
-      <div className="container mx-auto p-4">
+      <div className="mx-auto p-4">
         <Button onPress={onOpen}>發布任務</Button>
       </div>
       <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8 mb-10">

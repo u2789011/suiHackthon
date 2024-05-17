@@ -17,7 +17,7 @@ const Header = () => {
 
   return (
     <div
-      className="fixed top-0 left-0 w-full backdrop-blur-md"
+      className="fixed top-0 left-0 w-full backdrop-blur-md z-50"
       style={{
         WebkitBackdropFilter: "blur(12px)",
       }}

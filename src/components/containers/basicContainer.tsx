@@ -25,8 +25,7 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
-  Checkbox,
-  Link,
+  Chip,
 } from "@nextui-org/react";
 
 const BasicContainer = () => {
@@ -210,21 +209,23 @@ const BasicContainer = () => {
             className="col-span-12 sm:col-span-4 h-[300px]"
           >
             <CardHeader className="absolute z-10 top-1 flex-col items-start">
-              <p className="text-tiny text-white/60 uppercase font-bold">
+              <Chip className=" text-white/80 uppercase font-bold">
                 {task.name}
-              </p>
+              </Chip>
             </CardHeader>
-            <Image
-              removeWrapper
-              alt="Task"
-              src={task.image}
-              className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
-            />
-            <CardBody>{task.description}</CardBody>
-            <CardFooter className="absolute bg-black/40 bottom-0 z-10 dark:border-default-100">
+
+            <CardBody>
+              <Image
+                removeWrapper
+                alt="Task"
+                src={task.image}
+                className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
+              />
+            </CardBody>
+            <CardFooter className="absolute bg-black/80 bottom-0 z-10 dark:border-default-100">
               <div className="flex flex-grow gap-2 items-center">
                 <div className="flex flex-col">
-                  <p className="text-tiny text-white/60">{task.description}</p>
+                  <p className="text-tiny text-white/80">{task.description}</p>
                 </div>
               </div>
               <Button

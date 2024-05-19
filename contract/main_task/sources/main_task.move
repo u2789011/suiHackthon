@@ -4,7 +4,7 @@ module main_task::main_task {
     // Dependencies
 
     use std::string::{ String };
-    // use std::vector::{ length, borrow_mut };
+    use std::vector::{ length, borrow };
     use sui::clock::{ Self, Clock };
     use main_task::task_description::{create_task_description, TaskDescription};
     use sui::coin::{Self, Coin};
@@ -193,15 +193,13 @@ module main_task::main_task {
         task.moderator
     }
 
-    /*
-    public(package) fun get_task_description<T> (
-        task: &mut Task<T>,
-    ): TaskDescription {
-        let i = length(task.description);
-        borrow_mut(task.description, i)
-    }
-    */
     
+    public(package) fun get_task_description<T> (
+        task: &Task<T>,
+    ): TaskDescription {
+        let i = length(&task.description) - 1;
+        *borrow(&task.description, i)
+    }
     
 
 }

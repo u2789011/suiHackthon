@@ -18,6 +18,7 @@ module main_task::task_record {
 
     public struct TaskSheet has key, store {
         id: UID,
+        status: u8, // status field - 0: Not Submitted, 1: Pending Review, 2: Approved
         main_task_id: ID,
         task_description: TaskDescription,
         content: Option<String>,
@@ -35,6 +36,7 @@ module main_task::task_record {
         ctx: &mut TxContext
     ){
         let id = object::new(ctx);
+        let status = 0u8;
         let main_task_id = get_task_id(main_task);
         let task_description = get_task_description(main_task);
         let creator = ctx.sender();
@@ -42,6 +44,7 @@ module main_task::task_record {
 
         let task_sheet = TaskSheet {
             id,
+            status,
             main_task_id,
             task_description,
             content: option::none(),
@@ -79,12 +82,15 @@ module main_task::task_record {
     // Submit TaskSheet to Mod
 
     public entry fun submit_task_sheet (
-        task_sheet: TaskSheet,
+        mut task_sheet: TaskSheet,
+        date: &Clock,
         _: &TaskAdminCap
     ) {
+        task_sheet.update_time = clock::timestamp_ms(date);
+        task_sheet.status = 1u8;
+
         let receipient = task_sheet.receipient;
         transfer::public_transfer(task_sheet, receipient)
     }
-
 
 }

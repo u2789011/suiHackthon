@@ -71,7 +71,7 @@ module main_task::main_task {
         // create the main task object 
         let task = Task<T>{
             id: object::new(ctx),
-            version: 1,
+            version: 1u8,
             name,
             description: description_vector,
             image_url,

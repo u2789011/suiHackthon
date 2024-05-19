@@ -56,7 +56,6 @@ module main_task::task_record {
         // transfer task sheet to tasker
         transfer::public_transfer(task_sheet, creator);
 
-
         // transfer task admincap to tasker
         transfer::public_transfer(task_admin_cap, creator)
 

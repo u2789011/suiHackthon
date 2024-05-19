@@ -6,6 +6,14 @@ module main_task::task_record {
     use sui::clock::{ Self, Clock };
     use main_task::main_task::{ Task, get_task_id, get_task_mod };
 
+
+    // Task AdminCap
+
+    public struct TaskAdminCap has key, store {
+        id: UID,
+    }
+
+
     // TaskSheet
 
     public struct TaskSheet has key, store {
@@ -16,7 +24,7 @@ module main_task::task_record {
         receipient: address,
         creator: address,
         created_time: u64,
-        // TODO: add update-time
+        update_time: u64
     }
 
     // Mint Task Sheet By Tasker
@@ -39,13 +47,18 @@ module main_task::task_record {
             content,
             receipient,
             creator,
-            created_time: clock::timestamp_ms(date)
-            // TODO: add update-time
-            // TODO: admin_cap
+            created_time: clock::timestamp_ms(date),
+            update_time: clock::timestamp_ms(date)
         };
 
+        let task_admin_cap = TaskAdminCap { id: object::new(ctx) };
+
         // transfer task sheet to tasker
-        transfer::public_transfer(task_sheet, creator)
+        transfer::public_transfer(task_sheet, creator);
+
+
+        // transfer task admincap to tasker
+        transfer::public_transfer(task_admin_cap, creator)
 
     }
 
@@ -55,11 +68,12 @@ module main_task::task_record {
     public entry fun update_task_sheet_content (
         task_sheet: &mut TaskSheet,
         content: String,
-        update_time: &Clock
+        update_time: &Clock,
+        _: &TaskAdminCap
     ) {
         let update_time = clock::timestamp_ms(update_time);
         task_sheet.content = content;
-        task_sheet.created_time = update_time // TODO: change to  update-time
+        task_sheet.update_time = update_time
     }
 
 
@@ -67,6 +81,7 @@ module main_task::task_record {
 
     public entry fun submit_task_sheet (
         task_sheet: TaskSheet,
+        _: &TaskAdminCap
     ) {
         let receipient = task_sheet.receipient;
         transfer::public_transfer(task_sheet, receipient)

@@ -3,7 +3,8 @@ module main_task::main_task {
 
     // Dependencies
 
-    use std::string::{ String};
+    use std::string::{ String };
+    use std::vector::{ length, borrow };
     use sui::clock::{ Self, Clock };
     use main_task::task_description::{create_task_description, TaskDescription};
     use sui::coin::{Self, Coin};
@@ -70,7 +71,7 @@ module main_task::main_task {
         // create the main task object 
         let task = Task<T>{
             id: object::new(ctx),
-            version: 1,
+            version: 1u8,
             name,
             description: description_vector,
             image_url,
@@ -179,7 +180,26 @@ module main_task::main_task {
     ): u64 {
         task.reward_amount
     }
+
+    public(package) fun get_task_id<T>(
+        task: &Task<T>,
+    ): ID {
+        object::uid_to_inner(&task.id)
+    }
+
+    public(package) fun get_task_mod<T>(
+        task: &Task<T>,
+    ): address {
+        task.moderator
+    }
+
     
+    public(package) fun get_task_description<T> (
+        task: &Task<T>,
+    ): TaskDescription {
+        let i = length(&task.description) - 1;
+        *borrow(&task.description, i)
+    }
     
 
 }

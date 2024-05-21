@@ -165,12 +165,19 @@ const BasicContainer = () => {
   });
 
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
-  const [publishedTasks, setPublishedTasks] = useState<Task[]>([]);
+  const [publishedTasks, setPublishedTasks] = useState<Task[]>(tasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleAcceptTask = (taskId: number) => {
     // Logic for accepting task
-    const acceptedTask = tasks.find((task) => task.id === taskId);
+    const acceptedTask = publishedTasks.find((task) => task.id === taskId);
+    const alreadyAccepted = acceptedTasks.some((task) => task.id === taskId);
+
+    if (alreadyAccepted) {
+      toast.error("已接過此任務!");
+      return;
+    }
+
     if (acceptedTask) {
       setAcceptedTasks([...acceptedTasks, acceptedTask]);
       toast.success(`接受任務成功!`);
@@ -188,7 +195,6 @@ const BasicContainer = () => {
     //   arguments: [],
     // });
     console.log("New task published:", newTask);
-    setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
     setPublishedTasks([
       ...publishedTasks,
       { id: tasks.length + 1, ...newTask },
@@ -251,22 +257,28 @@ const BasicContainer = () => {
         />
       </div>
       <div className="mx-auto p-4">
-        <div className="mx-auto p-4">
-          <Button onPress={onOpen} onClick={() => setSelectedTask(null)}>
-            發布任務
-          </Button>
-        </div>
-        <div className="flex w-[900px] flex-col">
-          <Tabs aria-label="Options">
+        <Button onPress={onOpen} onClick={() => setSelectedTask(null)}>
+          發布任務
+        </Button>
+      </div>
+      <div className="mx-auto p-4">
+        <div className="flex w-full flex-col">
+          <Tabs aria-label="Options" variant="bordered">
             <Tab key="acceptedTasks" title="已接受任務">
-              <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
                 {acceptedTasks.map((task) => (
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="col-span-12 sm:col-span-4 h-[300px]"
+                    className="col-span-12 sm:col-span-4 h-[300px] w-[300px]"
                   >
-                    <CardHeader className="absolute z-10 top-1 flex-col items-start">
+                    <CardHeader className="absolute z-10 top-1 flex gap-4 items-start">
+                      <Chip
+                        color="primary"
+                        className=" text-white/80 uppercase font-bold"
+                      >
+                        {task.id}
+                      </Chip>
                       <Chip className=" text-white/80 uppercase font-bold">
                         {task.name}
                       </Chip>
@@ -302,14 +314,20 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="publishedTasks" title="已發布任務">
-              <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
                 {publishedTasks.map((task) => (
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="col-span-12 sm:col-span-4 h-[300px]"
+                    className="col-span-12 sm:col-span-4 h-[300px] w-[300px]"
                   >
-                    <CardHeader className="absolute z-10 top-1 flex-col items-start">
+                    <CardHeader className="absolute z-10 top-1 flex gap-4 items-start">
+                      <Chip
+                        color="primary"
+                        className=" text-white/80 uppercase font-bold"
+                      >
+                        {task.id}
+                      </Chip>
                       <Chip className=" text-white/80 uppercase font-bold">
                         {task.name}
                       </Chip>
@@ -349,14 +367,20 @@ const BasicContainer = () => {
       </div>
       <Divider className="my-4" />
       <h1 className="my-4">任務列表</h1>
-      <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8 mb-10">
-        {tasks.map((task) => (
+      <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8 mb-10">
+        {publishedTasks.map((task) => (
           <Card
             key={task.id}
             isFooterBlurred
-            className="col-span-12 sm:col-span-4 h-[300px]"
+            className="col-span-12 sm:col-span-4 h-[300px] w-[300px] "
           >
-            <CardHeader className="absolute z-10 top-1 flex-col items-start">
+            <CardHeader className="absolute z-10 top-1 flex gap-4 items-start">
+              <Chip
+                color="primary"
+                className=" text-white/80 uppercase font-bold"
+              >
+                {task.id}
+              </Chip>
               <Chip className=" text-white/80 uppercase font-bold">
                 {task.name}
               </Chip>

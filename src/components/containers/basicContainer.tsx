@@ -1,7 +1,7 @@
 import BasicDataField from "../fields/basicDataField";
 import BasicInputField from "../fields/basicInputField";
 import ActionButton from "../buttons/actionButton";
-import { useContext, useMemo, useState } from "react";
+import { SetStateAction, useContext, useMemo, useState } from "react";
 import {
   useAccounts,
   useSignAndExecuteTransactionBlock,
@@ -26,8 +26,18 @@ import {
   ModalFooter,
   useDisclosure,
   Chip,
+  Tabs,
+  Tab,
+  Divider,
 } from "@nextui-org/react";
 
+type Task = {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  fixedValue: string;
+};
 const BasicContainer = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { walletAddress, suiName } = useContext(AppContext);
@@ -154,19 +164,71 @@ const BasicContainer = () => {
     fixedValue: "0x6",
   });
 
+  const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
+  const [publishedTasks, setPublishedTasks] = useState<Task[]>(tasks);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
   const handleAcceptTask = (taskId: number) => {
     // Logic for accepting task
+    const acceptedTask = tasks.find((task) => task.id === taskId);
+    if (acceptedTask) {
+      setAcceptedTasks([...acceptedTasks, acceptedTask]);
+      toast.success(`接受任務成功!`);
+    }
     console.log(`Accepted task ${taskId}`);
-    toast.success(`接受任務成功!`);
+    console.log(acceptedTask);
   };
 
-  const handlePublishTask = () => {
+  const handlePublishTask = async () => {
     // Logic for publishing task
+    //if (!account.address) return;
+    // const tx = new TransactionBlock();
+    // const [nft] = tx.moveCall({
+    //   target: `${PACKAGE_ID}::fortune_bag::mint`,
+    //   arguments: [],
+    // });
     console.log("New task published:", newTask);
     setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
     setNewTask({ name: "", description: "", image: "", fixedValue: "0x6" });
     toast.success(`任務創建成功!`);
   };
+
+  const handleCompleteTask = (taskId: number) => {
+    setAcceptedTasks(acceptedTasks.filter((task) => task.id !== taskId));
+    toast.success(`任務已完成!`);
+    console.log(acceptedTasks);
+  };
+
+  const handleModifyTask = (task: Task) => {
+    setSelectedTask(task);
+    onOpen();
+    console.log(task);
+  };
+
+  const handleSaveTaskDetails = () => {
+    if (selectedTask) {
+      const updatedTasks = publishedTasks.map((task) =>
+        task.id === selectedTask.id ? selectedTask : task
+      );
+      setPublishedTasks(updatedTasks);
+      setSelectedTask(null);
+      onOpenChange();
+      console.log(updatedTasks);
+      toast.success("任務詳情已更新!");
+    }
+  };
+  let tabs = [
+    {
+      id: "acceptedTasks",
+      label: "已接受任務",
+      content: acceptedTasks,
+    },
+    {
+      id: "publishedTasks",
+      label: "已發布任務",
+      content: publishedTasks,
+    },
+  ];
 
   return (
     <>
@@ -197,8 +259,73 @@ const BasicContainer = () => {
         />
       </div>
       <div className="mx-auto p-4">
-        <Button onPress={onOpen}>發布任務</Button>
+        <div className="mx-auto p-4">
+          <Button onPress={onOpen} onClick={() => setSelectedTask(null)}>
+            發布任務
+          </Button>
+        </div>
+        <div className="flex w-[900px] flex-col">
+          <Tabs aria-label="Dynamic tabs" items={tabs}>
+            {(item) => (
+              <Tab key={item.id} title={item.label}>
+                <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+                  {acceptedTasks.map((task) => (
+                    <Card
+                      key={task.id}
+                      isFooterBlurred
+                      className="col-span-12 sm:col-span-4 h-[300px]"
+                    >
+                      <CardHeader className="absolute z-10 top-1 flex-col items-start">
+                        <Chip className=" text-white/80 uppercase font-bold">
+                          {task.name}
+                        </Chip>
+                      </CardHeader>
+
+                      <CardBody>
+                        <Image
+                          removeWrapper
+                          alt="Task"
+                          src={task.image}
+                          className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
+                        />
+                      </CardBody>
+                      <CardFooter className="absolute bg-black/80 bottom-0 z-10 dark:border-default-100">
+                        <div className="flex flex-grow gap-2 items-center">
+                          <div className="flex flex-col">
+                            <p className="text-tiny text-white/80">
+                              {task.description}
+                            </p>
+                          </div>
+                        </div>
+                        {item.id === "acceptedTasks" && (
+                          <Button
+                            onPress={() => handleCompleteTask(task.id)}
+                            radius="full"
+                            size="sm"
+                          >
+                            回報任務完成
+                          </Button>
+                        )}
+                        {item.id === "publishedTasks" && (
+                          <Button
+                            onPress={() => handleModifyTask(task)}
+                            radius="full"
+                            size="sm"
+                          >
+                            修改任務詳情
+                          </Button>
+                        )}
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </Tab>
+            )}
+          </Tabs>
+        </div>
       </div>
+      <Divider className="my-4" />
+      <h1 className="my-4">任務列表</h1>
       <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8 mb-10">
         {tasks.map((task) => (
           <Card
@@ -242,50 +369,72 @@ const BasicContainer = () => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">
-                發布任務
+              <ModalHeader>
+                {selectedTask ? "修改任務" : "發布新任務"}
               </ModalHeader>
               <ModalBody>
                 <Input
-                  autoFocus
                   label="任務名稱"
-                  placeholder="任務名稱"
-                  variant="bordered"
-                  value={newTask.name}
+                  value={selectedTask ? selectedTask.name : newTask.name}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, name: e.target.value })
+                    selectedTask
+                      ? setSelectedTask({
+                          ...selectedTask,
+                          name: e.target.value,
+                        })
+                      : setNewTask({ ...newTask, name: e.target.value })
                   }
                 />
                 <Input
                   label="任務描述"
-                  placeholder="任務描述"
-                  variant="bordered"
-                  value={newTask.description}
+                  value={
+                    selectedTask
+                      ? selectedTask.description
+                      : newTask.description
+                  }
                   onChange={(e) =>
-                    setNewTask({ ...newTask, description: e.target.value })
+                    selectedTask
+                      ? setSelectedTask({
+                          ...selectedTask,
+                          description: e.target.value,
+                        })
+                      : setNewTask({ ...newTask, description: e.target.value })
                   }
                 />
                 <Input
-                  label="圖片連結"
-                  placeholder="圖片連結"
-                  variant="bordered"
-                  value={newTask.image}
+                  label="任務圖片URL"
+                  value={selectedTask ? selectedTask.image : newTask.image}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, image: e.target.value })
+                    selectedTask
+                      ? setSelectedTask({
+                          ...selectedTask,
+                          image: e.target.value,
+                        })
+                      : setNewTask({ ...newTask, image: e.target.value })
                   }
                 />
-                <Input disabled label="固定填寫" value={newTask.fixedValue} />
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="flat" onPress={onClose}>
+                <Button
+                  color="danger"
+                  variant="flat"
+                  onPress={onClose}
+                  onClick={() => {
+                    setSelectedTask(null);
+                  }}
+                >
                   Close
                 </Button>
                 <Button
                   color="primary"
                   onPress={onClose}
-                  onClick={handlePublishTask}
+                  onClick={() => {
+                    selectedTask
+                      ? handleSaveTaskDetails()
+                      : handlePublishTask();
+                  }}
                 >
-                  發布任務
+                  {selectedTask ? "保存修改" : "發布"}
                 </Button>
               </ModalFooter>
             </>

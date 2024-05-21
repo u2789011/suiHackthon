@@ -266,6 +266,7 @@ module main_task::public_task {
         task:&mut Task<T>,
         tasker: address,
         mut task_sheet: TaskSheet,
+        annotation: Option<String>,
         _: &ModCap,
         clock: &Clock,
         ctx: &mut TxContext
@@ -279,6 +280,10 @@ module main_task::public_task {
         if (task_sheet.status != 1) {
             abort EInvalidTaskSheetStatus
         };
+
+        // MOD add annotation
+        let moderator = ctx.sender();
+        add_annotation(&mut task_sheet, annotation, moderator, clock);
 
         // Update task sheet status to approved
         task_sheet.status = 2;

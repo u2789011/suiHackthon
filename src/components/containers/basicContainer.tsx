@@ -197,7 +197,7 @@ const BasicContainer = () => {
     console.log("New task published:", newTask);
     setPublishedTasks([
       ...publishedTasks,
-      { id: tasks.length + 1, ...newTask },
+      { id: publishedTasks.length + 1, ...newTask },
     ]);
     setNewTask({ name: "", description: "", image: "", fixedValue: "0x6" });
     toast.success(`任務創建成功!`);
@@ -256,6 +256,8 @@ const BasicContainer = () => {
           buttonClass="w-70"
         />
       </div>
+      <Divider className="my-4" />
+      <h1 className="my-4">Fren Suipport Project</h1>
       <div className="mx-auto p-4">
         <Button onPress={onOpen} onClick={() => setSelectedTask(null)}>
           發布任務

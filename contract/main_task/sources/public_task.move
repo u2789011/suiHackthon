@@ -282,7 +282,7 @@ module main_task::public_task {
 
     /*-- Reward Admin/Mod Functions --*/
 
-    // approve task_sheet and send reward to tasker, then freeze task_sheet.
+    // Approves the task sheet, sends the reward, and freezes it.
     public entry fun approve_and_send_reward<T>(
         task:&mut Task<T>,
         tasker: address,
@@ -292,7 +292,7 @@ module main_task::public_task {
         clock: &Clock,
         ctx: &mut TxContext
     ) { 
-        // Ensure the task is active
+        // Ensure the task status is active
         if (task.is_active == false){
             abort ETaskIsInactive
         };

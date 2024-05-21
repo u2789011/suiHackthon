@@ -15,6 +15,7 @@ module main_task::public_task {
     const ETaskIsActive: u64 = 0;
     const ETaskIsInactive: u64 = 1; 
     const EInvalidTaskSheetStatus: u64 = 2;
+    const EInvalidModerator: u64 = 3;
 
     /*---Task Events---*/
 
@@ -123,14 +124,15 @@ module main_task::public_task {
     }
 
     // TaskSheet
-
+    // TODO: working on annotaion
     public struct TaskSheet has key, store {
         id: UID,
         status: u8, // status field - 0: Not Submitted, 1: Pending Review, 2: Approved
         main_task_id: ID,
         task_description: TaskDescription,
         content: Option<String>,
-        receipient: address,
+        annotaion: Option<String>,
+        moderator: address,
         creator: address,
         created_time: u64,
         update_time: u64
@@ -300,6 +302,29 @@ module main_task::public_task {
 
     }
 
+    // Add Reject Task Sheet Submission and Return to the Creator
+
+    public entry fun reject_and_return_task_sheet (
+        mut task_sheet: TaskSheet,
+        annotation: String,
+        moderator: address,
+        date: &Clock
+        //ctx: &mut TxContext
+    ){  
+        let task_sheet_creator = task_sheet.creator;
+
+        // add annotaion on task sheet
+        add_annotation(&mut task_sheet, annotation, moderator, date);
+
+        // Update task sheet status
+        task_sheet.status = 1;
+        task_sheet.update_time = clock::timestamp_ms(date);
+
+        // Return the task sheet to the Creator
+        transfer::public_transfer(task_sheet, task_sheet_creator);
+
+    }
+
     // For Admin to Take Out the Reward Funding
 
     public entry fun retrieve_task_fund<T> (
@@ -336,6 +361,22 @@ module main_task::public_task {
         })
     }
 
+    // for MOD to add annotation on task_sheet
+    fun add_annotation (
+        task_sheet: &mut TaskSheet,
+        annotation: String,
+        moderator: address,
+        date: &Clock
+    ) {
+        assert!(is_mod(task_sheet, moderator), EInvalidModerator);
+        task_sheet.annotaion = option::some(annotation);
+        task_sheet.update_time = clock::timestamp_ms(date)
+    }
+
+    fun is_mod(task_sheet: &TaskSheet, address: address): bool {
+        task_sheet.moderator == address
+    }
+
 
     /*-- Tasker/Tasksheets functions --*/
 
@@ -352,7 +393,7 @@ module main_task::public_task {
         let main_task_id = get_task_id(main_task);
         let task_description = get_task_description(main_task);
         let creator = ctx.sender();
-        let receipient = get_task_mod(main_task);
+        let moderator = get_task_mod(main_task);
 
         let task_sheet = TaskSheet {
             id,
@@ -360,7 +401,8 @@ module main_task::public_task {
             main_task_id,
             task_description,
             content: option::none(),
-            receipient,
+            annotaion: option::none(),
+            moderator,
             creator,
             created_time: clock::timestamp_ms(date),
             update_time: clock::timestamp_ms(date)
@@ -409,7 +451,7 @@ module main_task::public_task {
         task_sheet.status = 1u8;
 
         let task_id = task_sheet.main_task_id;
-        let receipient = task_sheet.receipient;
+        let receipient = task_sheet.moderator;
         let tasker = task_sheet.creator;
         let task_sheet_id = object::uid_to_inner(&task_sheet.id);
 

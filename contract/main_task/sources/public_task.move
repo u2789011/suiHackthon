@@ -79,6 +79,12 @@ module main_task::public_task {
         timestamp: u64
     }
 
+    // Task Rejected Event
+    public struct TaskRejectedEvent has copy, drop {
+        task_sheet_id: ID,
+        timestamp: u64
+    }
+
     // Admin Cap
 
     public struct AdminCap has key, store {
@@ -124,7 +130,7 @@ module main_task::public_task {
     }
 
     // TaskSheet
-    // TODO: working on annotaion
+
     public struct TaskSheet has key, store {
         id: UID,
         status: u8, // status field - 0: Not Submitted, 1: Pending Review, 2: Approved
@@ -317,6 +323,7 @@ module main_task::public_task {
         //ctx: &mut TxContext
     ){  
         let task_sheet_creator = task_sheet.creator;
+        let task_sheet_id = object::uid_to_inner(&task_sheet.id);
 
         // add annotaion on task sheet
         add_annotation(&mut task_sheet, annotation, moderator, date);
@@ -324,6 +331,11 @@ module main_task::public_task {
         // Update task sheet status
         task_sheet.status = 1;
         task_sheet.update_time = clock::timestamp_ms(date);
+
+        emit(TaskRejectedEvent {
+            task_sheet_id: task_sheet_id,
+            timestamp: task_sheet.update_time
+        });
 
         // Return the task sheet to the Creator
         transfer::public_transfer(task_sheet, task_sheet_creator);

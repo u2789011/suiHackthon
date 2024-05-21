@@ -103,6 +103,18 @@ module main_task::public_task {
         id: UID,
     }
 
+    /*---Main Objects Struct---*/
+
+    // Proof of Completion Struct
+
+    public struct ProofOfCompletion has key, store {
+        id: UID,
+        task_id: ID,
+        completer: address,
+        image_url: String,
+        issued_time: u64
+    }
+
     // Define Task Struct
 
     public struct Task<phantom T> has key, store {
@@ -118,10 +130,11 @@ module main_task::public_task {
         is_active: bool, // true: active, false: inactive
         fund: Balance<T>,
         reward_amount: u64,
-        task_sheets: vector<TaskSheet>
+        task_sheets: vector<TaskSheet>,
+        poc_img_url: String
     }
 
-    //  Task Description
+    //  Task Description Struct
 
     public struct TaskDescription has store, copy {
         description: String,
@@ -129,7 +142,7 @@ module main_task::public_task {
         publish_time: u64
     }
 
-    // TaskSheet
+    // TaskSheet Struct
 
     public struct TaskSheet has key, store {
         id: UID,
@@ -160,6 +173,7 @@ module main_task::public_task {
         moderator: address,
         fund: Coin<T>,
         reward_amount: u64,
+        poc_img_url: String,
         ctx: &mut TxContext
     ) {
         let is_active = true; //FIXME: test only
@@ -183,7 +197,8 @@ module main_task::public_task {
             is_active,
             fund,
             reward_amount,
-            task_sheets: vector::empty()
+            task_sheets: vector::empty(),
+            poc_img_url
         };
 
         // create an admin_cap object
@@ -303,6 +318,10 @@ module main_task::public_task {
         // freeze task_sheet to avoid any change ever happen after being approved
         transfer::public_freeze_object(task_sheet);
 
+        // Mint Proof of Completion
+        let img_url = task.poc_img_url;
+        issue_proof_of_complition(task, tasker, img_url, clock, ctx);
+
 
         emit(TaskSheetApprovedEvent{
             task_id: get_task_id(task),
@@ -392,6 +411,31 @@ module main_task::public_task {
 
     fun is_mod(task_sheet: &TaskSheet, address: address): bool {
         task_sheet.moderator == address
+    }
+
+
+    // issue proof of completion and transfer to completer
+    fun issue_proof_of_complition<T> (
+        task: &Task<T>,
+        completer: address,
+        image_url: String,
+        date: &Clock,
+        ctx: &mut TxContext
+    ) {
+        let id = object::new(ctx);
+        let issued_time = clock::timestamp_ms(date);
+        let task_id = object::uid_to_inner(&task.id);
+
+        let proof_of_completion = ProofOfCompletion {
+            id,
+            task_id,
+            completer,
+            image_url,
+            issued_time
+        };
+
+        transfer::public_transfer(proof_of_completion, completer)
+
     }
 
 

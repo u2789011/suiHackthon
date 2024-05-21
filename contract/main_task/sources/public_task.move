@@ -282,7 +282,7 @@ module main_task::public_task {
 
     /*-- Reward Admin/Mod Functions --*/
 
-    // Approves the task sheet, sends the reward, and freezes it.
+    // Approve the task sheet, send the reward, and freeze it.
     public entry fun approve_and_send_reward<T>(
         task:&mut Task<T>,
         tasker: address,

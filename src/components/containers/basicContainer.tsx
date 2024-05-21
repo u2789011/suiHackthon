@@ -165,7 +165,7 @@ const BasicContainer = () => {
   });
 
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
-  const [publishedTasks, setPublishedTasks] = useState<Task[]>(tasks);
+  const [publishedTasks, setPublishedTasks] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleAcceptTask = (taskId: number) => {
@@ -189,6 +189,10 @@ const BasicContainer = () => {
     // });
     console.log("New task published:", newTask);
     setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
+    setPublishedTasks([
+      ...publishedTasks,
+      { id: tasks.length + 1, ...newTask },
+    ]);
     setNewTask({ name: "", description: "", image: "", fixedValue: "0x6" });
     toast.success(`任務創建成功!`);
   };
@@ -217,18 +221,6 @@ const BasicContainer = () => {
       toast.success("任務詳情已更新!");
     }
   };
-  let tabs = [
-    {
-      id: "acceptedTasks",
-      label: "已接受任務",
-      content: acceptedTasks,
-    },
-    {
-      id: "publishedTasks",
-      label: "已發布任務",
-      content: publishedTasks,
-    },
-  ];
 
   return (
     <>
@@ -265,62 +257,93 @@ const BasicContainer = () => {
           </Button>
         </div>
         <div className="flex w-[900px] flex-col">
-          <Tabs aria-label="Dynamic tabs" items={tabs}>
-            {(item) => (
-              <Tab key={item.id} title={item.label}>
-                <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
-                  {acceptedTasks.map((task) => (
-                    <Card
-                      key={task.id}
-                      isFooterBlurred
-                      className="col-span-12 sm:col-span-4 h-[300px]"
-                    >
-                      <CardHeader className="absolute z-10 top-1 flex-col items-start">
-                        <Chip className=" text-white/80 uppercase font-bold">
-                          {task.name}
-                        </Chip>
-                      </CardHeader>
+          <Tabs aria-label="Options">
+            <Tab key="acceptedTasks" title="已接受任務">
+              <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+                {acceptedTasks.map((task) => (
+                  <Card
+                    key={task.id}
+                    isFooterBlurred
+                    className="col-span-12 sm:col-span-4 h-[300px]"
+                  >
+                    <CardHeader className="absolute z-10 top-1 flex-col items-start">
+                      <Chip className=" text-white/80 uppercase font-bold">
+                        {task.name}
+                      </Chip>
+                    </CardHeader>
 
-                      <CardBody>
-                        <Image
-                          removeWrapper
-                          alt="Task"
-                          src={task.image}
-                          className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
-                        />
-                      </CardBody>
-                      <CardFooter className="absolute bg-black/80 bottom-0 z-10 dark:border-default-100">
-                        <div className="flex flex-grow gap-2 items-center">
-                          <div className="flex flex-col">
-                            <p className="text-tiny text-white/80">
-                              {task.description}
-                            </p>
-                          </div>
+                    <CardBody>
+                      <Image
+                        removeWrapper
+                        alt="Task"
+                        src={task.image}
+                        className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
+                      />
+                    </CardBody>
+                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 dark:border-default-100">
+                      <div className="flex flex-grow gap-2 items-center">
+                        <div className="flex flex-col">
+                          <p className="text-tiny text-white/80">
+                            {task.description}
+                          </p>
                         </div>
-                        {item.id === "acceptedTasks" && (
-                          <Button
-                            onPress={() => handleCompleteTask(task.id)}
-                            radius="full"
-                            size="sm"
-                          >
-                            回報任務完成
-                          </Button>
-                        )}
-                        {item.id === "publishedTasks" && (
-                          <Button
-                            onPress={() => handleModifyTask(task)}
-                            radius="full"
-                            size="sm"
-                          >
-                            修改任務詳情
-                          </Button>
-                        )}
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              </Tab>
-            )}
+                      </div>
+
+                      <Button
+                        onPress={() => handleCompleteTask(task.id)}
+                        radius="full"
+                        size="sm"
+                      >
+                        回報任務完成
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </Tab>
+            <Tab key="publishedTasks" title="已發布任務">
+              <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+                {publishedTasks.map((task) => (
+                  <Card
+                    key={task.id}
+                    isFooterBlurred
+                    className="col-span-12 sm:col-span-4 h-[300px]"
+                  >
+                    <CardHeader className="absolute z-10 top-1 flex-col items-start">
+                      <Chip className=" text-white/80 uppercase font-bold">
+                        {task.name}
+                      </Chip>
+                    </CardHeader>
+
+                    <CardBody>
+                      <Image
+                        removeWrapper
+                        alt="Task"
+                        src={task.image}
+                        className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
+                      />
+                    </CardBody>
+                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 dark:border-default-100">
+                      <div className="flex flex-grow gap-2 items-center">
+                        <div className="flex flex-col">
+                          <p className="text-tiny text-white/80">
+                            {task.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Button
+                        onPress={() => handleModifyTask(task)}
+                        radius="full"
+                        size="sm"
+                      >
+                        修改任務詳情
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </Tab>
           </Tabs>
         </div>
       </div>

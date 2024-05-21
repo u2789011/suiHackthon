@@ -131,7 +131,7 @@ module main_task::public_task {
         main_task_id: ID,
         task_description: TaskDescription,
         content: Option<String>,
-        annotaion: Option<String>,
+        annotation: Option<String>,
         moderator: address,
         creator: address,
         created_time: u64,
@@ -306,7 +306,7 @@ module main_task::public_task {
 
     public entry fun reject_and_return_task_sheet (
         mut task_sheet: TaskSheet,
-        annotation: String,
+        annotation: Option<String>,
         moderator: address,
         date: &Clock
         //ctx: &mut TxContext
@@ -364,12 +364,12 @@ module main_task::public_task {
     // for MOD to add annotation on task_sheet
     fun add_annotation (
         task_sheet: &mut TaskSheet,
-        annotation: String,
+        annotation: Option<String>,
         moderator: address,
         date: &Clock
     ) {
         assert!(is_mod(task_sheet, moderator), EInvalidModerator);
-        task_sheet.annotaion = option::some(annotation);
+        task_sheet.annotation = annotation;
         task_sheet.update_time = clock::timestamp_ms(date)
     }
 
@@ -401,7 +401,7 @@ module main_task::public_task {
             main_task_id,
             task_description,
             content: option::none(),
-            annotaion: option::none(),
+            annotation: option::none(),
             moderator,
             creator,
             created_time: clock::timestamp_ms(date),

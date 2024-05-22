@@ -285,7 +285,6 @@ module main_task::public_task {
     // Approve the task sheet, send the reward, and freeze it.
     public entry fun approve_and_send_reward<T>(
         task:&mut Task<T>,
-        tasker: address,
         mut task_sheet: TaskSheet,
         annotation: String,
         _: &ModCap,
@@ -301,6 +300,7 @@ module main_task::public_task {
         if (task_sheet.status != 1) {
             abort EInvalidTaskSheetStatus
         };
+        
 
         // MOD add annotation
         let moderator = ctx.sender();
@@ -311,6 +311,7 @@ module main_task::public_task {
         task_sheet.update_time = clock::timestamp_ms(clock);
 
         // send reward to tasker
+        let tasker = task_sheet.creator;
         let reward_amount = get_task_reward_amount(task);
         let reward = coin::take(&mut task.fund, reward_amount, ctx);
         transfer::public_transfer(reward, tasker);

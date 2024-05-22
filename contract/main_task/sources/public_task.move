@@ -325,7 +325,7 @@ module main_task::public_task {
 
         // Mint Proof of Completion
         let img_url = task.poc_img_url;
-        issue_proof_of_complition(task, tasker, img_url, clock, ctx);
+        issue_proof_of_completion(task, tasker, img_url, clock, ctx);
 
 
         emit(TaskSheetApprovedEvent{
@@ -420,7 +420,7 @@ module main_task::public_task {
 
 
     // issue proof of completion and transfer to completer
-    fun issue_proof_of_complition<T> (
+    fun issue_proof_of_completion<T> (
         task: &Task<T>,
         completer: address,
         image_url: String,

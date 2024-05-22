@@ -130,7 +130,7 @@ module main_task::public_task {
         is_active: bool, // true: active, false: inactive
         fund: Balance<T>,
         reward_amount: u64,
-        task_sheets: vector<TaskSheet>,
+        task_sheets: vector<ID>,
         poc_img_url: String
     }
 
@@ -314,6 +314,10 @@ module main_task::public_task {
         let reward_amount = get_task_reward_amount(task);
         let reward = coin::take(&mut task.fund, reward_amount, ctx);
         transfer::public_transfer(reward, tasker);
+
+        // Copy task_sheet id and store in task.task_sheet vector
+        let task_sheet_id = get_task_sheet_id(&task_sheet);
+        vector::push_back(&mut task.task_sheets, task_sheet_id);
 
         // freeze task_sheet to avoid any change ever happen after being approved
         transfer::public_freeze_object(task_sheet);
@@ -531,19 +535,19 @@ module main_task::public_task {
 
     // Getter functions
     
-    fun get_task_reward_amount<T>(
+    fun get_task_reward_amount<T> (
         task: &Task<T>
     ): u64 {
         task.reward_amount
     }
 
-    fun get_task_id<T>(
+    fun get_task_id<T> (
         task: &Task<T>,
     ): ID {
         object::uid_to_inner(&task.id)
     }
 
-    fun get_task_mod<T>(
+    fun get_task_mod<T> (
         task: &Task<T>,
     ): address {
         task.moderator
@@ -554,6 +558,12 @@ module main_task::public_task {
     ): TaskDescription {
         let i = length(&task.description) - 1;
         *borrow(&task.description, i)
+    }
+
+    fun get_task_sheet_id (
+        task_sheet: &TaskSheet,
+    ): ID {
+        object::uid_to_inner(&task_sheet.id)
     }
     
 

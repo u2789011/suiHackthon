@@ -492,7 +492,7 @@ module main_task::public_task {
 
     }
 
-        // Modify Content On Task Sheet
+    // Modify Content On Task Sheet
 
     public entry fun update_task_sheet_content (
         task_sheet: &mut TaskSheet,

@@ -130,7 +130,7 @@ module main_task::public_task {
         is_active: bool, // true: active, false: inactive
         fund: Balance<T>,
         reward_amount: u64,
-        task_sheets: vector<TaskSheet>,
+        task_sheets: vector<ID>,
         poc_img_url: String
     }
 
@@ -285,9 +285,8 @@ module main_task::public_task {
     // Approve the task sheet, send the reward, and freeze it.
     public entry fun approve_and_send_reward<T>(
         task:&mut Task<T>,
-        tasker: address,
         mut task_sheet: TaskSheet,
-        annotation: Option<String>,
+        annotation: String,
         _: &ModCap,
         clock: &Clock,
         ctx: &mut TxContext
@@ -301,6 +300,7 @@ module main_task::public_task {
         if (task_sheet.status != 1) {
             abort EInvalidTaskSheetStatus
         };
+        
 
         // MOD add annotation
         let moderator = ctx.sender();
@@ -311,9 +311,14 @@ module main_task::public_task {
         task_sheet.update_time = clock::timestamp_ms(clock);
 
         // send reward to tasker
+        let tasker = task_sheet.creator;
         let reward_amount = get_task_reward_amount(task);
         let reward = coin::take(&mut task.fund, reward_amount, ctx);
         transfer::public_transfer(reward, tasker);
+
+        // Copy task_sheet id and store in task.task_sheet vector
+        let task_sheet_id = get_task_sheet_id(&task_sheet);
+        vector::push_back(&mut task.task_sheets, task_sheet_id);
 
         // freeze task_sheet to avoid any change ever happen after being approved
         transfer::public_freeze_object(task_sheet);
@@ -336,19 +341,19 @@ module main_task::public_task {
 
     public entry fun reject_and_return_task_sheet (
         mut task_sheet: TaskSheet,
-        annotation: Option<String>,
-        moderator: address,
+        annotation: String,
         date: &Clock
         //ctx: &mut TxContext
     ){  
         let task_sheet_creator = task_sheet.creator;
+        let moderator = task_sheet.moderator;
         let task_sheet_id = object::uid_to_inner(&task_sheet.id);
 
         // add annotaion on task sheet
         add_annotation(&mut task_sheet, annotation, moderator, date);
 
         // Update task sheet status
-        task_sheet.status = 1;
+        task_sheet.status = 0;
         task_sheet.update_time = clock::timestamp_ms(date);
 
         emit(TaskRejectedEvent {
@@ -400,12 +405,12 @@ module main_task::public_task {
     // for MOD to add annotation on task_sheet
     fun add_annotation (
         task_sheet: &mut TaskSheet,
-        annotation: Option<String>,
+        annotation: String,
         moderator: address,
         date: &Clock
     ) {
         assert!(is_mod(task_sheet, moderator), EInvalidModerator);
-        task_sheet.annotation = annotation;
+        task_sheet.annotation = option::some(annotation);
         task_sheet.update_time = clock::timestamp_ms(date)
     }
 
@@ -531,19 +536,19 @@ module main_task::public_task {
 
     // Getter functions
     
-    fun get_task_reward_amount<T>(
+    fun get_task_reward_amount<T> (
         task: &Task<T>
     ): u64 {
         task.reward_amount
     }
 
-    fun get_task_id<T>(
+    fun get_task_id<T> (
         task: &Task<T>,
     ): ID {
         object::uid_to_inner(&task.id)
     }
 
-    fun get_task_mod<T>(
+    fun get_task_mod<T> (
         task: &Task<T>,
     ): address {
         task.moderator
@@ -554,6 +559,12 @@ module main_task::public_task {
     ): TaskDescription {
         let i = length(&task.description) - 1;
         *borrow(&task.description, i)
+    }
+
+    fun get_task_sheet_id (
+        task_sheet: &TaskSheet,
+    ): ID {
+        object::uid_to_inner(&task_sheet.id)
     }
     
 

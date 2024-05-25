@@ -10,6 +10,7 @@ import {
 } from "@mysten/dapp-kit";
 import { AppContext } from "@/context/AppContext";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
 import { toast } from "react-toastify";
 import {
   Card,
@@ -51,75 +52,6 @@ const BasicContainer = () => {
   // FIXME: 20240525 test publish package address on devnet
   const PACKAGE_ID =
     "0x8312fbef4e12a25ffcef01086bfd9677cd33beb14d26c9c24b384cc705950bfc";
-  const TREASURY_ID =
-    "0x4211e66063acb06ca1128b6853cfa86131f3c84740cb74e13b43feaabb311a6d";
-
-  const handleMint = async () => {
-    if (!account.address) return;
-    const tx = new TransactionBlock();
-    const treasuryObj = tx.object(TREASURY_ID);
-    const flashMintAmount = tx.pure.u64(1);
-
-    // 1. flash mint
-    const [fortuneCoin, recipit] = tx.moveCall({
-      target: `${PACKAGE_ID}::fortune::flash_mint`,
-      arguments: [treasuryObj, flashMintAmount],
-    });
-
-    // 2. mint bag
-    const [fortuneBag] = tx.moveCall({
-      target: `${PACKAGE_ID}::fortune_bag::mint`,
-      arguments: [fortuneCoin],
-    });
-    const [fortuneValueInBag] = tx.moveCall({
-       target: `${PACKAGE_ID}::fortune_bag::fortune_value`,
-       arguments: [fortuneBag],
-     });
-
-    // 3. take from bag
-    const [repayment] = tx.moveCall({
-      target: `${PACKAGE_ID}::fortune_bag::take`,
-      arguments: [fortuneBag, flashMintAmount],
-    });
-
-    // 4. transfer bag to sender
-    tx.transferObjects([fortuneBag], account.address);
-
-    // 5. flash burn
-    tx.moveCall({
-      target: `${PACKAGE_ID}::fortune::flash_burn`,
-      arguments: [treasuryObj, repayment, recipit],
-    });
-    tx.setSender(account.address);
-
-    const dryrunRes = await client.dryRunTransactionBlock({
-      transactionBlock: await tx.build({ client: client }),
-    });
-    console.log(dryrunRes);
-
-    if (dryrunRes.effects.status.status === "success") {
-      signAndExecuteTransactionBlock(
-        {
-          transactionBlock: tx,
-          options: {
-            showEffects: true,
-          },
-        },
-        {
-          onSuccess: (res) => {
-            toast.success(`Mint ${res.effects?.created?.length ?? 0} Bag!`);
-            refetch();
-          },
-          onError: (err) => {
-            toast.error("Tx Failed!");
-            console.log(err);
-          },
-        }
-      );
-    } else {
-      toast.error("Something went wrong");
-    }
-  };
 
   const [tasks, setTasks] = useState([
     {
@@ -130,6 +62,7 @@ const BasicContainer = () => {
         "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
       fixedValue: "0x6",
     },
+    /*
     {
       id: 2,
       name: "任務二",
@@ -146,11 +79,14 @@ const BasicContainer = () => {
         "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
       fixedValue: "0x6",
     },
+    */
   ]);
 
   const [newTask, setNewTask] = useState({
+    reward_type: "",
     name: "",
     description: "",
+    format:1,
     image: "",
     fixedValue: "0x6",
     area: "",
@@ -160,34 +96,35 @@ const BasicContainer = () => {
     poc_img_url: "",
   });
 
+  
   const handleAcceptTask = (taskId: number) => {
     // Logic for accepting task
     console.log(`Accepted task ${taskId}`);
     toast.success(`接受任務成功!`);
   };
+  
 
   // TODO: publish task
-  const handlePublishTask = () => {
-    // Logic for publishing task
-    console.log("New task published:", newTask);
-    setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
-    setNewTask({ name: "", description: "", image: "", fixedValue: "0x6", area:"", mod:"", fund:"",reward_amount: "", poc_img_url: "", });
-    toast.success(`任務創建成功!`);
-  };
-
   const handlePublishTaskChain = async () => {
-    // Logic for publishing task
+
     if (!account.address) return;
     const txb = new TransactionBlock();
-
-    // const [coin] = txb.splitCoins(txb.gas, [1000000000]);
-    // txb.transferObjects([coin], '0x1a95de38da27d6915436498dbba16715a5b0eca04d1af4286aa4e1220c40c474');
 
     txb.moveCall({
       target: `${PACKAGE_ID}::public_task::publish_task`,
       arguments: [
-        //TODO: 
-      ]
+        txb.pure.string(newTask.name),
+        txb.pure.string(newTask.description),
+        txb.pure(newTask.format),
+        txb.pure.string(newTask.image),
+        txb.pure(SUI_CLOCK_OBJECT_ID),
+        txb.pure.string(newTask.area),
+        txb.pure.address(newTask.mod),
+        txb.object(newTask.fund),
+        txb.pure(newTask.reward_amount),
+        txb.pure.string(newTask.poc_img_url),
+      ],
+      typeArguments: [newTask.reward_type]
     });
 
     txb.setSender(account.address);
@@ -196,6 +133,7 @@ const BasicContainer = () => {
       transactionBlock: await txb.build({ client: client }),
     });
     console.log(dryrunRes);
+  
 
     if (dryrunRes.effects.status.status === "success") {
       signAndExecuteTransactionBlock(
@@ -219,10 +157,12 @@ const BasicContainer = () => {
     } else {
       toast.error("Something went wrong");
     }
+   
+
 
     console.log("New task published:", newTask);
     setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
-    // setNewTask({ name: "", description: "", image: "", fixedValue: "0x6", area:"", mod:"", fund:"",reward_amount: "", poc_img_url: "", });
+    setNewTask({ reward_type: "", name: "", description: "", format: 1, image: "", fixedValue: "0x6", area:"", mod:"", fund:"",reward_amount: "", poc_img_url: "", });
     toast.success(`發送成功`);
   };
 
@@ -246,12 +186,13 @@ const BasicContainer = () => {
           setSelectedToken={setSelectedToken}
           maxValue={0.0}
 
-        />
+      /*/>
         <ActionButton
           label="Flash Mint Fortune Bag"
           isConnected={true}
           isLoading={false}
           onClick={handleMint}
+       */   
         />
       </div>
       <div className="mx-auto p-4">
@@ -306,6 +247,16 @@ const BasicContainer = () => {
               <ModalBody>
                 <Input
                   autoFocus
+                  label="Reward Type"
+                  placeholder="Enter the Reward Type"
+                  variant="bordered"
+                  value={newTask.reward_type}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, reward_type: e.target.value })
+                  }
+                />
+                <Input
+                  autoFocus
                   label="Task Name"
                   placeholder="Please Input Task Name"
                   variant="bordered"
@@ -338,7 +289,7 @@ const BasicContainer = () => {
                   variant="bordered"
                   value={newTask.area}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, image: e.target.value })
+                    setNewTask({ ...newTask, area: e.target.value })
                   }
                 />
                 <Input
@@ -347,7 +298,7 @@ const BasicContainer = () => {
                   variant="bordered"
                   value={newTask.mod}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, image: e.target.value })
+                    setNewTask({ ...newTask, mod: e.target.value })
                   }
                 />
                 <Input
@@ -356,7 +307,7 @@ const BasicContainer = () => {
                   variant="bordered"
                   value={newTask.fund}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, image: e.target.value })
+                    setNewTask({ ...newTask, fund: e.target.value })
                   }
                 />
                 <Input
@@ -365,7 +316,7 @@ const BasicContainer = () => {
                   variant="bordered"
                   value={newTask.reward_amount}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, image: e.target.value })
+                    setNewTask({ ...newTask, reward_amount: e.target.value })
                   }
                 />
                 <Input
@@ -374,7 +325,7 @@ const BasicContainer = () => {
                   variant="bordered"
                   value={newTask.poc_img_url}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, image: e.target.value })
+                    setNewTask({ ...newTask, poc_img_url: e.target.value })
                   }
                 />
                 <Input disabled label="Fix Field" value={newTask.fixedValue} />

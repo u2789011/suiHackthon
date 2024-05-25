@@ -48,8 +48,9 @@ const BasicContainer = () => {
     }
   }, [suiBalance]);
 
+  // FIXME: 20240525 test publish package address on devnet
   const PACKAGE_ID =
-    "0xd4395116066d0e6d41a5b041154efaefc3dd8969084a2230732d205549e1bc31";
+    "0x8312fbef4e12a25ffcef01086bfd9677cd33beb14d26c9c24b384cc705950bfc";
   const TREASURY_ID =
     "0x4211e66063acb06ca1128b6853cfa86131f3c84740cb74e13b43feaabb311a6d";
 
@@ -70,10 +71,10 @@ const BasicContainer = () => {
       target: `${PACKAGE_ID}::fortune_bag::mint`,
       arguments: [fortuneCoin],
     });
-    // const [fortuneValueInBag] = tx.moveCall({
-    //   target: `${PACKAGE_ID}::fortune_bag::fortune_value`,
-    //   arguments: [fortuneBag],
-    // });
+    const [fortuneValueInBag] = tx.moveCall({
+       target: `${PACKAGE_ID}::fortune_bag::fortune_value`,
+       arguments: [fortuneBag],
+     });
 
     // 3. take from bag
     const [repayment] = tx.moveCall({
@@ -152,6 +153,11 @@ const BasicContainer = () => {
     description: "",
     image: "",
     fixedValue: "0x6",
+    area: "",
+    mod: "",
+    fund: "",
+    reward_amount: "",
+    poc_img_url: "",
   });
 
   const handleAcceptTask = (taskId: number) => {
@@ -160,19 +166,71 @@ const BasicContainer = () => {
     toast.success(`接受任務成功!`);
   };
 
+  // TODO: publish task
   const handlePublishTask = () => {
     // Logic for publishing task
     console.log("New task published:", newTask);
     setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
-    setNewTask({ name: "", description: "", image: "", fixedValue: "0x6" });
+    setNewTask({ name: "", description: "", image: "", fixedValue: "0x6", area:"", mod:"", fund:"",reward_amount: "", poc_img_url: "", });
     toast.success(`任務創建成功!`);
+  };
+
+  const handlePublishTaskChain = async () => {
+    // Logic for publishing task
+    if (!account.address) return;
+    const txb = new TransactionBlock();
+
+    // const [coin] = txb.splitCoins(txb.gas, [1000000000]);
+    // txb.transferObjects([coin], '0x1a95de38da27d6915436498dbba16715a5b0eca04d1af4286aa4e1220c40c474');
+
+    txb.moveCall({
+      target: `${PACKAGE_ID}::public_task::publish_task`,
+      arguments: [
+        //TODO: 
+      ]
+    });
+
+    txb.setSender(account.address);
+
+    const dryrunRes = await client.dryRunTransactionBlock({
+      transactionBlock: await txb.build({ client: client }),
+    });
+    console.log(dryrunRes);
+
+    if (dryrunRes.effects.status.status === "success") {
+      signAndExecuteTransactionBlock(
+        {
+          transactionBlock: txb,
+          options: {
+            showEffects: true,
+          },
+        },
+        {
+          onSuccess: (res) => {
+            toast.success(`發送成功！`);
+            refetch();
+          },
+          onError: (err) => {
+            toast.error("Tx Failed!");
+            console.log(err);
+          },
+        }
+      );
+    } else {
+      toast.error("Something went wrong");
+    }
+
+    console.log("New task published:", newTask);
+    setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
+    // setNewTask({ name: "", description: "", image: "", fixedValue: "0x6", area:"", mod:"", fund:"",reward_amount: "", poc_img_url: "", });
+    toast.success(`發送成功`);
   };
 
   return (
     <>
       <div className="w-[80%] flex flex-col items-center justify-center gap-4 mt-20">
         <BasicDataField
-          label="Your Wallet Balance"
+          label="Wallet Balance"
           value={userBalance ?? "0.0000"}
           spaceWithUnit
           unit="SUI"
@@ -187,17 +245,17 @@ const BasicContainer = () => {
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           maxValue={0.0}
+
         />
         <ActionButton
           label="Flash Mint Fortune Bag"
           isConnected={true}
           isLoading={false}
           onClick={handleMint}
-          buttonClass="w-70"
         />
       </div>
       <div className="mx-auto p-4">
-        <Button onPress={onOpen}>發布任務</Button>
+        <Button onPress={onOpen}>Publish Task</Button>
       </div>
       <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8 mb-10">
         {tasks.map((task) => (
@@ -229,7 +287,7 @@ const BasicContainer = () => {
               <Button
                 onClick={() => handleAcceptTask(task.id)}
                 radius="full"
-                size="sm"
+                size="md"
               >
                 接受任務
               </Button>
@@ -243,13 +301,13 @@ const BasicContainer = () => {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                發布任務
+                Mint a Task
               </ModalHeader>
               <ModalBody>
                 <Input
                   autoFocus
-                  label="任務名稱"
-                  placeholder="任務名稱"
+                  label="Task Name"
+                  placeholder="Please Input Task Name"
                   variant="bordered"
                   value={newTask.name}
                   onChange={(e) =>
@@ -257,8 +315,8 @@ const BasicContainer = () => {
                   }
                 />
                 <Input
-                  label="任務描述"
-                  placeholder="任務描述"
+                  label="Description"
+                  placeholder="Input Some Description of Your Task"
                   variant="bordered"
                   value={newTask.description}
                   onChange={(e) =>
@@ -266,15 +324,60 @@ const BasicContainer = () => {
                   }
                 />
                 <Input
-                  label="圖片連結"
-                  placeholder="圖片連結"
+                  label="Task Image"
+                  placeholder="Input Image URL"
                   variant="bordered"
                   value={newTask.image}
                   onChange={(e) =>
                     setNewTask({ ...newTask, image: e.target.value })
                   }
                 />
-                <Input disabled label="固定填寫" value={newTask.fixedValue} />
+                <Input
+                  label="Area"
+                  placeholder="Where the Task is Availible"
+                  variant="bordered"
+                  value={newTask.area}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, image: e.target.value })
+                  }
+                />
+                <Input
+                  label="MOD"
+                  placeholder="Input MOD address"
+                  variant="bordered"
+                  value={newTask.mod}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, image: e.target.value })
+                  }
+                />
+                <Input
+                  label="fund"
+                  placeholder="Input Fund Object"
+                  variant="bordered"
+                  value={newTask.fund}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, image: e.target.value })
+                  }
+                />
+                <Input
+                  label="Reward Amount"
+                  placeholder="Reward Amount for Each Tasker"
+                  variant="bordered"
+                  value={newTask.reward_amount}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, image: e.target.value })
+                  }
+                />
+                <Input
+                  label="Proof of completion Image URL"
+                  placeholder="Set the URL for Proof for Completion NFT"
+                  variant="bordered"
+                  value={newTask.poc_img_url}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, image: e.target.value })
+                  }
+                />
+                <Input disabled label="Fix Field" value={newTask.fixedValue} />
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="flat" onPress={onClose}>
@@ -283,9 +386,9 @@ const BasicContainer = () => {
                 <Button
                   color="primary"
                   onPress={onClose}
-                  onClick={handlePublishTask}
+                  onClick={handlePublishTaskChain} //FIXME: TEST Change
                 >
-                  發布任務
+                  Mint Task
                 </Button>
               </ModalFooter>
             </>

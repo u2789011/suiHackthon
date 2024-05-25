@@ -61,7 +61,7 @@ const BasicContainer = () => {
       image:
         "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
     },
-    /*
+    
     {
       id: 2,
       name: "任務二",
@@ -76,7 +76,6 @@ const BasicContainer = () => {
       image:
         "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
     },
-    */
   ]);
 
   const [newTask, setNewTask] = useState({
@@ -85,7 +84,6 @@ const BasicContainer = () => {
     description: "",
     format:1,
     image: "",
-    //fixedValue: "0x6",
     area: "",
     mod: "",
     fund: "",
@@ -99,9 +97,9 @@ const BasicContainer = () => {
     console.log(`Accepted task ${taskId}`);
     toast.success(`接受任務成功!`);
   };
-  
 
-  // TODO: publish task
+
+  // TODO: make type, fund splitable and selectable
   const handlePublishTaskChain = async () => {
 
     if (!account.address) return;
@@ -141,8 +139,18 @@ const BasicContainer = () => {
           },
         },
         {
-          onSuccess: (res) => {
-            toast.success(`發送成功！`);
+          onSuccess: async (res) => {
+            try{
+              const digest = await txb.getDigest({ client: client });
+              toast.success(`Transaction Sent, ${digest}`);
+              console.log(`Transaction Digest`, digest);
+            } catch (digestError) {
+              if (digestError instanceof Error){
+                toast.error(`Transaction sent, but failed to get digest: ${digestError.message}`);
+              } else {
+                toast.error("Transaction sent, but failed to get digest due to an unknown error.");
+              }
+            };
             refetch();
           },
           onError: (err) => {
@@ -154,14 +162,15 @@ const BasicContainer = () => {
     } else {
       toast.error("Something went wrong");
     }
-   
 
-
-    console.log("New task published:", newTask);
+    // console.log("New task published:", newTask);
     setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
     setNewTask({ reward_type: "", name: "", description: "", format: 1, image: "", area:"", mod:"", fund:"",reward_amount: "", poc_img_url: "", });
-    toast.success(`發送成功`);
+    toast.success(`Task Published`);
   };
+
+  
+
 
   return (
     <>

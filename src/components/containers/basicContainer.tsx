@@ -60,7 +60,6 @@ const BasicContainer = () => {
       description: "這是任務一的描述",
       image:
         "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
-      fixedValue: "0x6",
     },
     /*
     {
@@ -69,7 +68,6 @@ const BasicContainer = () => {
       description: "這是任務二的描述",
       image:
         "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
-      fixedValue: "0x6",
     },
     {
       id: 3,
@@ -77,7 +75,6 @@ const BasicContainer = () => {
       description: "這是任務三的描述",
       image:
         "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
-      fixedValue: "0x6",
     },
     */
   ]);
@@ -88,7 +85,7 @@ const BasicContainer = () => {
     description: "",
     format:1,
     image: "",
-    fixedValue: "0x6",
+    //fixedValue: "0x6",
     area: "",
     mod: "",
     fund: "",
@@ -162,7 +159,7 @@ const BasicContainer = () => {
 
     console.log("New task published:", newTask);
     setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
-    setNewTask({ reward_type: "", name: "", description: "", format: 1, image: "", fixedValue: "0x6", area:"", mod:"", fund:"",reward_amount: "", poc_img_url: "", });
+    setNewTask({ reward_type: "", name: "", description: "", format: 1, image: "", area:"", mod:"", fund:"",reward_amount: "", poc_img_url: "", });
     toast.success(`發送成功`);
   };
 
@@ -328,7 +325,6 @@ const BasicContainer = () => {
                     setNewTask({ ...newTask, poc_img_url: e.target.value })
                   }
                 />
-                <Input disabled label="Fix Field" value={newTask.fixedValue} />
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="flat" onPress={onClose}>

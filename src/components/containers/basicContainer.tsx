@@ -182,7 +182,7 @@ const BasicContainer = () => {
           spaceWithUnit
           unit="SUI"
           minFractionDigits={0}
-        />
+        /*/>
         <BasicInputField
           label="Input"
           inputValue="0.0000"
@@ -193,7 +193,7 @@ const BasicContainer = () => {
           setSelectedToken={setSelectedToken}
           maxValue={0.0}
 
-      /*/>
+        />
         <ActionButton
           label="Flash Mint Fortune Bag"
           isConnected={true}
@@ -234,10 +234,10 @@ const BasicContainer = () => {
               </div>
               <Button
                 onClick={() => handleAcceptTask(task.id)}
-                radius="full"
+                radius="md"
                 size="md"
               >
-                接受任務
+                Take
               </Button>
             </CardFooter>
           </Card>
@@ -309,7 +309,7 @@ const BasicContainer = () => {
                   }
                 />
                 <Input
-                  label="fund"
+                  label="Fund"
                   placeholder="Input Fund Object"
                   variant="bordered"
                   value={newTask.fund}

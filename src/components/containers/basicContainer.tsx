@@ -167,7 +167,7 @@ const BasicContainer = () => {
     // console.log("New task published:", newTask);
     setTasks([...tasks, { id: tasks.length + 1, ...newTask }]);
     setNewTask({ reward_type: "", name: "", description: "", format: 1, image: "", area:"", mod:"", fund:"",reward_amount: "", poc_img_url: "", });
-    toast.success(`Task Published`);
+    // toast.success(`Task Published`);
   };
 
   

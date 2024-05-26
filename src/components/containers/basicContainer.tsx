@@ -10,6 +10,7 @@ import {
 } from "@mysten/dapp-kit";
 import { AppContext } from "@/context/AppContext";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
 import { toast } from "react-toastify";
 import {
   Card,
@@ -38,6 +39,7 @@ type TaskDescription = {
 };
 
 type Task = {
+  reward_type: string;
   id: string;
   version: number;
   name: string;
@@ -53,6 +55,7 @@ type Task = {
   task_sheets: any[]; // assuming task_sheets is an array of objects
   poc_img_url: string;
 };
+
 const BasicContainer = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { walletAddress, suiName } = useContext(AppContext);
@@ -74,114 +77,20 @@ const BasicContainer = () => {
   }, [suiBalance]);
 
   const PACKAGE_ID =
-    "0xd4395116066d0e6d41a5b041154efaefc3dd8969084a2230732d205549e1bc31";
-  const TREASURY_ID =
-    "0x4211e66063acb06ca1128b6853cfa86131f3c84740cb74e13b43feaabb311a6d";
-
-  const handleMint = async () => {
-    if (!account.address) return;
-    const tx = new TransactionBlock();
-    const treasuryObj = tx.object(TREASURY_ID);
-    const flashMintAmount = tx.pure.u64(1);
-
-    // 1. flash mint
-    const [fortuneCoin, recipit] = tx.moveCall({
-      target: `${PACKAGE_ID}::fortune::flash_mint`,
-      arguments: [treasuryObj, flashMintAmount],
-    });
-
-    // 2. mint bag
-    const [fortuneBag] = tx.moveCall({
-      target: `${PACKAGE_ID}::fortune_bag::mint`,
-      arguments: [fortuneCoin],
-    });
-    // const [fortuneValueInBag] = tx.moveCall({
-    //   target: `${PACKAGE_ID}::fortune_bag::fortune_value`,
-    //   arguments: [fortuneBag],
-    // });
-
-    // 3. take from bag
-    const [repayment] = tx.moveCall({
-      target: `${PACKAGE_ID}::fortune_bag::take`,
-      arguments: [fortuneBag, flashMintAmount],
-    });
-
-    // 4. transfer bag to sender
-    tx.transferObjects([fortuneBag], account.address);
-
-    // 5. flash burn
-    tx.moveCall({
-      target: `${PACKAGE_ID}::fortune::flash_burn`,
-      arguments: [treasuryObj, repayment, recipit],
-    });
-    tx.setSender(account.address);
-
-    const dryrunRes = await client.dryRunTransactionBlock({
-      transactionBlock: await tx.build({ client: client }),
-    });
-    console.log(dryrunRes);
-
-    if (dryrunRes.effects.status.status === "success") {
-      signAndExecuteTransactionBlock(
-        {
-          transactionBlock: tx,
-          options: {
-            showEffects: true,
-          },
-        },
-        {
-          onSuccess: (res) => {
-            toast.success(`Mint ${res.effects?.created?.length ?? 0} Bag!`);
-            refetch();
-          },
-          onError: (err) => {
-            toast.error("Tx Failed!");
-            console.log(err);
-          },
-        }
-      );
-    } else {
-      toast.error("Something went wrong");
-    }
-  };
-
-  // const [tasks, setTasks] = useState([
-  //   {
-  //     id: 1,
-  //     name: "任務一",
-  //     description: "這是任務一的描述",
-  //     image:
-  //       "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
-  //     fixedValue: "0x6",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "任務二",
-  //     description: "這是任務二的描述",
-  //     image:
-  //       "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
-  //     fixedValue: "0x6",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "任務三",
-  //     description: "這是任務三的描述",
-  //     image:
-  //       "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
-  //     fixedValue: "0x6",
-  //   },
-  // ]);
+    "0x8312fbef4e12a25ffcef01086bfd9677cd33beb14d26c9c24b384cc705950bfc";
 
   const [newTask, setNewTask] = useState({
+    reward_type: "",
     name: "",
     description: "",
+    format: 1,
     image_url: "",
     area: "",
     reward_amount: "",
     poc_img_url: "",
-    creator: "0xYourAddress",
-    moderator: "0xModeratorAddress",
-    fund: 1000,
+    creator: "",
+    moderator: "",
+    fund: "",
   });
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
@@ -204,6 +113,7 @@ const BasicContainer = () => {
       area: "區域一",
       is_active: true,
       fund: 1000,
+      reward_type:"",
       reward_amount: 100,
       task_sheets: [],
       poc_img_url: "https://example.com/poc1.jpg",
@@ -226,6 +136,7 @@ const BasicContainer = () => {
       area: "區域二",
       is_active: false,
       fund: 2000,
+      reward_type:"",
       reward_amount: 200,
       task_sheets: [],
       poc_img_url: "https://example.com/poc2.jpg",
@@ -248,6 +159,7 @@ const BasicContainer = () => {
       area: "區域三",
       is_active: true,
       fund: 3000,
+      reward_type:"",
       reward_amount: 300,
       task_sheets: [],
       poc_img_url: "https://example.com/poc3.jpg",
@@ -273,16 +185,73 @@ const BasicContainer = () => {
     console.log(acceptedTask);
   };
 
-  const handlePublishTask = async () => {
-    // Logic for publishing task
-    //if (!account.address) return;
-    // const tx = new TransactionBlock();
-    // const [nft] = tx.moveCall({
-    //   target: `${PACKAGE_ID}::fortune_bag::mint`,
-    //   arguments: [],
-    // });
+  const handlePublishTaskChain = async () => {
+
+    if (!account.address) return;
+    const txb = new TransactionBlock();
+
+    txb.moveCall({
+      target: `${PACKAGE_ID}::public_task::publish_task`,
+      arguments: [
+        txb.pure.string(newTask.name),
+        txb.pure.string(newTask.description),
+        txb.pure(newTask.format),
+        txb.pure.string(newTask.image_url),
+        txb.pure(SUI_CLOCK_OBJECT_ID),
+        txb.pure.string(newTask.area),
+        txb.pure.address(newTask.moderator),
+        txb.object(newTask.fund),
+        txb.pure(newTask.reward_amount),
+        txb.pure.string(newTask.poc_img_url),
+      ],
+      typeArguments: [newTask.reward_type]
+    });
+
+    txb.setSender(account.address);
+
+    const dryrunRes = await client.dryRunTransactionBlock({
+      transactionBlock: await txb.build({ client: client }),
+    });
+    console.log(dryrunRes);
+  
+
+    if (dryrunRes.effects.status.status === "success") {
+      signAndExecuteTransactionBlock(
+        {
+          transactionBlock: txb,
+          options: {
+            showEffects: true,
+          },
+        },
+        {
+          onSuccess: async (res) => {
+            try{
+              const digest = await txb.getDigest({ client: client });
+              toast.success(`Transaction Sent, ${digest}`);
+              console.log(`Transaction Digest`, digest);
+            } catch (digestError) {
+              if (digestError instanceof Error){
+                toast.error(`Transaction sent, but failed to get digest: ${digestError.message}`);
+              } else {
+                toast.error("Transaction sent, but failed to get digest due to an unknown error.");
+              }
+            };
+            refetch();
+          },
+          onError: (err) => {
+            toast.error("Tx Failed!");
+            console.log(err);
+          },
+        }
+      );
+    } else {
+      toast.error("Something went wrong");
+    }
+
+
     console.log("New task published:", newTask);
     const newTaskObject = {
+      reward_type:newTask.reward_type,
       id: (publishedTasks.length + 1).toString(),
       version: 1,
       name: newTask.name,
@@ -309,15 +278,17 @@ const BasicContainer = () => {
 
     // 重置 newTask
     setNewTask({
+      reward_type: "",
       name: "",
       description: "",
+      format: 1,
       image_url: "",
       area: "",
       reward_amount: "",
       poc_img_url: "",
       creator: account.address || "0xYourAddress",
       moderator: account.address || "0xModeratorAddress",
-      fund: 1000,
+      fund: "",
     });
     toast.success(`任務創建成功!`);
   };
@@ -367,7 +338,7 @@ const BasicContainer = () => {
           spaceWithUnit
           unit="SUI"
           minFractionDigits={0}
-        />
+        /*/>
         <BasicInputField
           label="Input"
           inputValue="0.0000"
@@ -383,14 +354,15 @@ const BasicContainer = () => {
           isConnected={true}
           isLoading={false}
           onClick={handleMint}
-          buttonClass="w-70"
+          buttonClass="w-70" */
         />
       </div>
-      <Divider className="my-4" />
-      <h1 className="my-4">Fren Suipport Project</h1>
-      <div className="mx-auto p-4">
-        <Button onPress={onOpen} onClick={() => setSelectedTask(null)}>
-          發布任務
+      <Divider className="my-4" /*/>
+      <h1 className="my-4">Fren Suipport Project</h1>*/
+      >
+        </Divider><div className="mx-auto p-4">
+        <Button onPress={onOpen} onClick={(handlePublishTaskChain) => setSelectedTask(null)}>
+          Publish Task
         </Button>
       </div>
       <div className="mx-auto p-4">
@@ -612,11 +584,23 @@ const BasicContainer = () => {
           {(onClose) => (
             <>
               <ModalHeader>
-                {selectedTask ? "修改任務" : "發布新任務"}
+                {selectedTask ? "Modify Task Desciption" : "Mint a Task"}
               </ModalHeader>
               <ModalBody>
                 <Input
-                  label="任務名稱"
+                  label="Reward Type"
+                  value={selectedTask ? selectedTask.reward_type : newTask.reward_type} //FIXME: Reward Type
+                  onChange={(e) =>
+                    selectedTask
+                      ? setSelectedTask({
+                          ...selectedTask,
+                          name: e.target.value,
+                        })
+                      : setNewTask({ ...newTask, reward_type: e.target.value })
+                  }
+                />
+                <Input
+                  label="Task Name"
                   value={selectedTask ? selectedTask.name : newTask.name}
                   onChange={(e) =>
                     selectedTask
@@ -628,7 +612,7 @@ const BasicContainer = () => {
                   }
                 />
                 <Input
-                  label="任務描述"
+                  label="Description"
                   value={
                     selectedTask
                       ? selectedTask.description[0].description
@@ -650,7 +634,7 @@ const BasicContainer = () => {
                   }
                 />
                 <Input
-                  label="任務圖片URL"
+                  label="Task Image URL"
                   value={
                     selectedTask ? selectedTask.image_url : newTask.image_url
                   }
@@ -664,7 +648,7 @@ const BasicContainer = () => {
                   }
                 />
                 <Input
-                  label="任務所在地區"
+                  label="Task Area"
                   value={newTask.area}
                   onChange={(e) =>
                     setNewTask({
@@ -674,13 +658,44 @@ const BasicContainer = () => {
                   }
                 />
                 <Input
-                  label="任務獎勵金額"
+                  label="Task MOD"
+                  value={newTask.moderator}
+                  onChange={(e) =>
+                    setNewTask({
+                      ...newTask,
+                      moderator: e.target.value,
+                    })
+                  }
+                />
+                <Input
+                  label="Task Fund"
+                  value={newTask.fund}
+                  onChange={(e) =>
+                    setNewTask({
+                      ...newTask,
+                      fund: e.target.value,
+                    })
+                  }
+                />
+                <Input
+                  label="Reward Amount"
                   type="number"
                   value={newTask.reward_amount}
                   onChange={(e) =>
                     setNewTask({
                       ...newTask,
                       reward_amount: e.target.value,
+                    })
+                  }
+                />
+                <Input
+                  label="Proof of completion Image URL"
+                  type="number"
+                  value={newTask.poc_img_url}
+                  onChange={(e) =>
+                    setNewTask({
+                      ...newTask,
+                      poc_img_url: e.target.value,
                     })
                   }
                 />
@@ -702,10 +717,10 @@ const BasicContainer = () => {
                   onClick={() => {
                     selectedTask
                       ? handleSaveTaskDetails()
-                      : handlePublishTask();
+                      : handlePublishTaskChain();
                   }}
                 >
-                  {selectedTask ? "保存修改" : "發布"}
+                  {selectedTask ? "Save Changes" : "Publish Task"}
                 </Button>
               </ModalFooter>
             </>

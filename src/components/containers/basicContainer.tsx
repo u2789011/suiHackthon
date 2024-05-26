@@ -179,6 +179,9 @@ const BasicContainer = () => {
     area: "",
     reward_amount: "",
     poc_img_url: "",
+    creator: "0xYourAddress",
+    moderator: "0xModeratorAddress",
+    fund: 1000,
   });
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
@@ -312,14 +315,28 @@ const BasicContainer = () => {
       area: "",
       reward_amount: "",
       poc_img_url: "",
+      creator: account.address || "0xYourAddress",
+      moderator: account.address || "0xModeratorAddress",
+      fund: 1000,
     });
     toast.success(`任務創建成功!`);
   };
 
   const handleCompleteTask = (taskId: string) => {
-    setAcceptedTasks(acceptedTasks.filter((task) => task.id !== taskId));
-    toast.success(`任務已完成!`);
-    console.log(completedTasks);
+    const completedTask = acceptedTasks.find((task) => task.id === taskId);
+
+    if (completedTask) {
+      // 將已完成的任務添加到已完成任務的陣列中
+      setCompletedTasks([...completedTasks, completedTask]);
+
+      // 將已完成的任務從已接受任務列表中移除
+      setAcceptedTasks(acceptedTasks.filter((task) => task.id !== taskId));
+
+      toast.success(`任務已完成!`);
+      console.log(completedTasks);
+    } else {
+      toast.error("找不到該任務!");
+    }
   };
 
   const handleModifyTask = (task: Task) => {
@@ -576,6 +593,7 @@ const BasicContainer = () => {
                     <strong>獎勵金額:</strong> {task.reward_amount}
                   </p>
                   <Button
+                    isDisabled={!task.is_active}
                     onClick={() => handleAcceptTask(task.id)}
                     radius="full"
                     size="sm"
@@ -657,6 +675,7 @@ const BasicContainer = () => {
                 />
                 <Input
                   label="任務獎勵金額"
+                  type="number"
                   value={newTask.reward_amount}
                   onChange={(e) =>
                     setNewTask({

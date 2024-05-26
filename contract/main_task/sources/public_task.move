@@ -103,7 +103,18 @@ module main_task::public_task {
         id: UID,
     }
 
+    // Public Task One Time Witness
+
+    public struct PUBLIC_TASK has drop {}
+
+
     /*---Main Objects Struct---*/
+
+    // Task Manager Struct
+    public struct TaskManager has key {
+        id: UID,
+        published_tasks: vector<ID>
+    }
 
     // Proof of Completion Struct
 
@@ -157,6 +168,16 @@ module main_task::public_task {
         update_time: u64
     }
 
+    /*---Init Function---*/
+
+    fun init(_otw: PUBLIC_TASK, ctx: &mut TxContext) {
+        let task_manager = TaskManager{
+            id: object::new(ctx),
+            published_tasks: vector::empty()
+        };
+        transfer::share_object(task_manager);
+    }
+
     
     /*---Main Entry Functions---*/
 
@@ -169,14 +190,14 @@ module main_task::public_task {
         image_url: String,
         date: &Clock,
         area: String,
-        //_is_active: bool, FIXME: test only
+        is_active: bool,
         moderator: address,
         fund: Coin<T>,
         reward_amount: u64,
         poc_img_url: String,
+        task_manager: &mut TaskManager,
         ctx: &mut TxContext
     ) {
-        let is_active = true; //FIXME: test only
         let fund = fund.into_balance();
         let creator = tx_context::sender(ctx);
         let input_text = create_task_description(text_content, format, date);
@@ -206,6 +227,9 @@ module main_task::public_task {
 
         // create a moderator_cap object
         let mod_cap = ModCap { id: object::new(ctx)};
+
+        vector::push_back(&mut task_manager.published_tasks, get_task_id(&task));
+
 
         // Emit the TaskPublished event
         emit(TaskPublished {
@@ -287,8 +311,8 @@ module main_task::public_task {
         task:&mut Task<T>,
         mut task_sheet: TaskSheet,
         annotation: String,
-        _: &ModCap,
         clock: &Clock,
+        _: &ModCap,
         ctx: &mut TxContext
     ) { 
         // Ensure the task status is active
@@ -325,7 +349,7 @@ module main_task::public_task {
 
         // Mint Proof of Completion
         let img_url = task.poc_img_url;
-        issue_proof_of_complition(task, tasker, img_url, clock, ctx);
+        issue_proof_of_completion(task, tasker, img_url, clock, ctx);
 
 
         emit(TaskSheetApprovedEvent{
@@ -342,8 +366,8 @@ module main_task::public_task {
     public entry fun reject_and_return_task_sheet (
         mut task_sheet: TaskSheet,
         annotation: String,
-        date: &Clock
-        //ctx: &mut TxContext
+        date: &Clock,
+        _: &ModCap
     ){  
         let task_sheet_creator = task_sheet.creator;
         let moderator = task_sheet.moderator;
@@ -420,7 +444,7 @@ module main_task::public_task {
 
 
     // issue proof of completion and transfer to completer
-    fun issue_proof_of_complition<T> (
+    fun issue_proof_of_completion<T> (
         task: &Task<T>,
         completer: address,
         image_url: String,
@@ -535,7 +559,13 @@ module main_task::public_task {
 
 
     // Getter functions
-    
+
+    public entry fun get_all_task_ids (
+        task_manager: &TaskManager,
+    ): vector<ID> {
+        task_manager.published_tasks
+    }
+
     fun get_task_reward_amount<T> (
         task: &Task<T>
     ): u64 {

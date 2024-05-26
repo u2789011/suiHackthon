@@ -61,7 +61,7 @@ const BasicContainer = () => {
       image:
         "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
     },
-    
+    /*
     {
       id: 2,
       name: "任務二",
@@ -76,6 +76,7 @@ const BasicContainer = () => {
       image:
         "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
     },
+    */
   ]);
 
   const [newTask, setNewTask] = useState({

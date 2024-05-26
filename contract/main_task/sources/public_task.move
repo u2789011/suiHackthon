@@ -342,8 +342,8 @@ module main_task::public_task {
     public entry fun reject_and_return_task_sheet (
         mut task_sheet: TaskSheet,
         annotation: String,
-        date: &Clock
-        //ctx: &mut TxContext
+        date: &Clock,
+        _: &ModCap
     ){  
         let task_sheet_creator = task_sheet.creator;
         let moderator = task_sheet.moderator;

@@ -10,6 +10,7 @@ import {
 } from "@mysten/dapp-kit";
 import { AppContext } from "@/context/AppContext";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
 import { toast } from "react-toastify";
 import {
   Card,
@@ -53,6 +54,7 @@ type Task = {
   task_sheets: any[]; // assuming task_sheets is an array of objects
   poc_img_url: string;
 };
+
 const BasicContainer = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { walletAddress, suiName } = useContext(AppContext);
@@ -74,10 +76,13 @@ const BasicContainer = () => {
   }, [suiBalance]);
 
   const PACKAGE_ID =
-    "0xd4395116066d0e6d41a5b041154efaefc3dd8969084a2230732d205549e1bc31";
-  const TREASURY_ID =
+    "0x8312fbef4e12a25ffcef01086bfd9677cd33beb14d26c9c24b384cc705950bfc";
+  /*
+    const TREASURY_ID =
     "0x4211e66063acb06ca1128b6853cfa86131f3c84740cb74e13b43feaabb311a6d";
+  */
 
+  /*
   const handleMint = async () => {
     if (!account.address) return;
     const tx = new TransactionBlock();
@@ -144,6 +149,7 @@ const BasicContainer = () => {
       toast.error("Something went wrong");
     }
   };
+  */
 
   // const [tasks, setTasks] = useState([
   //   {
@@ -173,15 +179,17 @@ const BasicContainer = () => {
   // ]);
 
   const [newTask, setNewTask] = useState({
+    reward_type: "",
     name: "",
     description: "",
+    format: 1,
     image_url: "",
     area: "",
     reward_amount: "",
     poc_img_url: "",
     creator: "0xYourAddress",
     moderator: "0xModeratorAddress",
-    fund: 1000,
+    fund: "",
   });
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
@@ -273,14 +281,70 @@ const BasicContainer = () => {
     console.log(acceptedTask);
   };
 
-  const handlePublishTask = async () => {
-    // Logic for publishing task
-    //if (!account.address) return;
-    // const tx = new TransactionBlock();
-    // const [nft] = tx.moveCall({
-    //   target: `${PACKAGE_ID}::fortune_bag::mint`,
-    //   arguments: [],
-    // });
+  const handlePublishTaskChain = async () => {
+
+    if (!account.address) return;
+    const txb = new TransactionBlock();
+
+    txb.moveCall({
+      target: `${PACKAGE_ID}::public_task::publish_task`,
+      arguments: [
+        txb.pure.string(newTask.name),
+        txb.pure.string(newTask.description),
+        txb.pure(newTask.format),
+        txb.pure.string(newTask.image_url),
+        txb.pure(SUI_CLOCK_OBJECT_ID),
+        txb.pure.string(newTask.area),
+        txb.pure.address(newTask.moderator),
+        txb.object(newTask.fund),
+        txb.pure(newTask.reward_amount),
+        txb.pure.string(newTask.poc_img_url),
+      ],
+      typeArguments: [newTask.reward_type]
+    });
+
+    txb.setSender(account.address);
+
+    const dryrunRes = await client.dryRunTransactionBlock({
+      transactionBlock: await txb.build({ client: client }),
+    });
+    console.log(dryrunRes);
+  
+
+    if (dryrunRes.effects.status.status === "success") {
+      signAndExecuteTransactionBlock(
+        {
+          transactionBlock: txb,
+          options: {
+            showEffects: true,
+          },
+        },
+        {
+          onSuccess: async (res) => {
+            try{
+              const digest = await txb.getDigest({ client: client });
+              toast.success(`Transaction Sent, ${digest}`);
+              console.log(`Transaction Digest`, digest);
+            } catch (digestError) {
+              if (digestError instanceof Error){
+                toast.error(`Transaction sent, but failed to get digest: ${digestError.message}`);
+              } else {
+                toast.error("Transaction sent, but failed to get digest due to an unknown error.");
+              }
+            };
+            refetch();
+          },
+          onError: (err) => {
+            toast.error("Tx Failed!");
+            console.log(err);
+          },
+        }
+      );
+    } else {
+      toast.error("Something went wrong");
+    }
+
+
     console.log("New task published:", newTask);
     const newTaskObject = {
       id: (publishedTasks.length + 1).toString(),
@@ -309,15 +373,17 @@ const BasicContainer = () => {
 
     // 重置 newTask
     setNewTask({
+      reward_type: "",
       name: "",
       description: "",
+      format: 1,
       image_url: "",
       area: "",
       reward_amount: "",
       poc_img_url: "",
       creator: account.address || "0xYourAddress",
       moderator: account.address || "0xModeratorAddress",
-      fund: 1000,
+      fund: "",
     });
     toast.success(`任務創建成功!`);
   };
@@ -377,19 +443,19 @@ const BasicContainer = () => {
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           maxValue={0.0}
-        />
+        /*/>
         <ActionButton
           label="Flash Mint Fortune Bag"
           isConnected={true}
           isLoading={false}
           onClick={handleMint}
-          buttonClass="w-70"
+          buttonClass="w-70" */
         />
       </div>
       <Divider className="my-4" />
       <h1 className="my-4">Fren Suipport Project</h1>
       <div className="mx-auto p-4">
-        <Button onPress={onOpen} onClick={() => setSelectedTask(null)}>
+        <Button onPress={onOpen} onClick={(handlePublishTaskChain) => setSelectedTask(null)}>
           發布任務
         </Button>
       </div>
@@ -702,7 +768,7 @@ const BasicContainer = () => {
                   onClick={() => {
                     selectedTask
                       ? handleSaveTaskDetails()
-                      : handlePublishTask();
+                      : handlePublishTaskChain();
                   }}
                 >
                   {selectedTask ? "保存修改" : "發布"}

@@ -103,7 +103,18 @@ module main_task::public_task {
         id: UID,
     }
 
+    // Public Task One Time Witness
+
+    public struct PUBLIC_TASK has drop {}
+
+
     /*---Main Objects Struct---*/
+
+    // Task Manager Struct
+    public struct TaskManager has key {
+        id: UID,
+        published_tasks: vector<ID>
+    }
 
     // Proof of Completion Struct
 
@@ -157,6 +168,16 @@ module main_task::public_task {
         update_time: u64
     }
 
+    /*---Init Function---*/
+
+    fun init(_otw: PUBLIC_TASK, ctx: &mut TxContext) {
+        let task_manager = TaskManager{
+            id: object::new(ctx),
+            published_tasks: vector::empty()
+        };
+        transfer::share_object(task_manager);
+    }
+
     
     /*---Main Entry Functions---*/
 
@@ -174,6 +195,7 @@ module main_task::public_task {
         fund: Coin<T>,
         reward_amount: u64,
         poc_img_url: String,
+        task_manager: &mut TaskManager,
         ctx: &mut TxContext
     ) {
         let fund = fund.into_balance();
@@ -205,6 +227,9 @@ module main_task::public_task {
 
         // create a moderator_cap object
         let mod_cap = ModCap { id: object::new(ctx)};
+
+        vector::push_back(&mut task_manager.published_tasks, get_task_id(&task));
+
 
         // Emit the TaskPublished event
         emit(TaskPublished {
@@ -534,7 +559,13 @@ module main_task::public_task {
 
 
     // Getter functions
-    
+
+    public entry fun get_all_task_ids (
+        task_manager: &TaskManager,
+    ): vector<ID> {
+        task_manager.published_tasks
+    }
+
     fun get_task_reward_amount<T> (
         task: &Task<T>
     ): u64 {

@@ -287,8 +287,8 @@ module main_task::public_task {
         task:&mut Task<T>,
         mut task_sheet: TaskSheet,
         annotation: String,
-        _: &ModCap,
         clock: &Clock,
+        _: &ModCap,
         ctx: &mut TxContext
     ) { 
         // Ensure the task status is active

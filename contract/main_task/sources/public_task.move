@@ -169,14 +169,13 @@ module main_task::public_task {
         image_url: String,
         date: &Clock,
         area: String,
-        //_is_active: bool, FIXME: test only
+        is_active: bool,
         moderator: address,
         fund: Coin<T>,
         reward_amount: u64,
         poc_img_url: String,
         ctx: &mut TxContext
     ) {
-        let is_active = true; //FIXME: test only
         let fund = fund.into_balance();
         let creator = tx_context::sender(ctx);
         let input_text = create_task_description(text_content, format, date);

@@ -86,6 +86,7 @@ const BasicContainer = () => {
     format: 1,
     image_url: "",
     area: "",
+    is_active: true,
     reward_amount: "",
     poc_img_url: "",
     creator: "",
@@ -224,7 +225,7 @@ const BasicContainer = () => {
           },
         },
         {
-          onSuccess: async (res) => {
+          onSuccess: async () => {
             try{
               const digest = await txb.getDigest({ client: client });
               toast.success(`Transaction Sent, ${digest}`);
@@ -284,6 +285,7 @@ const BasicContainer = () => {
       format: 1,
       image_url: "",
       area: "",
+      is_active: true,
       reward_amount: "",
       poc_img_url: "",
       creator: account.address || "0xYourAddress",
@@ -589,7 +591,7 @@ const BasicContainer = () => {
               <ModalBody>
                 <Input
                   label="Reward Type"
-                  value={selectedTask ? selectedTask.reward_type : newTask.reward_type} //FIXME: Reward Type
+                  value={selectedTask ? selectedTask.reward_type : newTask.reward_type}
                   onChange={(e) =>
                     selectedTask
                       ? setSelectedTask({

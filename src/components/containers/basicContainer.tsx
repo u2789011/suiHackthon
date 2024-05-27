@@ -1,6 +1,7 @@
 import BasicDataField from "../fields/basicDataField";
 import BasicInputField from "../fields/basicInputField";
 import ActionButton from "../buttons/actionButton";
+import SkeletonTaskCard from '../ui/skeleton';
 import { SetStateAction, useContext, useEffect, useMemo, useState } from "react";
 import {
   useAccounts,
@@ -251,15 +252,15 @@ const BasicContainer = () => {
     });
   }
 
-  useEffect(() => {
-    async function fetchData() {
-      const apiData = await fetchPublishedList();
-      if (apiData) { // 檢查 apiData 是否為 null
-        const transformedData = transformData(apiData);
-        setPublishedTasks(transformedData);
-      }
+  async function fetchData() {
+    const apiData = await fetchPublishedList();
+    if (apiData) { 
+      const transformedData = transformData(apiData);
+      setPublishedTasks(transformedData);
     }
+  }
 
+  useEffect(() => {
     fetchData();
   }, []);
   
@@ -319,6 +320,7 @@ const BasicContainer = () => {
               }
             }
             refetch();
+            fetchData()
           },
           onError: (err) => {
             toast.error("Tx Failed!");
@@ -417,7 +419,8 @@ const BasicContainer = () => {
               toast.success(`Transaction Sent, ${digest}`);
               console.log(`Transaction Digest`, digest);
 
-              // 创建新的任务对象并添加到 publishedTasks
+              
+              // Create New Task Object
               const newTaskObject = {
                 reward_type: newTask.reward_type,
                 id: createdObject,
@@ -437,14 +440,17 @@ const BasicContainer = () => {
                 area: newTask.area,
                 is_active: true,
                 fund: newTask.fund, // 假設初始基金是 1000
-                reward_amount: parseInt(newTask.reward_amount, 10),
+                reward_amount: parseInt(newTask.reward_amount),
                 task_sheets: [],
                 poc_img_url: newTask.poc_img_url,
               };
 
               setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
 
-              // 重置 newTask
+              await fetchData();
+              
+              // FIXME: for test only
+              // Reset Task
               setNewTask({
                 reward_type: "0x2::sui::SUI",
                 name: "測試",
@@ -461,7 +467,6 @@ const BasicContainer = () => {
                 is_active: true,
               });
 
-              toast.success(`任務創建成功!`);
             } catch (digestError) {
               if (digestError instanceof Error) {
                 toast.error(
@@ -487,6 +492,9 @@ const BasicContainer = () => {
 
     console.log("New task published:", newTask);
   };
+
+
+
 
   const handleCompleteTask = (taskId: string) => {
     const completedTask = acceptedTasks.find((task) => task.id === taskId);
@@ -745,7 +753,7 @@ const BasicContainer = () => {
                     {new Date(parseInt(task.publish_date)).toLocaleString()}
                   </p>
                   <p>
-                    <strong>創建者:</strong>
+                    <strong>創建者:</strong>{" "}
                     {truncateAddress(task.creator)}
                   </p>
                   <p>
@@ -759,8 +767,8 @@ const BasicContainer = () => {
                     {task.is_active ? "Active" : "Inactive"}
                   </p>
                   <p>
-                    <strong>資金:</strong>
-                    {truncateAddress(task.fund)}
+                    <strong>資金:</strong>{" "}
+                    {task.fund}
                   </p>
                   <p>
                     <strong>獎勵金額:</strong> {task.reward_amount}

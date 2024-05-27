@@ -1,7 +1,7 @@
 import BasicDataField from "../fields/basicDataField";
 import BasicInputField from "../fields/basicInputField";
 import ActionButton from "../buttons/actionButton";
-import { SetStateAction, useContext, useMemo, useState } from "react";
+import { SetStateAction, useContext, useEffect, useMemo, useState } from "react";
 import {
   useAccounts,
   useSignAndExecuteTransactionBlock,
@@ -31,30 +31,8 @@ import {
   Tab,
   Divider,
 } from "@nextui-org/react";
+import { log } from "console";
 
-type TaskDescription = {
-  description: string;
-  format: number; // 0: Plaintext, 1: Markdown
-  publish_time: number; // Unix timestamp in milliseconds
-};
-
-type Task = {
-  reward_type: string;
-  id: string;
-  version: number;
-  name: string;
-  description: TaskDescription[];
-  image_url: string;
-  publish_date: number; // Unix timestamp in milliseconds
-  creator: string; // address
-  moderator: string; // address
-  area: string;
-  is_active: boolean; // true: active, false: inactive
-  fund: number;
-  reward_amount: number;
-  task_sheets: any[]; // assuming task_sheets is an array of objects
-  poc_img_url: string;
-};
 
 const BasicContainer = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -169,6 +147,29 @@ const BasicContainer = () => {
       poc_img_url: "https://example.com/poc3.jpg",
     },
   ]);
+
+  async function fetchTaskList() {
+    try {
+      const taskManagerObject = await client.getObject({
+        id: TASK_MANAGER_ID,
+        options: {
+          showContent: true
+        }
+      });
+  
+      const jsonString = JSON.stringify(taskManagerObject, null, 2);
+      const jsonObject = JSON.parse(jsonString);
+      const publishedTaskIdsArr = jsonObject.data.content.fields.published_tasks;
+      
+      console.log(publishedTaskIdsArr);
+      return publishedTaskIdsArr;
+    } catch (error) {
+      console.error('Error fetching or converting task manager object:', error);
+      return [];
+    }
+  }
+
+
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleAcceptTask = (taskId: string) => {
@@ -739,3 +740,7 @@ const BasicContainer = () => {
 };
 
 export default BasicContainer;
+function setLoading(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
+

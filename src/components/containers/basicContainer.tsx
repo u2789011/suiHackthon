@@ -31,6 +31,7 @@ import {
   Tab,
   Divider,
 } from "@nextui-org/react";
+import { log } from "console";
 
 type SuiObjectResponse = any;
 
@@ -189,7 +190,7 @@ const BasicContainer = () => {
       const jsonObject = JSON.parse(jsonString);
       const publishedTaskIdsArr = jsonObject.data.content.fields.published_tasks;
       
-      // console.log(publishedTaskIdsArr); //FIXME: Test Use Only
+      // console.log(publishedTaskIdsArr); FIXME: Test Use Only
       return publishedTaskIdsArr;
     } catch (error) {
       console.error('Error fetching or converting task manager object:', error);
@@ -210,7 +211,7 @@ const BasicContainer = () => {
   
       const objectsResponse = await client.multiGetObjects(multiGetObjectsParams);
 
-      console.log(objectsResponse); //FIXME: Test Use Only
+      //console.log(objectsResponse); FIXME: Test Use Only
       return objectsResponse;
     } catch (error) {
       console.error('Error fetching multiple objects:', error);
@@ -223,10 +224,11 @@ const BasicContainer = () => {
     
     return apiData.map(item => {
       const fields = item.data.content.fields;
+      const type = item.data.content.type;
       const descriptionField = fields.description[0].fields;
   
       return {
-        reward_type: fields.reward_type || "",
+        reward_type: (type.match(/<([^>]+)>/) || [])[1] || "",
         id: fields.id.id,
         version: fields.version,
         name: fields.name,
@@ -806,7 +808,7 @@ const BasicContainer = () => {
                     selectedTask
                       ? setSelectedTask({
                           ...selectedTask,
-                          name: e.target.value,
+                          reward_type: e.target.value,
                         })
                       : setNewTask({ ...newTask, reward_type: e.target.value })
                   }

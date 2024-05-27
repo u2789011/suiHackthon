@@ -76,8 +76,11 @@ const BasicContainer = () => {
     }
   }, [suiBalance]);
 
+  // version 20240527
   const PACKAGE_ID =
-    "0x8312fbef4e12a25ffcef01086bfd9677cd33beb14d26c9c24b384cc705950bfc";
+    "0x67dff0e24d98360cabc0ad7f0e51181585eba3f46fd970d872cef1370aada914";
+  const TASK_MANAGER_ID =
+    "0xa119f947b22e2d21904f82523d3b76da85cc1dfbbfcdaf858b427383dbdd4981";
 
   const [newTask, setNewTask] = useState({
     reward_type: "",
@@ -86,6 +89,7 @@ const BasicContainer = () => {
     format: 1,
     image_url: "",
     area: "",
+    is_active: true,
     reward_amount: "",
     poc_img_url: "",
     creator: "",
@@ -255,6 +259,7 @@ const BasicContainer = () => {
         txb.pure.string(newTask.image_url),
         txb.pure(SUI_CLOCK_OBJECT_ID),
         txb.pure.string(newTask.area),
+        txb.pure(true),
         txb.pure.address(newTask.moderator),
         txb.object(newTask.fund),
         txb.pure(newTask.reward_amount),
@@ -356,6 +361,7 @@ const BasicContainer = () => {
                 creator: account.address || "0xYourAddress",
                 moderator: account.address || "0xModeratorAddress",
                 fund: "1",
+                is_active: true,
               });
 
               toast.success(`任務創建成功!`);

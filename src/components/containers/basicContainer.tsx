@@ -1,7 +1,7 @@
 import BasicDataField from "../fields/basicDataField";
 import BasicInputField from "../fields/basicInputField";
 import ActionButton from "../buttons/actionButton";
-import { SetStateAction, useContext, useMemo, useState } from "react";
+import { SetStateAction, useContext, useEffect, useMemo, useState } from "react";
 import {
   useAccounts,
   useSignAndExecuteTransactionBlock,
@@ -31,6 +31,8 @@ import {
   Tab,
   Divider,
 } from "@nextui-org/react";
+
+type SuiObjectResponse = any;
 
 type TaskDescription = {
   description: string;
@@ -101,6 +103,7 @@ const BasicContainer = () => {
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
   const [publishedTasks, setPublishedTasks] = useState<Task[]>([
+    /*
     {
       id: "1",
       version: 1,
@@ -170,7 +173,98 @@ const BasicContainer = () => {
       task_sheets: [],
       poc_img_url: "https://example.com/poc3.jpg",
     },
+    */
   ]);
+
+  async function fetchTaskList() {
+    try {
+      const taskManagerObject = await client.getObject({
+        id: TASK_MANAGER_ID,
+        options: {
+          showContent: true
+        }
+      });
+  
+      const jsonString = JSON.stringify(taskManagerObject, null, 2);
+      const jsonObject = JSON.parse(jsonString);
+      const publishedTaskIdsArr = jsonObject.data.content.fields.published_tasks;
+      
+      // console.log(publishedTaskIdsArr); //FIXME: Test Use Only
+      return publishedTaskIdsArr;
+    } catch (error) {
+      console.error('Error fetching or converting task manager object:', error);
+      return [];
+    }
+  }
+
+  async function fetchPublishedList() {
+    try {
+      const publishedTaskIdsArr = await fetchTaskList();
+  
+      const multiGetObjectsParams = {
+        ids: publishedTaskIdsArr,
+        options: {
+          showContent: true
+        }
+      };
+  
+      const objectsResponse = await client.multiGetObjects(multiGetObjectsParams);
+
+      console.log(objectsResponse); //FIXME: Test Use Only
+      return objectsResponse;
+    } catch (error) {
+      console.error('Error fetching multiple objects:', error);
+      return null;
+    }
+  }
+
+  function transformData(apiData: SuiObjectResponse[]): Task[] {
+    if (!apiData) return [];
+    
+    return apiData.map(item => {
+      const fields = item.data.content.fields;
+      const descriptionField = fields.description[0].fields;
+  
+      return {
+        reward_type: fields.reward_type || "",
+        id: fields.id.id,
+        version: fields.version,
+        name: fields.name,
+        description: [
+          {
+            description: descriptionField.description,
+            format: parseInt(descriptionField.format),
+            publish_time: parseInt(descriptionField.publish_time),
+          },
+        ],
+        image_url: fields.image_url,
+        publish_date: fields.publish_date.toString(), // 轉換為 string 類型
+        creator: fields.creator,
+        moderator: fields.moderator,
+        area: fields.area,
+        is_active: fields.is_active,
+        fund: fields.fund,
+        reward_amount: parseFloat(fields.reward_amount),
+        task_sheets: fields.task_sheets,
+        poc_img_url: fields.poc_img_url,
+      };
+    });
+  }
+
+  useEffect(() => {
+    async function fetchData() {
+      const apiData = await fetchPublishedList();
+      if (apiData) { // 檢查 apiData 是否為 null
+        const transformedData = transformData(apiData);
+        setPublishedTasks(transformedData);
+      }
+    }
+
+    fetchData();
+  }, []);
+  
+
+
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleAcceptTask = async (selectedTask: Task) => {
@@ -648,7 +742,7 @@ const BasicContainer = () => {
                   </p>
                   <p>
                     <strong>發佈時間:</strong>{" "}
-                    {new Date(task.publish_date).toLocaleString()}
+                    {new Date(parseInt(task.publish_date)).toLocaleString()}
                   </p>
                   <p>
                     <strong>創建者:</strong>
@@ -700,7 +794,7 @@ const BasicContainer = () => {
                     selectedTask
                       ? selectedTask.reward_type
                       : newTask.reward_type
-                  } //FIXME: Reward Type
+                  }
                   onChange={(e) =>
                     selectedTask
                       ? setSelectedTask({
@@ -842,3 +936,7 @@ const BasicContainer = () => {
 };
 
 export default BasicContainer;
+function setLoading(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
+

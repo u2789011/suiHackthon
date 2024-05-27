@@ -16,6 +16,7 @@ type TokenInfo = {
 
 type BasicCoin = "SUI" | "USDC" | "USDT" | "BUCK";
 
+/*
 type TaskDescription = {
   description: string;
   format: number; // 0: Plaintext, 1: Markdown
@@ -39,3 +40,4 @@ type Task = {
   task_sheets: any[]; // assuming task_sheets is an array of objects
   poc_img_url: string;
 };
+*/

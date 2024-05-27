@@ -185,13 +185,36 @@ const BasicContainer = () => {
       const jsonObject = JSON.parse(jsonString);
       const publishedTaskIdsArr = jsonObject.data.content.fields.published_tasks;
       
-      console.log(publishedTaskIdsArr);
+      console.log(publishedTaskIdsArr); //FIXME: Test Use Only
       return publishedTaskIdsArr;
     } catch (error) {
       console.error('Error fetching or converting task manager object:', error);
       return [];
     }
   }
+
+  async function fetchPublishedList() {
+    try {
+      const publishedTaskIdsArr = await fetchTaskList();
+  
+      const multiGetObjectsParams = {
+        ids: publishedTaskIdsArr,
+        options: {
+          showContent: true
+        }
+      };
+  
+      const objectsResponse = await client.multiGetObjects(multiGetObjectsParams);
+      const jsonString = JSON.stringify(objectsResponse, null, 2);
+
+      console.log(jsonString); //FIXME: Test Use Only
+    } catch (error) {
+      console.error('Error fetching multiple objects:', error);
+    }
+  }
+  
+  
+  fetchPublishedList();
 
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);

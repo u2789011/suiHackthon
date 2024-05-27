@@ -67,7 +67,9 @@ const BasicContainer = () => {
   const [account] = useAccounts();
   const { mutate: signAndExecuteTransactionBlock } =
     useSignAndExecuteTransactionBlock();
-
+  const truncateAddress = (address: string | any[]) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
   const userBalance = useMemo(() => {
     if (suiBalance?.totalBalance) {
       return Math.floor(Number(suiBalance?.totalBalance) / 10 ** 9);
@@ -264,6 +266,7 @@ const BasicContainer = () => {
         txb.object(newTask.fund),
         txb.pure(newTask.reward_amount),
         txb.pure.string(newTask.poc_img_url),
+        txb.pure(TASK_MANAGER_ID),
       ],
       typeArguments: [newTask.reward_type],
     });
@@ -532,7 +535,7 @@ const BasicContainer = () => {
                         color="primary"
                         className=" text-white/80 uppercase font-bold"
                       >
-                        {task.id}
+                        {truncateAddress(task.id)}
                       </Chip>
                       <Chip className=" text-white/80 uppercase font-bold">
                         {task.name}
@@ -581,7 +584,7 @@ const BasicContainer = () => {
                         color="primary"
                         className=" text-white/80 uppercase font-bold"
                       >
-                        {task.id}
+                        {truncateAddress(task.id)}
                       </Chip>
                       <Chip className=" text-white/80 uppercase font-bold">
                         {task.name}
@@ -622,7 +625,7 @@ const BasicContainer = () => {
                 color="primary"
                 className=" text-white/80 uppercase font-bold"
               >
-                {task.id}
+                {truncateAddress(task.id)}
               </Chip>
               <Chip className=" text-white/80 uppercase font-bold">
                 {task.name}
@@ -648,10 +651,11 @@ const BasicContainer = () => {
                     {new Date(task.publish_date).toLocaleString()}
                   </p>
                   <p>
-                    <strong>創建者:</strong> {task.creator}
+                    <strong>創建者:</strong>
+                    {truncateAddress(task.creator)}
                   </p>
                   <p>
-                    <strong>主持人:</strong> {task.moderator}
+                    <strong>主持人:</strong> {truncateAddress(task.moderator)}
                   </p>
                   <p>
                     <strong>地區:</strong> {task.area}
@@ -661,7 +665,8 @@ const BasicContainer = () => {
                     {task.is_active ? "Active" : "Inactive"}
                   </p>
                   <p>
-                    <strong>資金:</strong> {task.fund}
+                    <strong>資金:</strong>
+                    {truncateAddress(task.fund)}
                   </p>
                   <p>
                     <strong>獎勵金額:</strong> {task.reward_amount}

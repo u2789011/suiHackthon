@@ -85,7 +85,7 @@ const BasicContainer = () => {
   const PACKAGE_ID =
     "0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
   const TASK_MANAGER_ID =
-    "0xa119f947b22e2d21904f82523d3b76da85cc1dfbbfcdaf858b427383dbdd4981";
+    "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
 
   const [newTask, setNewTask] = useState({
     reward_type: "",

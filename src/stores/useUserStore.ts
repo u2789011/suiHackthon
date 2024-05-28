@@ -9,7 +9,7 @@ interface UserState {
 }
 
 const useCoreUserStore = create<UserState>()((set) => ({
-  rpcUrl: "https://fullnode.devnet.sui.io:443",
+  rpcUrl: "https://suiscan.xyz/api/sui/devnet/",
   setRpcUrl: (newUrl) => set({ rpcUrl: newUrl }),
 
   network: "devnet",

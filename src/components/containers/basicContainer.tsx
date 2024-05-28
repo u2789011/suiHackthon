@@ -40,6 +40,7 @@ import {
   Link,
   CheckboxGroup,
   Checkbox,
+  Textarea,
 } from "@nextui-org/react";
 import { log } from "console";
 
@@ -79,6 +80,16 @@ const BasicContainer = () => {
     isOpen: isOpenModal2,
     onOpen: onOpenModal2,
     onOpenChange: onOpenChangeModal2,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenModal3,
+    onOpen: onOpenModal3,
+    onOpenChange: onOpenChangeModal3,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenModal4,
+    onOpen: onOpenModal4,
+    onOpenChange: onOpenChangeModal4,
   } = useDisclosure();
   const { walletAddress, suiName } = useContext(AppContext);
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
@@ -430,38 +441,33 @@ const BasicContainer = () => {
     console.log("New task published:", newTask);
   };
 
-  const handleCompleteTask = (taskId: string) => {
-    const completedTask = acceptedTasks.find((task) => task.id === taskId);
+  const handleCompleteTask = (task: Task) => {
+    setSelectedTask(task);
+    onOpenModal4();
+    console.log("Send Task Sheet", task);
+  };
 
-    if (completedTask) {
-      // 將已完成的任務添加到已完成任務的陣列中
-      setCompletedTasks([...completedTasks, completedTask]);
-
-      // 將已完成的任務從已接受任務列表中移除
-      setAcceptedTasks(acceptedTasks.filter((task) => task.id !== taskId));
-
-      toast.success(`任務已完成!`);
-      console.log(completedTasks);
-    } else {
-      toast.error("找不到該任務!");
+  const handleSendTaskSheet = () => {
+    if (selectedTask) {
+      toast.success("任務完成申請已送出!");
+      setSelectedTask(null);
     }
   };
 
   const handleModifyTask = (task: Task) => {
     setSelectedTask(task);
-    onOpenModal1();
+    onOpenModal3();
     console.log(task);
   };
 
   const handleSaveTaskDetails = () => {
     if (selectedTask) {
-      const updatedTasks = publishedTasks.map((task) =>
-        task.id === selectedTask.id ? selectedTask : task
-      );
-      setPublishedTasks(updatedTasks);
+      // const updatedTasks = publishedTasks.map((task) =>
+      //   task.id === selectedTask.id ? selectedTask : task
+      // );
+      // setPublishedTasks(updatedTasks);
       setSelectedTask(null);
-      onOpenChangeModal1();
-      console.log(updatedTasks);
+      onOpenChangeModal3();
       toast.success("任務詳情已更新!");
     }
   };
@@ -681,7 +687,7 @@ const BasicContainer = () => {
                             </Link>
                           </ScrollShadow>
                           <Button
-                            onPress={() => handleCompleteTask(task.id)}
+                            onPress={() => handleCompleteTask(task)}
                             radius="full"
                             size="sm"
                           >
@@ -1066,6 +1072,83 @@ const BasicContainer = () => {
                   通過
                 </Button>
               </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={isOpenModal3}
+        onOpenChange={onOpenChangeModal3}
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>
+                Task Name :{selectedTask ? selectedTask.name : ""}
+              </ModalHeader>
+              <ModalBody>
+                <p>Modify Task Desciption</p>
+                <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
+                  <Textarea
+                    maxRows={3}
+                    label="Description"
+                    placeholder={`${
+                      selectedTask
+                        ? selectedTask.description[0].description
+                        : ""
+                    }`}
+                  />
+                </div>
+                <Button onPress={onClose} onClick={handleSaveTaskDetails}>
+                  Save Changes
+                </Button>
+                <p>Take Fund</p>
+                <Input
+                  type="number"
+                  label="Amount"
+                  placeholder={`${selectedTask ? selectedTask.fund : ""}`}
+                  className="max-w-lg"
+                />
+                <Button onClick={handleSaveTaskDetails} onPress={onClose}>
+                  Take Fund
+                </Button>
+                <p>Add Fund</p>
+                <Input
+                  type="number"
+                  label="Amount"
+                  placeholder={`${selectedTask ? selectedTask.fund : ""}`}
+                  className="max-w-lg"
+                />
+                <Button onClick={handleSaveTaskDetails} onPress={onClose}>
+                  Add Fund
+                </Button>
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={isOpenModal4}
+        onOpenChange={onOpenChangeModal4}
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>{selectedTask ? selectedTask.name : ""}</ModalHeader>
+              <ModalBody>
+                <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
+                  <Textarea
+                    maxRows={3}
+                    label="Description"
+                    placeholder="Enter your description"
+                  />
+                </div>
+                <Button onClick={handleSendTaskSheet} onPress={onClose}>
+                  Submit Task sheet
+                </Button>
+              </ModalBody>
             </>
           )}
         </ModalContent>

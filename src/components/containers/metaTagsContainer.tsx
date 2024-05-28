@@ -5,7 +5,7 @@ import MetaThumbnail from "/public/images/app-og-image.png";
 const MetaTagsContainer = () => {
   const router = useRouter();
   //Set your product name, description, twitter account, and metadata image path
-  const name = "Sui Dapp Scaffold";
+  const name = "Fren Suipport";
   const description = "Product description";
   const twitterAccount = "@yourTwitterAccount";
   const metadataImagePath = `http://localhost:3000${MetaThumbnail.src}`;

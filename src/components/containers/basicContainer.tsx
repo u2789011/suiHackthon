@@ -313,7 +313,7 @@ const BasicContainer = () => {
         txb.pure(true),
         txb.pure.address(newTask.moderator),
         txb.object(newTask.fund),
-        txb.pure(newTask.reward_amount),
+        txb.pure(parseFloat(newTask.reward_amount) * FLOAT_SCALING),
         txb.pure.string(newTask.poc_img_url),
         txb.pure(TASK_MANAGER_ID),
       ],
@@ -571,7 +571,7 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
                               <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
@@ -659,7 +659,7 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
                               <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
@@ -746,7 +746,7 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
                               <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
@@ -840,7 +840,7 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
                               <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}

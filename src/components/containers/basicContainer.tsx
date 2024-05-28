@@ -483,23 +483,6 @@ const BasicContainer = () => {
           spaceWithUnit
           unit="SUI"
           minFractionDigits={0}
-          /*/>
-        <BasicInputField
-          label="Input"
-          inputValue="0.0000"
-          setInputValue={(value) => console.log(value)}
-          tokenInfo={["SUI", "BUCK", "USDC", "USDT"]}
-          canSelectToken={true}
-          selectedToken={selectedToken}
-          setSelectedToken={setSelectedToken}
-          maxValue={0.0}
-        />
-        <ActionButton
-          label="Flash Mint Fortune Bag"
-          isConnected={true}
-          isLoading={false}
-          onClick={handleMint}
-          buttonClass="w-70" */
         />
       </div>
       <Divider className="my-4"></Divider>
@@ -513,12 +496,12 @@ const BasicContainer = () => {
       </div>
       <Divider className="my-4" />
       <h1 className="my-4">任務列表</h1>
-      <div className="mx-auto p-4">
+      <div className="flex justify-center p-4">
         <div className="flex w-full flex-col">
           <Tabs
             aria-label="Options"
             variant="bordered"
-            className="w-[1200px] min-h-1"
+            className="min-h-1 mx-auto p-4"
           >
             <Tab key="allTasks" title="所有任務">
               {" "}

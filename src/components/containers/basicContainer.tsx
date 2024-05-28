@@ -83,7 +83,7 @@ const BasicContainer = () => {
 
   // version 20240527
   const PACKAGE_ID =
-    "0x67dff0e24d98360cabc0ad7f0e51181585eba3f46fd970d872cef1370aada914";
+    "0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
   const TASK_MANAGER_ID =
     "0xa119f947b22e2d21904f82523d3b76da85cc1dfbbfcdaf858b427383dbdd4981";
 
@@ -339,11 +339,13 @@ const BasicContainer = () => {
 
     if (acceptedTask) {
       setAcceptedTasks([...acceptedTasks, acceptedTask]);
-      toast.success(`接受任務成功!`);
+      // toast.success(`接受任務成功!`);
     }
     console.log(`Accepted task ${selectedTask.id}`);
     console.log(acceptedTask);
   };
+
+
 
   const handlePublishTaskChain = async () => {
     if (!account.address) return;

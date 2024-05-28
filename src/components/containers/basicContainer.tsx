@@ -288,11 +288,13 @@ const BasicContainer = () => {
 
     if (acceptedTask) {
       setAcceptedTasks([...acceptedTasks, acceptedTask]);
-      toast.success(`接受任務成功!`);
+      // toast.success(`接受任務成功!`);
     }
     console.log(`Accepted task ${selectedTask.id}`);
     console.log(acceptedTask);
   };
+
+
 
   const handlePublishTaskChain = async () => {
     if (!account.address) return;
@@ -888,7 +890,7 @@ const BasicContainer = () => {
           {(onClose) => (
             <>
               <ModalHeader>
-                {selectedTask ? "Modify Task Desciption" : "Mint a Task"}
+                {selectedTask ? "Manage Task" : "Mint a Task"}
               </ModalHeader>
               <ModalBody>
                 <Input

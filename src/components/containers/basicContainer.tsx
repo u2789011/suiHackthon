@@ -95,6 +95,12 @@ const BasicContainer = () => {
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
     owner: walletAddress ?? "",
   });
+  const { data: allCoins } = useSuiClientQuery("getAllCoins", {
+    owner: walletAddress ?? "",
+  })
+  const { data: ownedObjects } = useSuiClientQuery("getOwnedObjects", {
+    owner: walletAddress ?? "",
+  })
   const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const client = useSuiClient();
   const [account] = useAccounts();
@@ -173,7 +179,8 @@ const BasicContainer = () => {
         multiGetObjectsParams
       );
 
-      //console.log(objectsResponse); FIXME: Test Use Only
+      console.log(allCoins); //FIXME: Test Use Only
+      console.log(ownedObjects); //FIXME: Test Use Only
       return objectsResponse;
     } catch (error) {
       console.error("Error fetching multiple objects:", error);

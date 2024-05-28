@@ -116,6 +116,7 @@ const BasicContainer = () => {
     "0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
   const TASK_MANAGER_ID =
     "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
+  const FLOAT_SCALING = 1000000000;
 
   const [newTask, setNewTask] = useState({
     reward_type: "",
@@ -570,10 +571,10 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {task.fund}
+                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount}
+                              <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -658,10 +659,10 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {task.fund}
+                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount}
+                              <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -745,10 +746,10 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {task.fund}
+                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount}
+                              <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -839,10 +840,10 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {task.fund}
+                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount}
+                              <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal

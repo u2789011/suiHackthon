@@ -95,6 +95,12 @@ const BasicContainer = () => {
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
     owner: walletAddress ?? "",
   });
+  const { data: allCoins } = useSuiClientQuery("getAllCoins", {
+    owner: walletAddress ?? "",
+  })
+  const { data: ownedObjects } = useSuiClientQuery("getOwnedObjects", {
+    owner: walletAddress ?? "",
+  })
   const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const client = useSuiClient();
   const [account] = useAccounts();
@@ -173,7 +179,8 @@ const BasicContainer = () => {
         multiGetObjectsParams
       );
 
-      //console.log(objectsResponse); FIXME: Test Use Only
+      console.log(allCoins); //FIXME: Test Use Only
+      console.log(ownedObjects); //FIXME: Test Use Only
       return objectsResponse;
     } catch (error) {
       console.error("Error fetching multiple objects:", error);
@@ -313,7 +320,7 @@ const BasicContainer = () => {
         txb.pure(true),
         txb.pure.address(newTask.moderator),
         txb.object(newTask.fund),
-        txb.pure(newTask.reward_amount),
+        txb.pure(parseFloat(newTask.reward_amount) * FLOAT_SCALING),
         txb.pure.string(newTask.poc_img_url),
         txb.pure(TASK_MANAGER_ID),
       ],
@@ -571,7 +578,7 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
                               <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
@@ -600,7 +607,7 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="acceptedTasks" title="已接受任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+              <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {acceptedTasks.map((task) => (
                   <Card
                     key={task.id}
@@ -615,7 +622,6 @@ const BasicContainer = () => {
                         {truncateAddress(task.id)}
                       </Chip>
                     </CardHeader> */}
-
                     <CardBody className="relative p-4">
                       <Image
                         removeWrapper
@@ -659,7 +665,7 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
                               <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
@@ -687,7 +693,7 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="publishedTasks" title="已發布任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+              <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {publishedTasks.map((task) => (
                   <Card
                     key={task.id}
@@ -746,7 +752,7 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
                               <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
@@ -781,7 +787,7 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="completedTasks" title="已完成任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+              <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {completedTasks.map((task) => (
                   <Card
                     key={task.id}
@@ -840,7 +846,7 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseInt(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
                               <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}

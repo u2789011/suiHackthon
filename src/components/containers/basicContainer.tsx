@@ -1,7 +1,13 @@
 import BasicDataField from "../fields/basicDataField";
 import BasicInputField from "../fields/basicInputField";
 import ActionButton from "../buttons/actionButton";
-import { SetStateAction, useContext, useEffect, useMemo, useState } from "react";
+import {
+  SetStateAction,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   useAccounts,
   useSignAndExecuteTransactionBlock,
@@ -30,6 +36,8 @@ import {
   Tabs,
   Tab,
   Divider,
+  ScrollShadow,
+  Link,
 } from "@nextui-org/react";
 import { log } from "console";
 
@@ -182,18 +190,19 @@ const BasicContainer = () => {
       const taskManagerObject = await client.getObject({
         id: TASK_MANAGER_ID,
         options: {
-          showContent: true
-        }
+          showContent: true,
+        },
       });
-  
+
       const jsonString = JSON.stringify(taskManagerObject, null, 2);
       const jsonObject = JSON.parse(jsonString);
-      const publishedTaskIdsArr = jsonObject.data.content.fields.published_tasks;
-      
+      const publishedTaskIdsArr =
+        jsonObject.data.content.fields.published_tasks;
+
       // console.log(publishedTaskIdsArr); FIXME: Test Use Only
       return publishedTaskIdsArr;
     } catch (error) {
-      console.error('Error fetching or converting task manager object:', error);
+      console.error("Error fetching or converting task manager object:", error);
       return [];
     }
   }
@@ -201,32 +210,34 @@ const BasicContainer = () => {
   async function fetchPublishedList() {
     try {
       const publishedTaskIdsArr = await fetchTaskList();
-  
+
       const multiGetObjectsParams = {
         ids: publishedTaskIdsArr,
         options: {
-          showContent: true
-        }
+          showContent: true,
+        },
       };
-  
-      const objectsResponse = await client.multiGetObjects(multiGetObjectsParams);
+
+      const objectsResponse = await client.multiGetObjects(
+        multiGetObjectsParams
+      );
 
       //console.log(objectsResponse); FIXME: Test Use Only
       return objectsResponse;
     } catch (error) {
-      console.error('Error fetching multiple objects:', error);
+      console.error("Error fetching multiple objects:", error);
       return null;
     }
   }
 
   function transformData(apiData: SuiObjectResponse[]): Task[] {
     if (!apiData) return [];
-    
-    return apiData.map(item => {
+
+    return apiData.map((item) => {
       const fields = item.data.content.fields;
       const type = item.data.content.type;
       const descriptionField = fields.description[0].fields;
-  
+
       return {
         reward_type: (type.match(/<([^>]+)>/) || [])[1] || "",
         id: fields.id.id,
@@ -255,7 +266,7 @@ const BasicContainer = () => {
 
   async function fetchData() {
     const apiData = await fetchPublishedList();
-    if (apiData) { 
+    if (apiData) {
       const transformedData = transformData(apiData);
       setPublishedTasks(transformedData);
     }
@@ -264,8 +275,6 @@ const BasicContainer = () => {
   useEffect(() => {
     fetchData();
   }, []);
-  
-
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
@@ -321,7 +330,7 @@ const BasicContainer = () => {
               }
             }
             refetch();
-            fetchData()
+            fetchData();
           },
           onError: (err) => {
             toast.error("Tx Failed!");
@@ -420,7 +429,6 @@ const BasicContainer = () => {
               toast.success(`Transaction Sent, ${digest}`);
               console.log(`Transaction Digest`, digest);
 
-              
               // Create New Task Object
               const newTaskObject = {
                 reward_type: newTask.reward_type,
@@ -449,7 +457,7 @@ const BasicContainer = () => {
               setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
 
               await fetchData();
-              
+
               // FIXME: for test only
               // Reset Task
               setNewTask({
@@ -467,7 +475,6 @@ const BasicContainer = () => {
                 fund: "1",
                 is_active: true,
               });
-
             } catch (digestError) {
               if (digestError instanceof Error) {
                 toast.error(
@@ -493,9 +500,6 @@ const BasicContainer = () => {
 
     console.log("New task published:", newTask);
   };
-
-
-
 
   const handleCompleteTask = (taskId: string) => {
     const completedTask = acceptedTasks.find((task) => task.id === taskId);
@@ -533,6 +537,10 @@ const BasicContainer = () => {
     }
   };
 
+  const handleSubmittedTask = (task: Task) => {
+    console.log("Submitted Task", task);
+  };
+
   return (
     <>
       <div className="w-[80%] flex flex-col items-center justify-center gap-4 mt-20">
@@ -561,10 +569,7 @@ const BasicContainer = () => {
           buttonClass="w-70" */
         />
       </div>
-      <Divider
-        className="my-4" /*/>
-      <h1 className="my-4">Fren Suipport Project</h1>*/
-      ></Divider>
+      <Divider className="my-4"></Divider>
       <div className="mx-auto p-4">
         <Button
           onPress={onOpen}
@@ -573,207 +578,71 @@ const BasicContainer = () => {
           Publish Task
         </Button>
       </div>
-      <div className="mx-auto p-4">
-        <div className="flex w-full flex-col">
-          <Tabs aria-label="Options" variant="bordered">
-            <Tab key="acceptedTasks" title="已接受任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
-                {acceptedTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    isFooterBlurred
-                    className="col-span-12 sm:col-span-4 h-[300px] w-[300px]"
-                  >
-                    <CardHeader className="absolute z-10 top-1 flex gap-4 items-start">
-                      <Chip
-                        color="primary"
-                        className=" text-white/80 uppercase font-bold"
-                      >
-                        {task.id}
-                      </Chip>
-                      <Chip className=" text-white/80 uppercase font-bold">
-                        {task.name}
-                      </Chip>
-                    </CardHeader>
-
-                    <CardBody>
-                      <Image
-                        removeWrapper
-                        alt="Task"
-                        src={task.poc_img_url}
-                        className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
-                      />
-                    </CardBody>
-                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 dark:border-default-100">
-                      <div className="flex flex-grow gap-2 items-center">
-                        <div className="flex flex-col">
-                          <p className="text-tiny text-white/80">
-                            {task.description[0].description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <Button
-                        onPress={() => handleCompleteTask(task.id)}
-                        radius="full"
-                        size="sm"
-                      >
-                        回報任務完成
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </Tab>
-            <Tab key="publishedTasks" title="已發布任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
-                {publishedTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    isFooterBlurred
-                    className="col-span-12 sm:col-span-4 h-[300px] w-[300px]"
-                  >
-                    <CardHeader className="absolute z-10 top-1 flex gap-4 items-start">
-                      <Chip
-                        color="primary"
-                        className=" text-white/80 uppercase font-bold"
-                      >
-                        {truncateAddress(task.id)}
-                      </Chip>
-                      <Chip className=" text-white/80 uppercase font-bold">
-                        {task.name}
-                      </Chip>
-                    </CardHeader>
-
-                    <CardBody>
-                      <Image
-                        removeWrapper
-                        alt="Task"
-                        src={task.poc_img_url}
-                        className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
-                      />
-                    </CardBody>
-                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 dark:border-default-100">
-                      <div className="flex flex-grow gap-2 items-center">
-                        <div className="flex flex-col">
-                          <p className="text-tiny text-white/80">
-                            {task.description[0].description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <Button
-                        onPress={() => handleModifyTask(task)}
-                        radius="full"
-                        size="sm"
-                      >
-                        修改任務詳情
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </Tab>
-            <Tab key="completedTasks" title="已完成任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
-                {completedTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    isFooterBlurred
-                    className="col-span-12 sm:col-span-4 h-[300px] w-[300px]"
-                  >
-                    <CardHeader className="absolute z-10 top-1 flex gap-4 items-start">
-                      <Chip
-                        color="primary"
-                        className=" text-white/80 uppercase font-bold"
-                      >
-                        {truncateAddress(task.id)}
-                      </Chip>
-                      <Chip className=" text-white/80 uppercase font-bold">
-                        {task.name}
-                      </Chip>
-                    </CardHeader>
-
-                    <CardBody>
-                      <Image
-                        removeWrapper
-                        alt="Task"
-                        src={task.poc_img_url}
-                        className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
-                      />
-                    </CardBody>
-                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 dark:border-default-100">
-                      <div className="flex flex-grow gap-2 items-center">
-                        <div className="flex flex-col">
-                          <p className="text-tiny text-white/80">
-                            {task.description[0].description}
-                          </p>
-                        </div>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </Tab>
-          </Tabs>
-        </div>
-      </div>
       <Divider className="my-4" />
       <h1 className="my-4">任務列表</h1>
       <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
         {publishedTasks.map((task) => (
           <Card key={task.id} isFooterBlurred className="h-[600px] w-[300px] ">
-            <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
+            {/* <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
               <Chip
                 color="primary"
                 className=" text-white/80 uppercase font-bold"
               >
                 {truncateAddress(task.id)}
               </Chip>
-              <Chip className=" text-white/80 uppercase font-bold">
-                {task.name}
-              </Chip>
-            </CardHeader>
+            </CardHeader> */}
 
             <CardBody className="relative p-4">
               <Image
                 removeWrapper
                 alt="Task"
                 src={task.image_url}
-                className="z-0 w-full h-40 object-cover rounded-lg"
+                className="z-0 w-full h-50 object-cover rounded-lg"
               />
             </CardBody>
             <CardFooter className="absolute bg-black/80 bottom-0 z-10 w-full p-4 flex justify-between items-center">
               <div className="flex flex-grow gap-2 items-center">
                 <div className="flex flex-col gap-2 text-white/80">
-                  <p>
-                    <strong>描述:</strong> {task.description[0].description}
-                  </p>
-                  <p>
-                    <strong>發佈時間:</strong>{" "}
-                    {new Date(parseInt(task.publish_date)).toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>創建者:</strong>{" "}
-                    {truncateAddress(task.creator)}
-                  </p>
-                  <p>
-                    <strong>主持人:</strong> {truncateAddress(task.moderator)}
-                  </p>
-                  <p>
-                    <strong>地區:</strong> {task.area}
-                  </p>
-                  <p>
-                    <strong>狀態:</strong>{" "}
-                    {task.is_active ? "Active" : "Inactive"}
-                  </p>
-                  <p>
-                    <strong>資金:</strong>{" "}
-                    {task.fund}
-                  </p>
-                  <p>
-                    <strong>獎勵金額:</strong> {task.reward_amount}
-                  </p>
+                  <ScrollShadow hideScrollBar className="h-[250px]">
+                    <p>
+                      <strong>任務名稱:</strong> {task.name}
+                    </p>
+
+                    <p>
+                      <strong>描述:</strong> {task.description[0].description}
+                    </p>
+
+                    <p>
+                      <strong>發佈時間:</strong>{" "}
+                      {new Date(parseInt(task.publish_date)).toLocaleString()}
+                    </p>
+                    <p>
+                      <strong>創建者:</strong> {truncateAddress(task.creator)}
+                    </p>
+                    <p>
+                      <strong>主持人:</strong> {truncateAddress(task.moderator)}
+                    </p>
+                    <p>
+                      <strong>地區:</strong> {task.area}
+                    </p>
+                    <p>
+                      <strong>狀態:</strong>{" "}
+                      {task.is_active ? "Active" : "Inactive"}
+                    </p>
+                    <p>
+                      <strong>資金:</strong> {task.fund}
+                    </p>
+                    <p>
+                      <strong>獎勵金額:</strong> {task.reward_amount}
+                    </p>
+                    <Link
+                      isExternal
+                      href={`https://suiscan.xyz/devnet/${task.id}`}
+                      showAnchorIcon
+                    >
+                      在區塊鏈上查看
+                    </Link>
+                  </ScrollShadow>
                   <Button
                     isDisabled={!task.is_active}
                     onClick={() => handleAcceptTask(task)}
@@ -788,6 +657,280 @@ const BasicContainer = () => {
           </Card>
         ))}
       </div>
+      <Divider className="my-4" />
+
+      <div className="mx-auto p-4">
+        <div className="flex w-full flex-col">
+          <Tabs
+            aria-label="Options"
+            variant="bordered"
+            className="w-[1200px] min-h-1"
+          >
+            <Tab key="acceptedTasks" title="已接受任務">
+              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+                {acceptedTasks.map((task) => (
+                  <Card
+                    key={task.id}
+                    isFooterBlurred
+                    className="h-[600px] w-[300px] "
+                  >
+                    {/* <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
+                      <Chip
+                        color="primary"
+                        className=" text-white/80 uppercase font-bold"
+                      >
+                        {truncateAddress(task.id)}
+                      </Chip>
+                    </CardHeader> */}
+
+                    <CardBody className="relative p-4">
+                      <Image
+                        removeWrapper
+                        alt="Task"
+                        src={task.image_url}
+                        className="z-0 w-full h-50 object-cover rounded-lg"
+                      />
+                    </CardBody>
+                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 w-full p-4 flex justify-between items-center">
+                      <div className="flex flex-grow gap-2 items-center">
+                        <div className="flex flex-col gap-2 text-white/80">
+                          <ScrollShadow hideScrollBar className="h-[250px]">
+                            <p>
+                              <strong>任務名稱:</strong> {task.name}
+                            </p>
+
+                            <p>
+                              <strong>描述:</strong>{" "}
+                              {task.description[0].description}
+                            </p>
+
+                            <p>
+                              <strong>發佈時間:</strong>{" "}
+                              {new Date(
+                                parseInt(task.publish_date)
+                              ).toLocaleString()}
+                            </p>
+                            <p>
+                              <strong>創建者:</strong>{" "}
+                              {truncateAddress(task.creator)}
+                            </p>
+                            <p>
+                              <strong>主持人:</strong>{" "}
+                              {truncateAddress(task.moderator)}
+                            </p>
+                            <p>
+                              <strong>地區:</strong> {task.area}
+                            </p>
+                            <p>
+                              <strong>狀態:</strong>{" "}
+                              {task.is_active ? "Active" : "Inactive"}
+                            </p>
+                            <p>
+                              <strong>資金:</strong> {task.fund}
+                            </p>
+                            <p>
+                              <strong>獎勵金額:</strong> {task.reward_amount}
+                            </p>
+                            <Link
+                              isExternal
+                              href={`https://suiscan.xyz/devnet/${task.id}`}
+                              showAnchorIcon
+                            >
+                              在區塊鏈上查看
+                            </Link>
+                          </ScrollShadow>
+                          <Button
+                            onPress={() => handleCompleteTask(task.id)}
+                            radius="full"
+                            size="sm"
+                          >
+                            回報任務完成
+                          </Button>
+                        </div>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </Tab>
+            <Tab key="publishedTasks" title="已發布任務">
+              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+                {publishedTasks.map((task) => (
+                  <Card
+                    key={task.id}
+                    isFooterBlurred
+                    className="h-[600px] w-[300px] "
+                  >
+                    {/* <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
+                      <Chip
+                        color="primary"
+                        className=" text-white/80 uppercase font-bold"
+                      >
+                        {truncateAddress(task.id)}
+                      </Chip>
+                    </CardHeader> */}
+
+                    <CardBody className="relative p-4">
+                      <Image
+                        removeWrapper
+                        alt="Task"
+                        src={task.image_url}
+                        className="z-0 w-full h-50 object-cover rounded-lg"
+                      />
+                    </CardBody>
+                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 w-full p-4 flex justify-between items-center">
+                      <div className="flex flex-grow gap-2 items-center">
+                        <div className="flex flex-col gap-2 text-white/80">
+                          <ScrollShadow hideScrollBar className="h-[250px]">
+                            <p>
+                              <strong>任務名稱:</strong> {task.name}
+                            </p>
+
+                            <p>
+                              <strong>描述:</strong>{" "}
+                              {task.description[0].description}
+                            </p>
+
+                            <p>
+                              <strong>發佈時間:</strong>{" "}
+                              {new Date(
+                                parseInt(task.publish_date)
+                              ).toLocaleString()}
+                            </p>
+                            <p>
+                              <strong>創建者:</strong>{" "}
+                              {truncateAddress(task.creator)}
+                            </p>
+                            <p>
+                              <strong>主持人:</strong>{" "}
+                              {truncateAddress(task.moderator)}
+                            </p>
+                            <p>
+                              <strong>地區:</strong> {task.area}
+                            </p>
+                            <p>
+                              <strong>狀態:</strong>{" "}
+                              {task.is_active ? "Active" : "Inactive"}
+                            </p>
+                            <p>
+                              <strong>資金:</strong> {task.fund}
+                            </p>
+                            <p>
+                              <strong>獎勵金額:</strong> {task.reward_amount}
+                            </p>
+                            <Link
+                              isExternal
+                              href={`https://suiscan.xyz/devnet/${task.id}`}
+                              showAnchorIcon
+                            >
+                              在區塊鏈上查看
+                            </Link>
+                          </ScrollShadow>
+                          <Button
+                            onPress={() => handleModifyTask(task)}
+                            radius="full"
+                            size="sm"
+                          >
+                            修改任務詳情
+                          </Button>
+                          <Button
+                            onPress={() => handleSubmittedTask(task)}
+                            radius="full"
+                            size="sm"
+                          >
+                            管理已提交任務
+                          </Button>
+                        </div>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </Tab>
+            <Tab key="completedTasks" title="已完成任務">
+              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+                {completedTasks.map((task) => (
+                  <Card
+                    key={task.id}
+                    isFooterBlurred
+                    className="h-[600px] w-[300px] "
+                  >
+                    {/* <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
+                      <Chip
+                        color="primary"
+                        className=" text-white/80 uppercase font-bold"
+                      >
+                        {truncateAddress(task.id)}
+                      </Chip>
+                    </CardHeader> */}
+
+                    <CardBody className="relative p-4">
+                      <Image
+                        removeWrapper
+                        alt="Task"
+                        src={task.image_url}
+                        className="z-0 w-full h-50 object-cover rounded-lg"
+                      />
+                    </CardBody>
+                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 w-full p-4 flex justify-between items-center">
+                      <div className="flex flex-grow gap-2 items-center">
+                        <div className="flex flex-col gap-2 text-white/80">
+                          <ScrollShadow hideScrollBar className="h-[250px]">
+                            <p>
+                              <strong>任務名稱:</strong> {task.name}
+                            </p>
+
+                            <p>
+                              <strong>描述:</strong>{" "}
+                              {task.description[0].description}
+                            </p>
+
+                            <p>
+                              <strong>發佈時間:</strong>{" "}
+                              {new Date(
+                                parseInt(task.publish_date)
+                              ).toLocaleString()}
+                            </p>
+                            <p>
+                              <strong>創建者:</strong>{" "}
+                              {truncateAddress(task.creator)}
+                            </p>
+                            <p>
+                              <strong>主持人:</strong>{" "}
+                              {truncateAddress(task.moderator)}
+                            </p>
+                            <p>
+                              <strong>地區:</strong> {task.area}
+                            </p>
+                            <p>
+                              <strong>狀態:</strong>{" "}
+                              {task.is_active ? "Active" : "Inactive"}
+                            </p>
+                            <p>
+                              <strong>資金:</strong> {task.fund}
+                            </p>
+                            <p>
+                              <strong>獎勵金額:</strong> {task.reward_amount}
+                            </p>
+                            <Link
+                              isExternal
+                              href={`https://suiscan.xyz/devnet/${task.id}`}
+                              showAnchorIcon
+                            >
+                              在區塊鏈上查看
+                            </Link>
+                          </ScrollShadow>
+                        </div>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </Tab>
+          </Tabs>
+        </div>
+      </div>
+
       {/* Modal for publishing task */}
       <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="top-center">
         <ModalContent>
@@ -948,4 +1091,3 @@ export default BasicContainer;
 function setLoading(arg0: boolean) {
   throw new Error("Function not implemented.");
 }
-

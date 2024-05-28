@@ -615,7 +615,6 @@ const BasicContainer = () => {
                         {truncateAddress(task.id)}
                       </Chip>
                     </CardHeader> */}
-
                     <CardBody className="relative p-4">
                       <Image
                         removeWrapper
@@ -687,7 +686,7 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="publishedTasks" title="已發布任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+              <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {publishedTasks.map((task) => (
                   <Card
                     key={task.id}

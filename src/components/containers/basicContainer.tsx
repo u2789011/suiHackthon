@@ -939,7 +939,7 @@ const BasicContainer = () => {
           {(onClose) => (
             <>
               <ModalHeader>
-                {selectedTask ? "Modify Task Desciption" : "Mint a Task"}
+                {selectedTask ? "Manage Task" : "Mint a Task"}
               </ModalHeader>
               <ModalBody>
                 <Input

@@ -88,6 +88,7 @@ const BasicContainer = () => {
     }
   })
 
+
   const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const client = useSuiClient();
   const [account] = useAccounts();
@@ -206,7 +207,7 @@ const BasicContainer = () => {
     });
   }
 
-  async function fetchData() {
+  async function fetchAllTaskData() {
     const apiData = await fetchAllTaskList();
     if (apiData) {
       const transformedData = transformData(apiData);
@@ -215,7 +216,7 @@ const BasicContainer = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchAllTaskData();
   }, []);
 
   // Set Accepted Tasks Data From Task Sheets Owned by User
@@ -330,7 +331,7 @@ const BasicContainer = () => {
               }
             }
             refetch();
-            fetchData();
+            fetchAllTaskData();
           },
           onError: (err) => {
             toast.error("Tx Failed!");
@@ -436,7 +437,7 @@ const BasicContainer = () => {
   
             setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
   
-            await fetchData();
+            await fetchAllTaskData();
             setNewTask({
               reward_type: "",
               name: "",

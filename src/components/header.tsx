@@ -24,9 +24,14 @@ const Header = () => {
     >
       <header className="w-full max-w-360 mx-auto h-20 flex items-center justify-between pt-5 pb-3 px-4 z-50">
         {/* Logo Link */}
-        <span className="text-xl lg:text-3xl font-extrabold">
-          Fren Suipport
-        </span>
+        <Link href="/" passHref>
+          <div className="flex items-center">
+            <Image src="/FrenSuipport.svg" alt="Logo" width={50} height={50} />
+              <span className="text-xl lg:text-3xl font-extrabold">
+                Fren Suipport
+              </span>
+          </div>
+        </Link>
         {/* Connect Button */}
         {walletAddress ? (
           <ConnectMenu walletAddress={walletAddress} suiName={suiName} />

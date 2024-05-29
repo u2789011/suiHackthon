@@ -217,12 +217,11 @@ const BasicContainer = () => {
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
     userTaskSheets: TaskSheet[],
-    publishedTasks: Task[]
+    allTasks: Task[]
   ) => {
     const matchedTasks: Task[] = [];
     const seenTaskIds = new Set<String>();
     
-    //console.log(userTaskSheets); //FIXME: for test only
     userTaskSheets.forEach((taskSheet) => {
       if (taskSheet.data && taskSheet.data.fields){
         const mainTaskId = taskSheet.data.fields.main_task_id;
@@ -236,16 +235,16 @@ const BasicContainer = () => {
       }
     });
 
-    // console.log('matchedTasks:', matchedTasks); //FIXME: for test only
+    //console.log('matchedTasks:', matchedTasks); //FIXME: for test only
     setAcceptedTasks(matchedTasks)
-    // console.log('Acceptes Tasks:', acceptedTasks); //FIXME: for test only
+    //console.log('Acceptes Tasks:', acceptedTasks); //FIXME: for test only
   };
 
   async function fetchAcceptedTask() {
     if (userTaskSheets && userTaskSheets.data) {
       const jsonString = JSON.stringify(userTaskSheets, null, 2);
       const jsonObject = JSON.parse(jsonString);
-      console.log("jsonString:", jsonString); //FIXME: test use only
+      //console.log("jsonString:", jsonString); //FIXME: test use only
 
       //console.log('jsonObject maintask_id', jsonObject.data[0].content.fields.main_task_id);
       // Turn jsonObject into taskSheets (an array of TaskSheet)
@@ -260,8 +259,8 @@ const BasicContainer = () => {
         }).filter((item: TaskSheet | null) => item !== null) as TaskSheet[];
 
 
-      console.log("taskSheets:", taskSheets); //FIXME: test use only
-      handleMatchAndSetAcceptedTasks(taskSheets, publishedTasks);
+      //console.log("taskSheets:", taskSheets); //FIXME: test use only
+      handleMatchAndSetAcceptedTasks(taskSheets, allTasks);
     }
   };
 };

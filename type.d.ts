@@ -16,7 +16,9 @@ type TokenInfo = {
 
 type BasicCoin = "SUI" | "USDC" | "USDT" | "BUCK";
 
-/*
+type SuiObjectResponse = any;
+
+
 type TaskDescription = {
   description: string;
   format: number; // 0: Plaintext, 1: Markdown
@@ -30,14 +32,31 @@ type Task = {
   name: string;
   description: TaskDescription[];
   image_url: string;
-  publish_date: number; // Unix timestamp in milliseconds
+  publish_date: string; // Unix timestamp in milliseconds
   creator: string; // address
   moderator: string; // address
   area: string;
   is_active: boolean; // true: active, false: inactive
-  fund: number;
+  fund: string;
   reward_amount: number;
   task_sheets: any[]; // assuming task_sheets is an array of objects
   poc_img_url: string;
 };
-*/
+
+type TaskSheet = {
+  data: {
+    fields: {
+      id: any[];
+      status: number;
+      main_task_id: string;
+      task_description: TaskDescription;
+      content?: string | null;
+      annotation?: string | null;
+      moderator: string;
+      creator: string;
+      created_time: string;
+      update_time: string;
+    };
+  };
+}
+

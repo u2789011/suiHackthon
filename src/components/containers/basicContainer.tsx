@@ -67,7 +67,8 @@ const BasicContainer = () => {
   const TASK_MANAGER_ID =
     "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
   const FLOAT_SCALING = 1000000000;
-
+  const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
+  
   const { walletAddress, suiName } = useContext(AppContext);
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
     owner: walletAddress ?? "",
@@ -86,6 +87,7 @@ const BasicContainer = () => {
       showContent: true,
     },
   });
+
 
   const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const client = useSuiClient();
@@ -209,7 +211,7 @@ const BasicContainer = () => {
     });
   }
 
-  async function fetchData() {
+  async function fetchAllTaskData() {
     const apiData = await fetchAllTaskList();
     if (apiData) {
       const transformedData = transformData(apiData);
@@ -218,7 +220,7 @@ const BasicContainer = () => {
   }
 
   useEffect(() => {
-    fetchData();
+    fetchAllTaskData();
   }, []);
 
   // Set Accepted Tasks Data From Task Sheets Owned by User
@@ -315,7 +317,22 @@ const BasicContainer = () => {
           onSuccess: async (res) => {
             try {
               const digest = await txb.getDigest({ client: client });
-              toast.success(`Transaction Sent, ${digest}`);
+              const explorerUrl = `${DEVNET_EXPLORE+digest}`;
+              toast.success(
+                <span>
+                  Transaction Sent
+                  <div>
+                    <a 
+                      href={explorerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{color: 'lightblue', textDecoration: 'underline'}}
+                      >
+                      Check Transaction on Explore
+                    </a>
+                  </div>
+                </span>
+              );
               console.log(`Transaction Digest`, digest);
             } catch (digestError) {
               if (digestError instanceof Error) {
@@ -329,7 +346,7 @@ const BasicContainer = () => {
               }
             }
             refetch();
-            fetchData();
+            fetchAllTaskData();
           },
           onError: (err) => {
             toast.error("Tx Failed!");
@@ -405,7 +422,22 @@ const BasicContainer = () => {
             console.log(createdObject);
 
             const digest = await txb.getDigest({ client: client });
-            toast.success(`Transaction Sent, ${digest}`);
+            const explorerUrl = `${DEVNET_EXPLORE+digest}`;
+            toast.success(
+              <span>
+              Transaction Sent
+              <div>
+                <a 
+                  href={explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{color: 'lightblue', textDecoration: 'underline'}}
+                  >
+                  Check Transaction on Explore
+                </a>
+              </div>
+            </span>
+            );
             console.log(`Transaction Digest`, digest);
 
             const newTaskObject = {
@@ -433,8 +465,9 @@ const BasicContainer = () => {
             };
 
             setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
+            
+            await fetchAllTaskData();
 
-            await fetchData();
             setNewTask({
               reward_type: "",
               name: "",
@@ -529,7 +562,7 @@ const BasicContainer = () => {
               }
             }
             refetch();
-            fetchData();
+            fetchAllTaskData();
           },
           onError: (err) => {
             toast.error("Tx Failed!");

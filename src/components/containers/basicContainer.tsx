@@ -147,7 +147,7 @@ const BasicContainer = () => {
   }
 
   // Get objects data for eash intem in `publishedTaskIdsArr`
-  async function fetchPublishedList() {
+  async function fetchAllTaskList() {
     try {
       const publishedTaskIdsArr = await fetchTaskList();
 
@@ -207,7 +207,7 @@ const BasicContainer = () => {
   }
 
   async function fetchData() {
-    const apiData = await fetchPublishedList();
+    const apiData = await fetchAllTaskList();
     if (apiData) {
       const transformedData = transformData(apiData);
       setAllTasks(transformedData);
@@ -237,7 +237,7 @@ const BasicContainer = () => {
 
     //console.log('matchedTasks:', matchedTasks); //FIXME: for test only
     setAcceptedTasks(matchedTasks)
-    //console.log('Acceptes Tasks:', acceptedTasks); //FIXME: for test only
+    console.log('Acceptes Tasks:', acceptedTasks); //FIXME: for test only
   };
 
   async function fetchAcceptedTask() {
@@ -267,8 +267,13 @@ const BasicContainer = () => {
 
   useEffect(() => {
     fetchData();
-    fetchAcceptedTask();
   }, []);
+
+  useEffect(() => {
+    if (userTaskSheets) {
+      fetchAcceptedTask();
+    }
+  }, [userTaskSheets, allTasks]);
   
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 

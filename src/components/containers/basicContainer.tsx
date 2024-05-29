@@ -67,6 +67,7 @@ const BasicContainer = () => {
   const TASK_MANAGER_ID =
     "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
   const FLOAT_SCALING = 1000000000;
+  const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
   
   const { walletAddress, suiName } = useContext(AppContext);
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
@@ -317,7 +318,7 @@ const BasicContainer = () => {
           onSuccess: async (res) => {
             try {
               const digest = await txb.getDigest({ client: client });
-              const explorerUrl = `https://suiscan.xyz/devnet/tx/${digest}`;
+              const explorerUrl = `${DEVNET_EXPLORE+digest}`;
               toast.success(
                 <span>
                   Transaction Sent
@@ -423,7 +424,7 @@ const BasicContainer = () => {
             console.log(createdObject);
   
             const digest = await txb.getDigest({ client: client });
-            const explorerUrl = `https://suiscan.xyz/devnet/tx/${digest}`;
+            const explorerUrl = `${DEVNET_EXPLORE+digest}`;
             toast.success(
               <span>
               Transaction Sent

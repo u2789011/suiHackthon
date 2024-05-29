@@ -214,6 +214,10 @@ const BasicContainer = () => {
     }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
     userTaskSheets: TaskSheet[],
@@ -264,10 +268,6 @@ const BasicContainer = () => {
     }
   };
 };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   useEffect(() => {
     if (userTaskSheets) {

@@ -224,14 +224,16 @@ const BasicContainer = () => {
     publishedTasks: Task[]
   ) => {
     const matchedTasks: Task[] = [];
+    const seenTaskIds = new Set<String>();
     
     //console.log(userTaskSheets); //FIXME: for test only
     userTaskSheets.forEach((taskSheet) => {
       if (taskSheet.data && taskSheet.data.fields){
         const mainTaskId = taskSheet.data.fields.main_task_id;
         const matchedTask = publishedTasks.find(task => task.id === mainTaskId);
-        if (matchedTask) {
+        if (matchedTask && !seenTaskIds.has(matchedTask.id)) {
           matchedTasks.push(matchedTask);
+          seenTaskIds.add(matchedTask.id);
         }
       } else {
         console.warn("Task sheet data or fields is undefined:", taskSheet)

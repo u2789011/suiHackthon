@@ -295,7 +295,6 @@ const BasicContainer = () => {
   }, [allTasks, walletAddress]);
 
 
-
   //選取任務（modal用）
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   //接受任務
@@ -1088,8 +1087,11 @@ const BasicContainer = () => {
                   </div>
                 )}
                 {acceptedTasks.map((task) => (
-                  <Card key={task.id} isFooterBlurred className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden">
-                    <CardBody className="relative p-4">
+                  <Card key={task.id} 
+                        isFooterBlurred
+                        className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
+                        >
+                    <CardBody className="relative p-3">
                       <Image
                         removeWrapper
                         alt="Task"
@@ -1143,7 +1145,7 @@ const BasicContainer = () => {
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
+                    className="h-[700px] w-[320px] shadow-lg rounded-lg overflow-hidden"
                   >
                     <CardBody className="relative p-3">
                       <Image

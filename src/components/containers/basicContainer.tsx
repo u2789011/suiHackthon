@@ -562,7 +562,7 @@ const BasicContainer = () => {
               }
             }
             refetch();
-            fetchData();
+            fetchAllTaskData();
           },
           onError: (err) => {
             toast.error("Tx Failed!");

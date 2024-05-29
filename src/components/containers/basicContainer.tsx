@@ -1,7 +1,7 @@
 import BasicDataField from "../fields/basicDataField";
 // import BasicInputField from "../fields/basicInputField";
 // import ActionButton from "../buttons/actionButton";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState, ChangeEvent } from "react";
 import {
   useAccounts,
   useSignAndExecuteTransactionBlock,
@@ -61,7 +61,7 @@ const BasicContainer = () => {
     onOpenChange: onOpenChangeModal4,
   } = useDisclosure();
 
-    // version 20240527
+  // version 20240527
   const PACKAGE_ID =
     "0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
   const TASK_MANAGER_ID =
@@ -75,19 +75,18 @@ const BasicContainer = () => {
   });
   const { data: allCoins } = useSuiClientQuery("getAllCoins", {
     owner: walletAddress ?? "",
-
-  })
+  });
   // Get TaskSheets Owned By User
   const { data: userTaskSheets } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
     filter: {
-      StructType: `${PACKAGE_ID}::public_task::TaskSheet`
+      StructType: `${PACKAGE_ID}::public_task::TaskSheet`,
     },
     options: {
       showType: true,
       showContent: true,
-    }
-  })
+    },
+  });
 
 
   const [selectedToken, setSelectedToken] = useState<string>("SUI");
@@ -105,7 +104,6 @@ const BasicContainer = () => {
       return 0;
     }
   }, [suiBalance]);
-
 
   const [newTask, setNewTask] = useState({
     reward_type: "",
@@ -125,8 +123,13 @@ const BasicContainer = () => {
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
   const [publishedTasks, setPublishedTasks] = useState<Task[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [taskDescription, setTaskDescription] = useState("");
+  const [taskSheetDescription, setTaskSheetDescription] = useState("");
+  const [taskFund, setTaskFund] = useState(0);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [annotation, setAnnotation] = useState("");
 
-  // Get ObjectIDS in TaskManager 
+  // Get ObjectIDS in TaskManager
   async function fetchTaskList() {
     try {
       const taskManagerObject = await client.getObject({
@@ -214,7 +217,7 @@ const BasicContainer = () => {
       const transformedData = transformData(apiData);
       setAllTasks(transformedData);
     }
-  };
+  }
 
   useEffect(() => {
     fetchAllTaskData();
@@ -227,23 +230,23 @@ const BasicContainer = () => {
   ) => {
     const matchedTasks: Task[] = [];
     const seenTaskIds = new Set<String>();
-    
+
     userTaskSheets.forEach((taskSheet) => {
-      if (taskSheet.data && taskSheet.data.fields){
+      if (taskSheet.data && taskSheet.data.fields) {
         const mainTaskId = taskSheet.data.fields.main_task_id;
-        const matchedTask = allTasks.find(task => task.id === mainTaskId);
+        const matchedTask = allTasks.find((task) => task.id === mainTaskId);
         if (matchedTask && !seenTaskIds.has(matchedTask.id)) {
           matchedTasks.push(matchedTask);
           seenTaskIds.add(matchedTask.id);
         }
       } else {
-        console.warn("Task sheet data or fields is undefined:", taskSheet)
+        console.warn("Task sheet data or fields is undefined:", taskSheet);
       }
     });
 
     //console.log('matchedTasks:', matchedTasks); //FIXME: for test only
-    setAcceptedTasks(matchedTasks)
-    console.log('Acceptes Tasks:', acceptedTasks); //FIXME: for test only
+    setAcceptedTasks(matchedTasks);
+    console.log("Acceptes Tasks:", acceptedTasks); //FIXME: for test only
   };
 
   async function fetchAcceptedTask() {
@@ -255,41 +258,37 @@ const BasicContainer = () => {
       //console.log('jsonObject maintask_id', jsonObject.data[0].content.fields.main_task_id);
       // Turn jsonObject into taskSheets (an array of TaskSheet)
       if (Array.isArray(jsonObject.data)) {
-        const taskSheets: TaskSheet[] = jsonObject.data.map((item: any) => {
-          if (item && item.data && item.data.content && item.data.content.fields) {
-            return { data: { fields: item.data.content.fields } };
-          } else {
-            console.warn("Item or fields is undefined:", item);
-            return null;
-          }
-        }).filter((item: TaskSheet | null) => item !== null) as TaskSheet[];
+        const taskSheets: TaskSheet[] = jsonObject.data
+          .map((item: any) => {
+            if (
+              item &&
+              item.data &&
+              item.data.content &&
+              item.data.content.fields
+            ) {
+              return { data: { fields: item.data.content.fields } };
+            } else {
+              console.warn("Item or fields is undefined:", item);
+              return null;
+            }
+          })
+          .filter((item: TaskSheet | null) => item !== null) as TaskSheet[];
 
-
-      //console.log("taskSheets:", taskSheets); //FIXME: test use only
-      handleMatchAndSetAcceptedTasks(taskSheets, allTasks);
+        //console.log("taskSheets:", taskSheets); //FIXME: test use only
+        handleMatchAndSetAcceptedTasks(taskSheets, allTasks);
+      }
     }
-  };
-};
+  }
 
   useEffect(() => {
     if (userTaskSheets) {
       fetchAcceptedTask();
     }
   }, [userTaskSheets, allTasks]);
-  
+  //選取任務（modal用）
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-
+  //接受任務
   const handleAcceptTask = async (selectedTask: Task) => {
-    // Logic for test accepting task
-    const acceptedTask = allTasks.find((task) => task.id === selectedTask.id);
-
-    if (acceptedTask) {
-      setAcceptedTasks([...acceptedTasks, acceptedTask]);
-      toast.success(`Please Approve Transaction in Wallet`);
-    }
-    console.log(`Accepted task ${selectedTask.id}`);
-    console.log(acceptedTask);
-
     if (!account.address) return;
 
     const txb = new TransactionBlock();
@@ -358,14 +357,13 @@ const BasicContainer = () => {
     } else {
       toast.error("Something went wrong");
     }
-
   };
-
+  //發布任務
   const handlePublishTaskChain = async () => {
     if (!account.address) return;
-  
+
     const txb = new TransactionBlock();
-  
+
     txb.moveCall({
       target: `${PACKAGE_ID}::public_task::publish_task`,
       arguments: [
@@ -384,20 +382,20 @@ const BasicContainer = () => {
       ],
       typeArguments: [newTask.reward_type],
     });
-  
+
     txb.setSender(account.address);
-  
+
     const dryrunRes = await client.dryRunTransactionBlock({
       transactionBlock: await txb.build({ client: client }),
     });
-  
+
     console.log(dryrunRes);
-  
+
     if (dryrunRes.effects.status.status !== "success") {
       toast.error("Something went wrong");
       return;
     }
-  
+
     await signAndExecuteTransactionBlock(
       {
         transactionBlock: txb,
@@ -412,17 +410,17 @@ const BasicContainer = () => {
             if (!created || created.length === 0) {
               throw new Error("No object created.");
             }
-  
+
             const createdObject =
               created.find((obj) => obj.owner !== account.address)?.reference
                 ?.objectId || created[0].reference?.objectId;
-  
+
             if (!createdObject) {
               throw new Error("Created object ID is not a string.");
             }
-  
+
             console.log(createdObject);
-  
+
             const digest = await txb.getDigest({ client: client });
             const explorerUrl = `${DEVNET_EXPLORE+digest}`;
             toast.success(
@@ -441,7 +439,7 @@ const BasicContainer = () => {
             </span>
             );
             console.log(`Transaction Digest`, digest);
-  
+
             const newTaskObject = {
               reward_type: newTask.reward_type,
               id: createdObject,
@@ -465,10 +463,11 @@ const BasicContainer = () => {
               task_sheets: [],
               poc_img_url: newTask.poc_img_url,
             };
-  
+
             setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
-  
+            
             await fetchAllTaskData();
+
             setNewTask({
               reward_type: "",
               name: "",
@@ -502,45 +501,494 @@ const BasicContainer = () => {
         },
       }
     );
-  
+
     console.log("New task published:", newTask);
   };
-
+  //打開回報任務完成Modal
   const handleCompleteTask = (task: Task) => {
     setSelectedTask(task);
     onOpenModal4();
     console.log("Send Task Sheet", task);
   };
+  //提交任務單 | submit_task_sheet
+  const handleSendTaskSheet = async (selectedTaskID: string) => {
+    console.log(`Send Task Sheet ${selectedTaskID}`);
+    if (!account.address) return;
 
-  const handleSendTaskSheet = () => {
-    if (selectedTask) {
-      toast.success("任務完成申請已送出!");
-      setSelectedTask(null);
+    const txb = new TransactionBlock();
+    console.log(selectedTask);
+    txb.moveCall({
+      target: `${PACKAGE_ID}::public_task::submit_task_sheet`,
+      arguments: [
+        txb.object(
+          "0x49806003f14dac78b61bbc0455aa1f437de190d66bb2cc9512c8524f47b9f70f"
+          //要抓到任務單的ID
+        ),
+        txb.pure(SUI_CLOCK_OBJECT_ID),
+        txb.object(selectedTaskID),
+      ],
+      typeArguments: ["0x2::sui::SUI"],
+    });
+
+    txb.setSender(account.address);
+    const dryrunRes = await client.dryRunTransactionBlock({
+      transactionBlock: await txb.build({ client: client }),
+    });
+    console.log(dryrunRes);
+
+    if (dryrunRes.effects.status.status === "success") {
+      signAndExecuteTransactionBlock(
+        {
+          transactionBlock: txb,
+          options: {
+            showEffects: true,
+          },
+        },
+        {
+          onSuccess: async (res) => {
+            try {
+              const digest = await txb.getDigest({ client: client });
+              toast.success(`Transaction Sent, ${digest}`);
+              console.log(`Transaction Digest`, digest);
+            } catch (digestError) {
+              if (digestError instanceof Error) {
+                toast.error(
+                  `Transaction sent, but failed to get digest: ${digestError.message}`
+                );
+              } else {
+                toast.error(
+                  "Transaction sent, but failed to get digest due to an unknown error."
+                );
+              }
+            }
+            refetch();
+            fetchData();
+          },
+          onError: (err) => {
+            toast.error("Tx Failed!");
+            console.log(err);
+          },
+        }
+      );
+    } else {
+      toast.error("Something went wrong");
     }
+    // if (selectedTask) {
+    //   toast.success("任務完成申請已送出!");
+    //   setSelectedTask(null);
+    // }
   };
+  //更新任務單內容 | update_task_sheet_content
+  const handleTaskSheetDetails = (
+    selectedTaskID: string,
+    description: string
+  ) => {
+    /* if (!account.address) return;
+        const txb = new TransactionBlock();
+        console.log(selectedTask);
+        txb.moveCall({
+          target: `${PACKAGE_ID}::public_task::update_task_sheet_content`,
+          arguments: [
+            txb.object(
+              selectedTaskId
+            ),
+            txb.pure(SUI_CLOCK_OBJECT_ID),
+            txb.pure(description)
+          ],
+          typeArguments: ["0x2::sui::SUI"],
+        });
 
+        txb.setSender(account.address);
+        const dryrunRes = await client.dryRunTransactionBlock({
+          transactionBlock: await txb.build({ client: client }),
+        });
+        console.log(dryrunRes);
+
+        if (dryrunRes.effects.status.status === "success") {
+          signAndExecuteTransactionBlock(
+            {
+              transactionBlock: txb,
+              options: {
+                showEffects: true,
+              },
+            },
+            {
+              onSuccess: async (res) => {
+                try {
+                  const digest = await txb.getDigest({ client: client });
+                  toast.success(`Transaction Sent, ${digest}`);
+                  console.log(`Transaction Digest`, digest);
+                } catch (digestError) {
+                  if (digestError instanceof Error) {
+                    toast.error(
+                      `Transaction sent, but failed to get digest: ${digestError.message}`
+                    );
+                  } else {
+                    toast.error(
+                      "Transaction sent, but failed to get digest due to an unknown error."
+                    );
+                  }
+                }
+                refetch();
+                fetchData();
+              },
+              onError: (err) => {
+                toast.error("Tx Failed!");
+                console.log(err);
+              },
+            }
+          );
+        } else {
+          toast.error("Something went wrong");
+        }*/
+    console.log("Task Sheet Details", selectedTaskID, description);
+    toast.success("任務單描述已更新！");
+    setTaskSheetDescription("");
+  };
+  //打開發任務者編輯已發布任務的Modal
   const handleModifyTask = (task: Task) => {
     setSelectedTask(task);
     onOpenModal3();
     console.log(task);
   };
+  //增加獎池資金 | add_task_fund<T>;
+  const handleAddTaskFund = (selectedTaskID: string, fund: number) => {
+    /* if (!account.address) return;
+        const txb = new TransactionBlock();
+        console.log(selectedTask);
+        txb.moveCall({
+          target: `${PACKAGE_ID}::public_task::add_task_fund`,
+          arguments: [
+            txb.object(
+              selectedTaskId
+            ),
+            txb.pure(SUI_CLOCK_OBJECT_ID),
+            txb.pure(fund),
+          ],
+          typeArguments: ["0x2::sui::SUI"],
+        });
 
-  const handleSaveTaskDetails = () => {
+        txb.setSender(account.address);
+        const dryrunRes = await client.dryRunTransactionBlock({
+          transactionBlock: await txb.build({ client: client }),
+        });
+        console.log(dryrunRes);
+
+        if (dryrunRes.effects.status.status === "success") {
+          signAndExecuteTransactionBlock(
+            {
+              transactionBlock: txb,
+              options: {
+                showEffects: true,
+              },
+            },
+            {
+              onSuccess: async (res) => {
+                try {
+                  const digest = await txb.getDigest({ client: client });
+                  toast.success(`Transaction Sent, ${digest}`);
+                  console.log(`Transaction Digest`, digest);
+                } catch (digestError) {
+                  if (digestError instanceof Error) {
+                    toast.error(
+                      `Transaction sent, but failed to get digest: ${digestError.message}`
+                    );
+                  } else {
+                    toast.error(
+                      "Transaction sent, but failed to get digest due to an unknown error."
+                    );
+                  }
+                }
+                refetch();
+                fetchData();
+              },
+              onError: (err) => {
+                toast.error("Tx Failed!");
+                console.log(err);
+              },
+            }
+          );
+        } else {
+          toast.error("Something went wrong");
+        }*/
     if (selectedTask) {
-      // const updatedTasks = publishedTasks.map((task) =>
-      //   task.id === selectedTask.id ? selectedTask : task
-      // );
-      // setPublishedTasks(updatedTasks);
+      toast.success(`${selectedTaskID} ${"任務基金已增加"} ${fund} SUI`);
       setSelectedTask(null);
-      onOpenChangeModal3();
-      toast.success("任務詳情已更新!");
     }
   };
+  //取出獎池資金 | retrieve_task_fund<T>
+  const handleTakeTaskFund = (selectedTaskID: string, fund: number) => {
+    /* if (!account.address) return;
+        const txb = new TransactionBlock();
+        console.log(selectedTask);
+        txb.moveCall({
+          target: `${PACKAGE_ID}::public_task::retrieve_task_fund`,
+          arguments: [
+            txb.object(
+              selectedTaskId
+            ),
+            txb.pure(SUI_CLOCK_OBJECT_ID),
+            txb.pure(fund),
+          ],
+          typeArguments: ["0x2::sui::SUI"],
+        });
 
+        txb.setSender(account.address);
+        const dryrunRes = await client.dryRunTransactionBlock({
+          transactionBlock: await txb.build({ client: client }),
+        });
+        console.log(dryrunRes);
+
+        if (dryrunRes.effects.status.status === "success") {
+          signAndExecuteTransactionBlock(
+            {
+              transactionBlock: txb,
+              options: {
+                showEffects: true,
+              },
+            },
+            {
+              onSuccess: async (res) => {
+                try {
+                  const digest = await txb.getDigest({ client: client });
+                  toast.success(`Transaction Sent, ${digest}`);
+                  console.log(`Transaction Digest`, digest);
+                } catch (digestError) {
+                  if (digestError instanceof Error) {
+                    toast.error(
+                      `Transaction sent, but failed to get digest: ${digestError.message}`
+                    );
+                  } else {
+                    toast.error(
+                      "Transaction sent, but failed to get digest due to an unknown error."
+                    );
+                  }
+                }
+                refetch();
+                fetchData();
+              },
+              onError: (err) => {
+                toast.error("Tx Failed!");
+                console.log(err);
+              },
+            }
+          );
+        } else {
+          toast.error("Something went wrong");
+        }*/
+    if (selectedTask) {
+      toast.success(`${selectedTaskID} ${"任務基金已提取"} ${fund} SUI`);
+      setSelectedTask(null);
+    }
+  };
+  //更新任務描述 | update_task_description<T>
+  const handleTaskDescription = (
+    selectedTaskID: string,
+    description: string
+  ) => {
+    /* if (!account.address) return;
+        const txb = new TransactionBlock();
+        console.log(selectedTask);
+        txb.moveCall({
+          target: `${PACKAGE_ID}::public_task::update_task_description`,
+          arguments: [
+            txb.object(
+              selectedTaskId
+            ),
+            txb.pure(SUI_CLOCK_OBJECT_ID),
+            txb.pure(description),
+          ],
+          typeArguments: ["0x2::sui::SUI"],
+        });
+
+        txb.setSender(account.address);
+        const dryrunRes = await client.dryRunTransactionBlock({
+          transactionBlock: await txb.build({ client: client }),
+        });
+        console.log(dryrunRes);
+
+        if (dryrunRes.effects.status.status === "success") {
+          signAndExecuteTransactionBlock(
+            {
+              transactionBlock: txb,
+              options: {
+                showEffects: true,
+              },
+            },
+            {
+              onSuccess: async (res) => {
+                try {
+                  const digest = await txb.getDigest({ client: client });
+                  toast.success(`Transaction Sent, ${digest}`);
+                  console.log(`Transaction Digest`, digest);
+                } catch (digestError) {
+                  if (digestError instanceof Error) {
+                    toast.error(
+                      `Transaction sent, but failed to get digest: ${digestError.message}`
+                    );
+                  } else {
+                    toast.error(
+                      "Transaction sent, but failed to get digest due to an unknown error."
+                    );
+                  }
+                }
+                refetch();
+                fetchData();
+              },
+              onError: (err) => {
+                toast.error("Tx Failed!");
+                console.log(err);
+              },
+            }
+          );
+        } else {
+          toast.error("Something went wrong");
+        }*/
+    console.log("Task Sheet Details", selectedTaskID, description);
+    toast.success("任務描述已更新！");
+  };
+  //管理已提交任務打開Modal
   const handleSubmittedTask = (task: Task) => {
     setSelectedTask(task);
     console.log("Submitted Task", task);
     onOpenModal2();
+  };
+  //紀錄選取了哪些任務單
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelected([...selected, e.target.value]);
+    } else {
+      setSelected(selected.filter((item) => item !== e.target.value));
+    }
+  };
+  //認證通過並發送獎勵 | approve_and_send_reward<T>
+  const handleSubmit = (annotation: string, selectedTaskId: string) => {
+    /* if (!account.address) return;
+        const txb = new TransactionBlock();
+        console.log(selectedTask);
+        txb.moveCall({
+          target: `${PACKAGE_ID}::public_task::approve_and_send_reward`,
+          arguments: [
+            txb.object(
+              selectedTaskId
+            ),
+            txb.pure(SUI_CLOCK_OBJECT_ID),
+            txb.pure(annotation),
+          ],
+          typeArguments: ["0x2::sui::SUI"],
+        });
+
+        txb.setSender(account.address);
+        const dryrunRes = await client.dryRunTransactionBlock({
+          transactionBlock: await txb.build({ client: client }),
+        });
+        console.log(dryrunRes);
+
+        if (dryrunRes.effects.status.status === "success") {
+          signAndExecuteTransactionBlock(
+            {
+              transactionBlock: txb,
+              options: {
+                showEffects: true,
+              },
+            },
+            {
+              onSuccess: async (res) => {
+                try {
+                  const digest = await txb.getDigest({ client: client });
+                  toast.success(`Transaction Sent, ${digest}`);
+                  console.log(`Transaction Digest`, digest);
+                } catch (digestError) {
+                  if (digestError instanceof Error) {
+                    toast.error(
+                      `Transaction sent, but failed to get digest: ${digestError.message}`
+                    );
+                  } else {
+                    toast.error(
+                      "Transaction sent, but failed to get digest due to an unknown error."
+                    );
+                  }
+                }
+                refetch();
+                fetchData();
+              },
+              onError: (err) => {
+                toast.error("Tx Failed!");
+                console.log(err);
+              },
+            }
+          );
+        } else {
+          toast.error("Something went wrong");
+        }*/
+    console.log(selectedTaskId, selected, annotation);
+    toast.success(`任務單${selected}已審核通過`);
+    toast.success(`審批註釋: ${annotation}`);
+    setSelected([]);
+  };
+  //認證不通過退回任務單 | reject_and_return_task_sheet
+  const handleReject = (annotation: string, selectedTaskId: string) => {
+    /* if (!account.address) return;
+        const txb = new TransactionBlock();
+        console.log(selectedTask);
+        txb.moveCall({
+          target: `${PACKAGE_ID}::public_task::reject_and_return_task_sheet`,
+          arguments: [
+            txb.object(
+              selectedTaskId
+            ),
+            txb.pure(SUI_CLOCK_OBJECT_ID),
+          ],
+          typeArguments: ["0x2::sui::SUI"],
+        });
+
+        txb.setSender(account.address);
+        const dryrunRes = await client.dryRunTransactionBlock({
+          transactionBlock: await txb.build({ client: client }),
+        });
+        console.log(dryrunRes);
+
+        if (dryrunRes.effects.status.status === "success") {
+          signAndExecuteTransactionBlock(
+            {
+              transactionBlock: txb,
+              options: {
+                showEffects: true,
+              },
+            },
+            {
+              onSuccess: async (res) => {
+                try {
+                  const digest = await txb.getDigest({ client: client });
+                  toast.success(`Transaction Sent, ${digest}`);
+                  console.log(`Transaction Digest`, digest);
+                } catch (digestError) {
+                  if (digestError instanceof Error) {
+                    toast.error(
+                      `Transaction sent, but failed to get digest: ${digestError.message}`
+                    );
+                  } else {
+                    toast.error(
+                      "Transaction sent, but failed to get digest due to an unknown error."
+                    );
+                  }
+                }
+                refetch();
+                fetchData();
+              },
+              onError: (err) => {
+                toast.error("Tx Failed!");
+                console.log(err);
+              },
+            }
+          );
+        } else {
+          toast.error("Something went wrong");
+        }*/
+    console.log(selectedTaskId, selected, annotation);
+    toast.warning(`任務單${selected}已駁回`);
+    toast.warning(`審批註釋: ${annotation}`);
+    setSelected([]);
   };
 
   return (
@@ -556,10 +1004,7 @@ const BasicContainer = () => {
       </div>
       <Divider className="my-4"></Divider>
       <div className="mx-auto p-4">
-        <Button
-          onPress={onOpenModal1}
-          onClick={(handlePublishTaskChain) => setSelectedTask(null)}
-        >
+        <Button onPress={onOpenModal1} onClick={() => setSelectedTask(null)}>
           Publish Task
         </Button>
       </div>
@@ -580,15 +1025,6 @@ const BasicContainer = () => {
                     isFooterBlurred
                     className="h-[600px] w-[300px] "
                   >
-                    {/* <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
-              <Chip
-                color="primary"
-                className=" text-white/80 uppercase font-bold"
-              >
-                {truncateAddress(task.id)}
-              </Chip>
-            </CardHeader> */}
-
                     <CardBody className="relative p-4">
                       <Image
                         removeWrapper
@@ -675,14 +1111,6 @@ const BasicContainer = () => {
                     isFooterBlurred
                     className="h-[600px] w-[300px] "
                   >
-                    {/* <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
-                      <Chip
-                        color="primary"
-                        className=" text-white/80 uppercase font-bold"
-                      >
-                        {truncateAddress(task.id)}
-                      </Chip>
-                    </CardHeader> */}
                     <CardBody className="relative p-4">
                       <Image
                         removeWrapper
@@ -768,15 +1196,6 @@ const BasicContainer = () => {
                     isFooterBlurred
                     className="h-[600px] w-[300px] "
                   >
-                    {/* <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
-                      <Chip
-                        color="primary"
-                        className=" text-white/80 uppercase font-bold"
-                      >
-                        {truncateAddress(task.id)}
-                      </Chip>
-                    </CardHeader> */}
-
                     <CardBody className="relative p-4">
                       <Image
                         removeWrapper
@@ -869,15 +1288,6 @@ const BasicContainer = () => {
                     isFooterBlurred
                     className="h-[600px] w-[300px] "
                   >
-                    {/* <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
-                      <Chip
-                        color="primary"
-                        className=" text-white/80 uppercase font-bold"
-                      >
-                        {truncateAddress(task.id)}
-                      </Chip>
-                    </CardHeader> */}
-
                     <CardBody className="relative p-4">
                       <Image
                         removeWrapper
@@ -946,7 +1356,6 @@ const BasicContainer = () => {
           </Tabs>
         </div>
       </div>
-
       {/* Modal for publishing task */}
       <Modal
         isOpen={isOpenModal1}
@@ -956,72 +1365,34 @@ const BasicContainer = () => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader>
-                {selectedTask ? "Manage Task" : "Mint a Task"}
-              </ModalHeader>
+              <ModalHeader>Mint a Task</ModalHeader>
               <ModalBody>
                 <Input
                   label="Reward Type"
-                  value={
-                    selectedTask
-                      ? selectedTask.reward_type
-                      : newTask.reward_type
-                  }
+                  value={newTask.reward_type}
                   onChange={(e) =>
-                    selectedTask
-                      ? setSelectedTask({
-                          ...selectedTask,
-                          reward_type: e.target.value,
-                        })
-                      : setNewTask({ ...newTask, reward_type: e.target.value })
+                    setNewTask({ ...newTask, reward_type: e.target.value })
                   }
                 />
                 <Input
                   label="Task Name"
                   value={selectedTask ? selectedTask.name : newTask.name}
                   onChange={(e) =>
-                    selectedTask
-                      ? setSelectedTask({
-                          ...selectedTask,
-                          name: e.target.value,
-                        })
-                      : setNewTask({ ...newTask, name: e.target.value })
+                    setNewTask({ ...newTask, name: e.target.value })
                   }
                 />
                 <Input
                   label="Description"
-                  value={
-                    selectedTask
-                      ? selectedTask.description[0].description
-                      : newTask.description
-                  }
+                  value={newTask.description}
                   onChange={(e) =>
-                    selectedTask
-                      ? setSelectedTask({
-                          ...selectedTask,
-                          description: [
-                            {
-                              description: e.target.value,
-                              format: 0, // 假設格式是 plaintext
-                              publish_time: Date.now(), // 假設發布時間是當前時間
-                            },
-                          ],
-                        })
-                      : setNewTask({ ...newTask, description: e.target.value })
+                    setNewTask({ ...newTask, description: e.target.value })
                   }
                 />
                 <Input
                   label="Task Image URL"
-                  value={
-                    selectedTask ? selectedTask.image_url : newTask.image_url
-                  }
+                  value={newTask.image_url}
                   onChange={(e) =>
-                    selectedTask
-                      ? setSelectedTask({
-                          ...selectedTask,
-                          image_url: e.target.value,
-                        })
-                      : setNewTask({ ...newTask, image_url: e.target.value })
+                    setNewTask({ ...newTask, image_url: e.target.value })
                   }
                 />
                 <Input
@@ -1091,18 +1462,17 @@ const BasicContainer = () => {
                   color="primary"
                   onPress={onClose}
                   onClick={() => {
-                    selectedTask
-                      ? handleSaveTaskDetails()
-                      : handlePublishTaskChain();
+                    handlePublishTaskChain();
                   }}
                 >
-                  {selectedTask ? "Save Changes" : "Publish Task"}
+                  Publish Task
                 </Button>
               </ModalFooter>
             </>
           )}
         </ModalContent>
       </Modal>
+      {/* Modal for 通過或駁回已提交任務*/}
       <Modal
         isOpen={isOpenModal2}
         onOpenChange={onOpenChangeModal2}
@@ -1117,27 +1487,64 @@ const BasicContainer = () => {
                 {selectedTask ? selectedTask.name : ""}已完成任務清單
               </ModalHeader>
               <ModalBody>
-                <CheckboxGroup
-                  label="Select submitted tasks"
-                  defaultValue={["tasksheet 1"]}
-                >
-                  <Checkbox value="tasksheet 1">tasksheet 1</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                  <Checkbox value="tasksheet 2">tasksheet 2</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                  <Checkbox value="tasksheet 3">tasksheet 3</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                  <Checkbox value="tasksheet 4">tasksheet 4</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                  <Checkbox value="tasksheet 5">tasksheet 5</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                </CheckboxGroup>
+                {/* //TODO: 這裡要抓到selectedTask中的任務單們 */}
+                {selectedTask?.task_sheets?.map((taskSheet, index) => (
+                  <Checkbox
+                    key={index}
+                    value={taskSheet}
+                    onChange={handleChange}
+                  >
+                    {taskSheet}
+                  </Checkbox>
+                ))}
+                <Checkbox value="tasksheet 1" onChange={handleChange}>
+                  tasksheet 1
+                </Checkbox>
+                <Checkbox value="tasksheet 2" onChange={handleChange}>
+                  tasksheet 2
+                </Checkbox>
+                <Checkbox value="tasksheet 3" onChange={handleChange}>
+                  tasksheet 3
+                </Checkbox>
+                <Checkbox value="tasksheet 4" onChange={handleChange}>
+                  tasksheet 4
+                </Checkbox>
+                <Checkbox value="tasksheet 5" onChange={handleChange}>
+                  tasksheet 5
+                </Checkbox>
+                <Textarea
+                  maxRows={3}
+                  label="Annotation"
+                  placeholder="Enter your annotation"
+                  onChange={(e) => {
+                    setAnnotation(e.target.value);
+                  }}
+                />
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="flat" onPress={onClose}>
+                <Button
+                  color="danger"
+                  variant="flat"
+                  onPress={onClose}
+                  onClick={() =>
+                    handleReject(
+                      annotation,
+                      selectedTask ? selectedTask.id : ""
+                    )
+                  }
+                >
                   駁回
                 </Button>
-                <Button color="primary" onPress={onClose}>
+                <Button
+                  color="primary"
+                  onPress={onClose}
+                  onClick={() =>
+                    handleSubmit(
+                      annotation,
+                      selectedTask ? selectedTask.id : ""
+                    )
+                  }
+                >
                   通過
                 </Button>
               </ModalFooter>
@@ -1145,6 +1552,7 @@ const BasicContainer = () => {
           )}
         </ModalContent>
       </Modal>
+      {/* //modal for 修改任務單內容 & 提取任務基金 & 增加任務基金 */}
       <Modal
         isOpen={isOpenModal3}
         onOpenChange={onOpenChangeModal3}
@@ -1167,29 +1575,57 @@ const BasicContainer = () => {
                         ? selectedTask.description[0].description
                         : ""
                     }`}
+                    onChange={(e) => {
+                      setTaskDescription(e.target.value);
+                    }}
                   />
                 </div>
-                <Button onPress={onClose} onClick={handleSaveTaskDetails}>
+                <Button
+                  onPress={onClose}
+                  onClick={() => {
+                    handleTaskDescription(
+                      selectedTask ? selectedTask.id : "",
+                      taskDescription
+                    );
+                  }}
+                  color="primary"
+                >
                   Save Changes
                 </Button>
                 <p>Take Fund</p>
-                <Input
-                  type="number"
-                  label="Amount"
-                  placeholder={`${selectedTask ? selectedTask.fund : ""}`}
-                  className="max-w-lg"
-                />
-                <Button onClick={handleSaveTaskDetails} onPress={onClose}>
+                setTaskFund(Number(e.target.value));
+                <Button
+                  color="danger"
+                  onClick={() =>
+                    handleTakeTaskFund(
+                      selectedTask ? selectedTask.id : "",
+                      taskFund
+                    )
+                  }
+                  onPress={onClose}
+                >
                   Take Fund
                 </Button>
                 <p>Add Fund</p>
                 <Input
                   type="number"
                   label="Amount"
-                  placeholder={`${selectedTask ? selectedTask.fund : ""}`}
+                  placeholder={`${selectedTask ? selectedTask.fund : 0}`}
                   className="max-w-lg"
+                  onChange={(e) => {
+                    setTaskFund(Number(e.target.value));
+                  }}
                 />
-                <Button onClick={handleSaveTaskDetails} onPress={onClose}>
+                <Button
+                  color="success"
+                  onClick={() => {
+                    handleAddTaskFund(
+                      selectedTask ? selectedTask.id : "",
+                      taskFund
+                    );
+                  }}
+                  onPress={onClose}
+                >
                   Add Fund
                 </Button>
               </ModalBody>
@@ -1197,6 +1633,7 @@ const BasicContainer = () => {
           )}
         </ModalContent>
       </Modal>
+      {/* //Modal for 更新任務單內容 & 提交任務單  */}
       <Modal
         isOpen={isOpenModal4}
         onOpenChange={onOpenChangeModal4}
@@ -1212,12 +1649,36 @@ const BasicContainer = () => {
                     maxRows={3}
                     label="Description"
                     placeholder="Enter your description"
+                    value={taskSheetDescription}
+                    onChange={(e) => {
+                      setTaskSheetDescription(e.target.value);
+                    }}
                   />
                 </div>
-                <Button onClick={handleSendTaskSheet} onPress={onClose}>
-                  Submit Task sheet
-                </Button>
               </ModalBody>
+              <ModalFooter>
+                <Button
+                  color="warning"
+                  onClick={() =>
+                    handleSendTaskSheet(selectedTask ? selectedTask.id : "")
+                  }
+                  onPress={onClose}
+                >
+                  回報任務完成
+                </Button>
+                <Button
+                  color="primary"
+                  onClick={() =>
+                    handleTaskSheetDetails(
+                      selectedTask ? selectedTask.id : "",
+                      taskSheetDescription
+                    )
+                  }
+                  onPress={onClose}
+                >
+                  更新描述
+                </Button>
+              </ModalFooter>
             </>
           )}
         </ModalContent>

@@ -284,7 +284,7 @@ const BasicContainer = () => {
 
     if (acceptedTask) {
       setAcceptedTasks([...acceptedTasks, acceptedTask]);
-      toast.success(`接受任務成功!`);
+      toast.success(`Please Approve Transaction in Wallet`);
     }
     console.log(`Accepted task ${selectedTask.id}`);
     console.log(acceptedTask);

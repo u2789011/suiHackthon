@@ -1,13 +1,7 @@
 import BasicDataField from "../fields/basicDataField";
-import BasicInputField from "../fields/basicInputField";
-import ActionButton from "../buttons/actionButton";
-import {
-  SetStateAction,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+// import BasicInputField from "../fields/basicInputField";
+// import ActionButton from "../buttons/actionButton";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   useAccounts,
   useSignAndExecuteTransactionBlock,
@@ -80,6 +74,7 @@ const BasicContainer = () => {
   });
   const { data: allCoins } = useSuiClientQuery("getAllCoins", {
     owner: walletAddress ?? "",
+
   })
   // Get TaskSheets Owned By User
   const { data: userTaskSheets } = useSuiClientQuery("getOwnedObjects", {
@@ -127,6 +122,7 @@ const BasicContainer = () => {
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
   const [publishedTasks, setPublishedTasks] = useState<Task[]>([]);
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
 
   // Get ObjectIDS in TaskManager 
   async function fetchTaskList() {
@@ -214,7 +210,7 @@ const BasicContainer = () => {
     const apiData = await fetchPublishedList();
     if (apiData) {
       const transformedData = transformData(apiData);
-      setPublishedTasks(transformedData);
+      setAllTasks(transformedData);
     }
   };
 
@@ -276,7 +272,18 @@ const BasicContainer = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleAcceptTask = async (selectedTask: Task) => {
+    // Logic for test accepting task
+    const acceptedTask = allTasks.find((task) => task.id === selectedTask.id);
+
+    if (acceptedTask) {
+      setAcceptedTasks([...acceptedTasks, acceptedTask]);
+      toast.success(`接受任務成功!`);
+    }
+    console.log(`Accepted task ${selectedTask.id}`);
+    console.log(acceptedTask);
+
     if (!account.address) return;
+
     const txb = new TransactionBlock();
     console.log(selectedTask);
     txb.moveCall({
@@ -328,22 +335,9 @@ const BasicContainer = () => {
     } else {
       toast.error("Something went wrong");
     }
-    // Logic for accepting task
-    const acceptedTask = publishedTasks.find(
-      (task) => task.id === selectedTask.id
-    );
 
-    // FIXME: This should be set by on chain response
-    if (acceptedTask) {
-      setAcceptedTasks([...acceptedTasks, acceptedTask]);
-      // toast.success(`接受任務成功!`);
-    }
-    console.log(`Accepted task ${selectedTask.id}`);
-    console.log(acceptedTask);
   };
 
-
-  // Publish Tasks on Sui Network
   const handlePublishTaskChain = async () => {
     if (!account.address) return;
   
@@ -541,9 +535,8 @@ const BasicContainer = () => {
             className="min-h-1 mx-auto p-4"
           >
             <Tab key="allTasks" title="所有任務">
-              {" "}
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
-                {publishedTasks.map((task) => (
+                {allTasks.map((task) => (
                   <Card
                     key={task.id}
                     isFooterBlurred
@@ -601,10 +594,12 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
+                              <strong>獎勵金額:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -631,6 +626,11 @@ const BasicContainer = () => {
             </Tab>
             <Tab key="acceptedTasks" title="已接受任務">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+                {!acceptedTasks.length && (
+                  <div className="flex justify-center items-center h-[300px]">
+                    <p className="text-white/80">No accepted tasks</p>
+                  </div>
+                )}
                 {acceptedTasks.map((task) => (
                   <Card
                     key={task.id}
@@ -688,10 +688,12 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
+                              <strong>獎勵金額:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -717,6 +719,11 @@ const BasicContainer = () => {
             </Tab>
             <Tab key="publishedTasks" title="已發布任務">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+                {!publishedTasks.length && (
+                  <div className="flex justify-center items-center h-[300px]">
+                    <p className="text-white/80">No published tasks</p>
+                  </div>
+                )}
                 {publishedTasks.map((task) => (
                   <Card
                     key={task.id}
@@ -775,10 +782,12 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
+                              <strong>獎勵金額:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -811,6 +820,11 @@ const BasicContainer = () => {
             </Tab>
             <Tab key="completedTasks" title="已完成任務">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+                {!completedTasks.length && (
+                  <div className="flex justify-center items-center h-[300px]">
+                    <p className="text-white/80">No completed tasks</p>
+                  </div>
+                )}
                 {completedTasks.map((task) => (
                   <Card
                     key={task.id}
@@ -869,10 +883,12 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {parseFloat(task.fund) / FLOAT_SCALING}
+                              <strong>資金:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount / FLOAT_SCALING}
+                              <strong>獎勵金額:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal

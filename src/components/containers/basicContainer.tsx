@@ -1,13 +1,7 @@
 import BasicDataField from "../fields/basicDataField";
-import BasicInputField from "../fields/basicInputField";
-import ActionButton from "../buttons/actionButton";
-import {
-  SetStateAction,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+// import BasicInputField from "../fields/basicInputField";
+// import ActionButton from "../buttons/actionButton";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   useAccounts,
   useSignAndExecuteTransactionBlock,
@@ -95,7 +89,7 @@ const BasicContainer = () => {
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
     owner: walletAddress ?? "",
   });
-  const [selectedToken, setSelectedToken] = useState<string>("SUI");
+  // const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const client = useSuiClient();
   const [account] = useAccounts();
   const { mutate: signAndExecuteTransactionBlock } =
@@ -116,6 +110,7 @@ const BasicContainer = () => {
     "0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
   const TASK_MANAGER_ID =
     "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
+  const ADDRESS = walletAddress;
 
   const [newTask, setNewTask] = useState({
     reward_type: "",
@@ -134,6 +129,7 @@ const BasicContainer = () => {
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
   const [publishedTasks, setPublishedTasks] = useState<Task[]>([]);
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
 
   async function fetchTaskList() {
     try {
@@ -218,7 +214,7 @@ const BasicContainer = () => {
     const apiData = await fetchPublishedList();
     if (apiData) {
       const transformedData = transformData(apiData);
-      setPublishedTasks(transformedData);
+      setAllTasks(transformedData);
     }
   }
 
@@ -517,17 +513,12 @@ const BasicContainer = () => {
       </div>
       <Divider className="my-4" />
       <h1 className="my-4">任務列表</h1>
-      <div className="mx-auto p-4">
+      <div className="">
         <div className="flex w-full flex-col">
-          <Tabs
-            aria-label="Options"
-            variant="bordered"
-            className="w-[1200px] min-h-1"
-          >
+          <Tabs aria-label="Options" variant="bordered" className="">
             <Tab key="allTasks" title="所有任務">
-              {" "}
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
-                {publishedTasks.map((task) => (
+                {allTasks.map((task) => (
                   <Card
                     key={task.id}
                     isFooterBlurred
@@ -614,7 +605,12 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="acceptedTasks" title="已接受任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+              <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+                {!acceptedTasks.length && (
+                  <div className="flex justify-center items-center w-[1200px] h-[300px]">
+                    <p className="text-white/80">No accepted tasks</p>
+                  </div>
+                )}
                 {acceptedTasks.map((task) => (
                   <Card
                     key={task.id}
@@ -701,7 +697,12 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="publishedTasks" title="已發布任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+              <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+                {!publishedTasks.length && (
+                  <div className="flex justify-center items-center w-[1200px] h-[300px]">
+                    <p className="text-white/80">No published tasks</p>
+                  </div>
+                )}
                 {publishedTasks.map((task) => (
                   <Card
                     key={task.id}
@@ -795,7 +796,12 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="completedTasks" title="已完成任務">
-              <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
+              <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+                {!completedTasks.length && (
+                  <div className="flex justify-center items-center w-[1200px] h-[300px]">
+                    <p className="text-white/80">No completed tasks</p>
+                  </div>
+                )}
                 {completedTasks.map((task) => (
                   <Card
                     key={task.id}

@@ -89,7 +89,13 @@ const BasicContainer = () => {
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
     owner: walletAddress ?? "",
   });
-  // const [selectedToken, setSelectedToken] = useState<string>("SUI");
+  const { data: allCoins } = useSuiClientQuery("getAllCoins", {
+    owner: walletAddress ?? "",
+  });
+  const { data: ownedObjects } = useSuiClientQuery("getOwnedObjects", {
+    owner: walletAddress ?? "",
+  });
+  const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const client = useSuiClient();
   const [account] = useAccounts();
   const { mutate: signAndExecuteTransactionBlock } =
@@ -110,7 +116,7 @@ const BasicContainer = () => {
     "0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
   const TASK_MANAGER_ID =
     "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
-  const ADDRESS = walletAddress;
+  const FLOAT_SCALING = 1000000000;
 
   const [newTask, setNewTask] = useState({
     reward_type: "",
@@ -168,7 +174,8 @@ const BasicContainer = () => {
         multiGetObjectsParams
       );
 
-      //console.log(objectsResponse); FIXME: Test Use Only
+      console.log(allCoins); //FIXME: Test Use Only
+      console.log(ownedObjects); //FIXME: Test Use Only
       return objectsResponse;
     } catch (error) {
       console.error("Error fetching multiple objects:", error);
@@ -284,7 +291,7 @@ const BasicContainer = () => {
 
     if (acceptedTask) {
       setAcceptedTasks([...acceptedTasks, acceptedTask]);
-      toast.success(`接受任務成功!`);
+      // toast.success(`接受任務成功!`);
     }
     console.log(`Accepted task ${selectedTask.id}`);
     console.log(acceptedTask);
@@ -306,7 +313,7 @@ const BasicContainer = () => {
         txb.pure(true),
         txb.pure.address(newTask.moderator),
         txb.object(newTask.fund),
-        txb.pure(newTask.reward_amount),
+        txb.pure(parseFloat(newTask.reward_amount) * FLOAT_SCALING),
         txb.pure.string(newTask.poc_img_url),
         txb.pure(TASK_MANAGER_ID),
       ],
@@ -483,23 +490,6 @@ const BasicContainer = () => {
           spaceWithUnit
           unit="SUI"
           minFractionDigits={0}
-          /*/>
-        <BasicInputField
-          label="Input"
-          inputValue="0.0000"
-          setInputValue={(value) => console.log(value)}
-          tokenInfo={["SUI", "BUCK", "USDC", "USDT"]}
-          canSelectToken={true}
-          selectedToken={selectedToken}
-          setSelectedToken={setSelectedToken}
-          maxValue={0.0}
-        />
-        <ActionButton
-          label="Flash Mint Fortune Bag"
-          isConnected={true}
-          isLoading={false}
-          onClick={handleMint}
-          buttonClass="w-70" */
         />
       </div>
       <Divider className="my-4"></Divider>
@@ -513,9 +503,13 @@ const BasicContainer = () => {
       </div>
       <Divider className="my-4" />
       <h1 className="my-4">任務列表</h1>
-      <div className="">
+      <div className="flex justify-center p-4">
         <div className="flex w-full flex-col">
-          <Tabs aria-label="Options" variant="bordered" className="">
+          <Tabs
+            aria-label="Options"
+            variant="bordered"
+            className="min-h-1 mx-auto p-4"
+          >
             <Tab key="allTasks" title="所有任務">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {allTasks.map((task) => (
@@ -576,10 +570,12 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {task.fund}
+                              <strong>資金:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount}
+                              <strong>獎勵金額:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -625,7 +621,6 @@ const BasicContainer = () => {
                         {truncateAddress(task.id)}
                       </Chip>
                     </CardHeader> */}
-
                     <CardBody className="relative p-4">
                       <Image
                         removeWrapper
@@ -669,10 +664,12 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {task.fund}
+                              <strong>資金:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount}
+                              <strong>獎勵金額:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -761,10 +758,12 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {task.fund}
+                              <strong>資金:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount}
+                              <strong>獎勵金額:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -860,10 +859,12 @@ const BasicContainer = () => {
                               {task.is_active ? "Active" : "Inactive"}
                             </p>
                             <p>
-                              <strong>資金:</strong> {task.fund}
+                              <strong>資金:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
                             </p>
                             <p>
-                              <strong>獎勵金額:</strong> {task.reward_amount}
+                              <strong>獎勵金額:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
                             </p>
                             <Link
                               isExternal
@@ -894,7 +895,7 @@ const BasicContainer = () => {
           {(onClose) => (
             <>
               <ModalHeader>
-                {selectedTask ? "Modify Task Desciption" : "Mint a Task"}
+                {selectedTask ? "Manage Task" : "Mint a Task"}
               </ModalHeader>
               <ModalBody>
                 <Input

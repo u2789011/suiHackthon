@@ -317,7 +317,22 @@ const BasicContainer = () => {
           onSuccess: async (res) => {
             try {
               const digest = await txb.getDigest({ client: client });
-              toast.success(`Transaction Sent, ${digest}`);
+              const explorerUrl = `https://suiscan.xyz/devnet/tx/${digest}`; //FIXME: devnet only
+              toast.success(
+                <span>
+                  Transaction Sent
+                  <div>
+                    <a 
+                      href={explorerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{color: 'lightblue', textDecoration: 'underline'}}
+                      >
+                      Check Transaction on Explore
+                    </a>
+                  </div>
+                </span>
+              );
               console.log(`Transaction Digest`, digest);
             } catch (digestError) {
               if (digestError instanceof Error) {

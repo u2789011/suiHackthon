@@ -41,34 +41,9 @@ import {
   CheckboxGroup,
   Checkbox,
   Textarea,
+  user,
 } from "@nextui-org/react";
 import { log } from "console";
-
-type SuiObjectResponse = any;
-
-type TaskDescription = {
-  description: string;
-  format: number; // 0: Plaintext, 1: Markdown
-  publish_time: number; // Unix timestamp in milliseconds
-};
-
-type Task = {
-  reward_type: string;
-  id: string;
-  version: number;
-  name: string;
-  description: TaskDescription[];
-  image_url: string;
-  publish_date: string; // Unix timestamp in milliseconds
-  creator: string; // address
-  moderator: string; // address
-  area: string;
-  is_active: boolean; // true: active, false: inactive
-  fund: string;
-  reward_amount: number;
-  task_sheets: any[]; // assuming task_sheets is an array of objects
-  poc_img_url: string;
-};
 
 const BasicContainer = () => {
   const {
@@ -91,6 +66,14 @@ const BasicContainer = () => {
     onOpen: onOpenModal4,
     onOpenChange: onOpenChangeModal4,
   } = useDisclosure();
+
+    // version 20240527
+  const PACKAGE_ID =
+    "0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
+  const TASK_MANAGER_ID =
+    "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
+  const FLOAT_SCALING = 1000000000;
+  
   const { walletAddress, suiName } = useContext(AppContext);
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
     owner: walletAddress ?? "",
@@ -98,9 +81,18 @@ const BasicContainer = () => {
   const { data: allCoins } = useSuiClientQuery("getAllCoins", {
     owner: walletAddress ?? "",
   })
-  const { data: ownedObjects } = useSuiClientQuery("getOwnedObjects", {
+  // Get TaskSheets Owned By User
+  const { data: userTaskSheets } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
+    filter: {
+      StructType: `${PACKAGE_ID}::public_task::TaskSheet`
+    },
+    options: {
+      showType: true,
+      showContent: true,
+    }
   })
+
   const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const client = useSuiClient();
   const [account] = useAccounts();
@@ -117,12 +109,6 @@ const BasicContainer = () => {
     }
   }, [suiBalance]);
 
-  // version 20240527
-  const PACKAGE_ID =
-    "0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
-  const TASK_MANAGER_ID =
-    "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
-  const FLOAT_SCALING = 1000000000;
 
   const [newTask, setNewTask] = useState({
     reward_type: "",
@@ -142,6 +128,7 @@ const BasicContainer = () => {
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
   const [publishedTasks, setPublishedTasks] = useState<Task[]>([]);
 
+  // Get ObjectIDS in TaskManager 
   async function fetchTaskList() {
     try {
       const taskManagerObject = await client.getObject({
@@ -156,7 +143,6 @@ const BasicContainer = () => {
       const publishedTaskIdsArr =
         jsonObject.data.content.fields.published_tasks;
 
-      // console.log(publishedTaskIdsArr); FIXME: Test Use Only
       return publishedTaskIdsArr;
     } catch (error) {
       console.error("Error fetching or converting task manager object:", error);
@@ -164,6 +150,7 @@ const BasicContainer = () => {
     }
   }
 
+  // Get objects data for eash intem in `publishedTaskIdsArr`
   async function fetchPublishedList() {
     try {
       const publishedTaskIdsArr = await fetchTaskList();
@@ -179,8 +166,8 @@ const BasicContainer = () => {
         multiGetObjectsParams
       );
 
-      console.log(allCoins); //FIXME: Test Use Only
-      console.log(ownedObjects); //FIXME: Test Use Only
+      //console.log(userTaskSheets); //FIXME: Test Use Only
+      //console.log(allCoins); //FIXME: Test Use Only
       return objectsResponse;
     } catch (error) {
       console.error("Error fetching multiple objects:", error);
@@ -188,6 +175,7 @@ const BasicContainer = () => {
     }
   }
 
+  // Apply Onchain object Data to ts Type structure, and set as PublishedTasks
   function transformData(apiData: SuiObjectResponse[]): Task[] {
     if (!apiData) return [];
 
@@ -209,7 +197,7 @@ const BasicContainer = () => {
           },
         ],
         image_url: fields.image_url,
-        publish_date: fields.publish_date.toString(), // 轉換為 string 類型
+        publish_date: fields.publish_date.toString(),
         creator: fields.creator,
         moderator: fields.moderator,
         area: fields.area,
@@ -228,12 +216,61 @@ const BasicContainer = () => {
       const transformedData = transformData(apiData);
       setPublishedTasks(transformedData);
     }
-  }
+  };
+
+  // Set Accepted Tasks Data From Task Sheets Owned by User
+  const handleMatchAndSetAcceptedTasks = (
+    userTaskSheets: TaskSheet[],
+    publishedTasks: Task[]
+  ) => {
+    const matchedTasks: Task[] = [];
+    
+    //console.log(userTaskSheets); //FIXME: for test only
+    userTaskSheets.forEach((taskSheet) => {
+      if (taskSheet.data && taskSheet.data.fields){
+        const mainTaskId = taskSheet.data.fields.main_task_id;
+        const matchedTask = publishedTasks.find(task => task.id === mainTaskId);
+        if (matchedTask) {
+          matchedTasks.push(matchedTask);
+        }
+      } else {
+        console.warn("Task sheet data or fields is undefined:", taskSheet)
+      }
+    });
+
+    setAcceptedTasks(matchedTasks)
+  };
+
+  async function fetchAcceptedTask() {
+    if (userTaskSheets && userTaskSheets.data) {
+      const jsonString = JSON.stringify(userTaskSheets, null, 2);
+      const jsonObject = JSON.parse(jsonString);
+      console.log("jsonString:", jsonString); //FIXME: test use only
+
+      //console.log('jsonObject maintask_id', jsonObject.data[0].content.fields.main_task_id);
+      // Turn jsonObject into taskSheets (an array of TaskSheet)
+      if (Array.isArray(jsonObject.data)) {
+        const taskSheets: TaskSheet[] = jsonObject.data.map((item: any) => {
+          if (item && item.data && item.data.content && item.data.content.fields) {
+            return { data: { fields: item.data.content.fields } };
+          } else {
+            console.warn("Item or fields is undefined:", item);
+            return null;
+          }
+        }).filter((item: TaskSheet | null) => item !== null) as TaskSheet[];
+
+
+      console.log("taskSheets:", taskSheets); //FIXME: test use only
+      handleMatchAndSetAcceptedTasks(taskSheets, publishedTasks);
+    }
+  };
+};
 
   useEffect(() => {
     fetchData();
+    fetchAcceptedTask();
   }, []);
-
+  
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleAcceptTask = async (selectedTask: Task) => {
@@ -294,6 +331,7 @@ const BasicContainer = () => {
       (task) => task.id === selectedTask.id
     );
 
+    // FIXME: This should be set by on chain response
     if (acceptedTask) {
       setAcceptedTasks([...acceptedTasks, acceptedTask]);
       // toast.success(`接受任務成功!`);
@@ -303,11 +341,12 @@ const BasicContainer = () => {
   };
 
 
-
+  // Publish Tasks on Sui Network
   const handlePublishTaskChain = async () => {
     if (!account.address) return;
+  
     const txb = new TransactionBlock();
-
+  
     txb.moveCall({
       target: `${PACKAGE_ID}::public_task::publish_task`,
       arguments: [
@@ -326,128 +365,110 @@ const BasicContainer = () => {
       ],
       typeArguments: [newTask.reward_type],
     });
-
+  
     txb.setSender(account.address);
-
+  
     const dryrunRes = await client.dryRunTransactionBlock({
       transactionBlock: await txb.build({ client: client }),
     });
+  
     console.log(dryrunRes);
-
-    if (dryrunRes.effects.status.status === "success") {
-      let createdObject = "";
-
-      await signAndExecuteTransactionBlock(
-        {
-          transactionBlock: txb,
-          options: {
-            showEffects: true,
-          },
-        },
-        {
-          onSuccess: async (res) => {
-            try {
-              const created = res.effects?.created;
-              if (created === undefined || created.length === 0) {
-                throw new Error("No object created.");
-              }
-              for (let i = 0; i < created.length; i++) {
-                const potentialObject = created[i].reference?.objectId;
-                if (
-                  created[i].owner !== account.address &&
-                  potentialObject !== undefined &&
-                  typeof potentialObject === "string"
-                ) {
-                  createdObject = potentialObject;
-                  console.log(createdObject);
-                  break;
-                }
-              }
-              const potentialObject =
-                res.effects?.created?.[0]?.reference?.objectId;
-              if (
-                potentialObject !== undefined &&
-                typeof potentialObject === "string"
-              ) {
-                createdObject = potentialObject;
-                console.log(createdObject);
-              } else {
-                throw new Error("Created object ID is not a string.");
-              }
-
-              const digest = await txb.getDigest({ client: client });
-              toast.success(`Transaction Sent, ${digest}`);
-              console.log(`Transaction Digest`, digest);
-
-              // Create New Task Object
-              const newTaskObject = {
-                reward_type: newTask.reward_type,
-                id: createdObject,
-                version: 1,
-                name: newTask.name,
-                description: [
-                  {
-                    description: newTask.description,
-                    format: 0, // 假設默認格式是 plaintext
-                    publish_time: Date.now(),
-                  },
-                ],
-                image_url: newTask.image_url,
-                publish_date: SUI_CLOCK_OBJECT_ID,
-                creator: account.address, // 需要用你的地址替代
-                moderator: newTask.moderator, // 需要用 moderator 的地址替代
-                area: newTask.area,
-                is_active: true,
-                fund: newTask.fund, // 假設初始基金是 1000
-                reward_amount: parseInt(newTask.reward_amount),
-                task_sheets: [],
-                poc_img_url: newTask.poc_img_url,
-              };
-
-              setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
-
-              await fetchData();
-
-              // FIXME: for test only
-              // Reset Task
-              setNewTask({
-                reward_type: "0x2::sui::SUI",
-                name: "測試",
-                description: "測試",
-                format: 1,
-                image_url:
-                  "https://github.com/do0x0ob/Sui-Devnet-faucet_coin-EYES/blob/main/faucet_eyes/token_img/_46d4533c-de79-4231-a457-5be2e3fe77af.jpeg?raw=true",
-                area: "TW",
-                reward_amount: "",
-                poc_img_url: "https://suifrens.com/images/header-mobile.svg",
-                creator: account.address || "0xYourAddress",
-                moderator: account.address || "0xModeratorAddress",
-                fund: "1",
-                is_active: true,
-              });
-            } catch (digestError) {
-              if (digestError instanceof Error) {
-                toast.error(
-                  `Transaction sent, but failed to get digest: ${digestError.message}`
-                );
-              } else {
-                toast.error(
-                  "Transaction sent, but failed to get digest due to an unknown error."
-                );
-              }
-            }
-            refetch();
-          },
-          onError: (err) => {
-            toast.error("Tx Failed!");
-            console.log(err);
-          },
-        }
-      );
-    } else {
+  
+    if (dryrunRes.effects.status.status !== "success") {
       toast.error("Something went wrong");
+      return;
     }
-
+  
+    await signAndExecuteTransactionBlock(
+      {
+        transactionBlock: txb,
+        options: {
+          showEffects: true,
+        },
+      },
+      {
+        onSuccess: async (res) => {
+          try {
+            const created = res.effects?.created;
+            if (!created || created.length === 0) {
+              throw new Error("No object created.");
+            }
+  
+            const createdObject =
+              created.find((obj) => obj.owner !== account.address)?.reference
+                ?.objectId || created[0].reference?.objectId;
+  
+            if (!createdObject) {
+              throw new Error("Created object ID is not a string.");
+            }
+  
+            console.log(createdObject);
+  
+            const digest = await txb.getDigest({ client: client });
+            toast.success(`Transaction Sent, ${digest}`);
+            console.log(`Transaction Digest`, digest);
+  
+            const newTaskObject = {
+              reward_type: newTask.reward_type,
+              id: createdObject,
+              version: 1,
+              name: newTask.name,
+              description: [
+                {
+                  description: newTask.description,
+                  format: 0, // Default to plaintext
+                  publish_time: Date.now(),
+                },
+              ],
+              image_url: newTask.image_url,
+              publish_date: SUI_CLOCK_OBJECT_ID,
+              creator: account.address,
+              moderator: newTask.moderator,
+              area: newTask.area,
+              is_active: true,
+              fund: newTask.fund,
+              reward_amount: parseInt(newTask.reward_amount),
+              task_sheets: [],
+              poc_img_url: newTask.poc_img_url,
+            };
+  
+            setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
+  
+            await fetchData();
+            setNewTask({
+              reward_type: "",
+              name: "",
+              description: "",
+              format: 0,
+              image_url: "",
+              area: "",
+              reward_amount: "",
+              poc_img_url: "",
+              creator: "",
+              moderator: "",
+              fund: "",
+              is_active: true,
+            });
+          } catch (digestError) {
+            if (digestError instanceof Error) {
+              toast.error(
+                `Transaction sent, but failed to get digest: ${digestError.message}`
+              );
+            } else {
+              toast.error(
+                "Transaction sent, but failed to get digest due to an unknown error."
+              );
+            }
+          }
+          refetch();
+        },
+        onError: (err) => {
+          toast.error("Transaction Failed!");
+          console.log(err);
+        },
+      }
+    );
+  
     console.log("New task published:", newTask);
   };
 

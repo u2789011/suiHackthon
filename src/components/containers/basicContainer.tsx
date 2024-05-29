@@ -295,9 +295,10 @@ const BasicContainer = () => {
   }, [allTasks, walletAddress]);
 
 
-  //選取任務（modal用）
+  // select task (for Modal use)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  //接受任務
+  
+  // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account.address) return;
 
@@ -338,7 +339,7 @@ const BasicContainer = () => {
                       rel="noopener noreferrer"
                       style={{color: 'lightblue', textDecoration: 'underline'}}
                       >
-                      Check Transaction on Explore
+                      View on Blockchain
                     </a>
                   </div>
                 </span>
@@ -368,7 +369,8 @@ const BasicContainer = () => {
       toast.error("Something went wrong");
     }
   };
-  //發布任務
+
+  // Publish Public Tasks
   const handlePublishTaskChain = async () => {
     if (!account.address) return;
 
@@ -1539,8 +1541,8 @@ const BasicContainer = () => {
               <ModalBody>
                 <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
                   <Textarea
-                    maxRows={3}
-                    label="Description"
+                    minRows={80}
+                    label="Task Record"
                     placeholder="Enter your description"
                     value={taskSheetDescription}
                     onChange={(e) => {
@@ -1553,15 +1555,6 @@ const BasicContainer = () => {
                 <Button
                   color="warning"
                   onClick={() =>
-                    handleSendTaskSheet(selectedTask ? selectedTask.id : "")
-                  }
-                  onPress={onClose}
-                >
-                  回報任務完成
-                </Button>
-                <Button
-                  color="primary"
-                  onClick={() =>
                     handleTaskSheetDetails(
                       selectedTask ? selectedTask.id : "",
                       taskSheetDescription
@@ -1569,7 +1562,16 @@ const BasicContainer = () => {
                   }
                   onPress={onClose}
                 >
-                  更新描述
+                  Update
+                </Button>
+                <Button
+                  color="primary"
+                  onClick={() =>
+                    handleSendTaskSheet(selectedTask ? selectedTask.id : "")
+                  }
+                  onPress={onClose}
+                >
+                  Submit
                 </Button>
               </ModalFooter>
             </>

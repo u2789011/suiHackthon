@@ -223,6 +223,8 @@ const BasicContainer = () => {
     fetchAllTaskData();
   }, []);
 
+  console.log('all tasks', allTasks)
+
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
     userTaskSheets: TaskSheet[],
@@ -244,19 +246,15 @@ const BasicContainer = () => {
       }
     });
 
-    //console.log('matchedTasks:', matchedTasks); //FIXME: for test only
     setAcceptedTasks(matchedTasks);
-    console.log("Acceptes Tasks:", acceptedTasks); //FIXME: for test only
+
   };
 
   async function fetchAcceptedTask() {
     if (userTaskSheets && userTaskSheets.data) {
       const jsonString = JSON.stringify(userTaskSheets, null, 2);
       const jsonObject = JSON.parse(jsonString);
-      //console.log("jsonString:", jsonString); //FIXME: test use only
 
-      //console.log('jsonObject maintask_id', jsonObject.data[0].content.fields.main_task_id);
-      // Turn jsonObject into taskSheets (an array of TaskSheet)
       if (Array.isArray(jsonObject.data)) {
         const taskSheets: TaskSheet[] = jsonObject.data
           .map((item: any) => {
@@ -280,11 +278,24 @@ const BasicContainer = () => {
     }
   }
 
+  // Data for Accepted Tasks
   useEffect(() => {
     if (userTaskSheets) {
       fetchAcceptedTask();
     }
   }, [userTaskSheets, allTasks]);
+
+
+  // Data for Published Tasks
+  useEffect(() => {
+    if (allTasks.length > 0) {
+      const filteredTasks = allTasks.filter(task => task.creator === walletAddress);
+      setPublishedTasks(filteredTasks);
+    }
+  }, [allTasks, walletAddress]);
+
+
+
   //選取任務（modal用）
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   //接受任務

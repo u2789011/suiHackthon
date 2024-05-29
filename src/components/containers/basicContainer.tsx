@@ -226,7 +226,7 @@ const BasicContainer = () => {
     userTaskSheets.forEach((taskSheet) => {
       if (taskSheet.data && taskSheet.data.fields){
         const mainTaskId = taskSheet.data.fields.main_task_id;
-        const matchedTask = publishedTasks.find(task => task.id === mainTaskId);
+        const matchedTask = allTasks.find(task => task.id === mainTaskId);
         if (matchedTask && !seenTaskIds.has(matchedTask.id)) {
           matchedTasks.push(matchedTask);
           seenTaskIds.add(matchedTask.id);
@@ -236,7 +236,9 @@ const BasicContainer = () => {
       }
     });
 
+    // console.log('matchedTasks:', matchedTasks); //FIXME: for test only
     setAcceptedTasks(matchedTasks)
+    // console.log('Acceptes Tasks:', acceptedTasks); //FIXME: for test only
   };
 
   async function fetchAcceptedTask() {

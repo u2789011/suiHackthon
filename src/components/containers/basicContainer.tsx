@@ -1,7 +1,7 @@
 import BasicDataField from "../fields/basicDataField";
 // import BasicInputField from "../fields/basicInputField";
 // import ActionButton from "../buttons/actionButton";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState, ChangeEvent } from "react";
 import {
   useAccounts,
   useSignAndExecuteTransactionBlock,
@@ -37,6 +37,7 @@ import {
   Textarea,
 } from "@nextui-org/react";
 import { log } from "console";
+import { set, update } from "lodash";
 
 type SuiObjectResponse = any;
 
@@ -136,6 +137,10 @@ const BasicContainer = () => {
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
   const [publishedTasks, setPublishedTasks] = useState<Task[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [taskDescription, setTaskDescription] = useState("");
+  const [taskSheetDescription, setTaskSheetDescription] = useState("");
+  const [taskFund, setTaskFund] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
 
   async function fetchTaskList() {
     try {
@@ -232,16 +237,6 @@ const BasicContainer = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleAcceptTask = async (selectedTask: Task) => {
-    // Logic for test accepting task
-    const acceptedTask = allTasks.find((task) => task.id === selectedTask.id);
-
-    if (acceptedTask) {
-      setAcceptedTasks([...acceptedTasks, acceptedTask]);
-      toast.success(`接受任務成功!`);
-    }
-    console.log(`Accepted task ${selectedTask.id}`);
-    console.log(acceptedTask);
-
     if (!account.address) return;
 
     const txb = new TransactionBlock();
@@ -295,6 +290,15 @@ const BasicContainer = () => {
     } else {
       toast.error("Something went wrong");
     }
+    // Logic for test accepting task
+    const acceptedTask = allTasks.find((task) => task.id === selectedTask.id);
+
+    if (acceptedTask) {
+      setAcceptedTasks([...acceptedTasks, acceptedTask]);
+      toast.success(`接受任務成功!`);
+    }
+    console.log(`Accepted task ${selectedTask.id}`);
+    console.log(acceptedTask);
   };
 
   const handlePublishTaskChain = async () => {
@@ -450,11 +454,79 @@ const BasicContainer = () => {
     console.log("Send Task Sheet", task);
   };
 
-  const handleSendTaskSheet = () => {
-    if (selectedTask) {
-      toast.success("任務完成申請已送出!");
-      setSelectedTask(null);
+  const handleSendTaskSheet = async (selectedTaskID: string) => {
+    // if (selectedTask) {
+    //   toast.success("任務完成申請已送出!");
+    //   setSelectedTask(null);
+    // }
+    console.log(`Send Task Sheet ${selectedTaskID}`);
+    if (!account.address) return;
+
+    const txb = new TransactionBlock();
+    console.log(selectedTask);
+    txb.moveCall({
+      target: `${PACKAGE_ID}::public_task::submit_task_sheet`,
+      arguments: [
+        txb.object(
+          "0x49806003f14dac78b61bbc0455aa1f437de190d66bb2cc9512c8524f47b9f70f"
+        ),
+        txb.pure(SUI_CLOCK_OBJECT_ID),
+      ],
+      typeArguments: ["0x2::sui::SUI"],
+    });
+
+    txb.setSender(account.address);
+    const dryrunRes = await client.dryRunTransactionBlock({
+      transactionBlock: await txb.build({ client: client }),
+    });
+    console.log(dryrunRes);
+
+    if (dryrunRes.effects.status.status === "success") {
+      signAndExecuteTransactionBlock(
+        {
+          transactionBlock: txb,
+          options: {
+            showEffects: true,
+          },
+        },
+        {
+          onSuccess: async (res) => {
+            try {
+              const digest = await txb.getDigest({ client: client });
+              toast.success(`Transaction Sent, ${digest}`);
+              console.log(`Transaction Digest`, digest);
+            } catch (digestError) {
+              if (digestError instanceof Error) {
+                toast.error(
+                  `Transaction sent, but failed to get digest: ${digestError.message}`
+                );
+              } else {
+                toast.error(
+                  "Transaction sent, but failed to get digest due to an unknown error."
+                );
+              }
+            }
+            refetch();
+            fetchData();
+          },
+          onError: (err) => {
+            toast.error("Tx Failed!");
+            console.log(err);
+          },
+        }
+      );
+    } else {
+      toast.error("Something went wrong");
     }
+  };
+
+  const handleTaskSheetDetails = (
+    selectedTaskID: string,
+    description: string
+  ) => {
+    console.log("Task Sheet Details", selectedTaskID, description);
+    toast.success("任務單描述已更新！");
+    setTaskSheetDescription("");
   };
 
   const handleModifyTask = (task: Task) => {
@@ -463,22 +535,52 @@ const BasicContainer = () => {
     console.log(task);
   };
 
-  const handleSaveTaskDetails = () => {
+  const handleAddTaskFund = (selectedTaskID: string, fund: string) => {
     if (selectedTask) {
-      // const updatedTasks = publishedTasks.map((task) =>
-      //   task.id === selectedTask.id ? selectedTask : task
-      // );
-      // setPublishedTasks(updatedTasks);
+      toast.success(`${selectedTaskID} ${"任務基金已增加"} ${fund} SUI`);
       setSelectedTask(null);
-      onOpenChangeModal3();
-      toast.success("任務詳情已更新!");
     }
+  };
+
+  const handleTakeTaskFund = (selectedTaskID: string, fund: string) => {
+    if (selectedTask) {
+      toast.success(`${selectedTaskID} ${"任務基金已提取"} ${fund} SUI`);
+      setSelectedTask(null);
+    }
+  };
+
+  const handleTaskDescription = (
+    selectedTaskID: string,
+    description: string
+  ) => {
+    console.log("Task Sheet Details", selectedTaskID, description);
+    toast.success("任務描述已更新！");
   };
 
   const handleSubmittedTask = (task: Task) => {
     setSelectedTask(task);
     console.log("Submitted Task", task);
     onOpenModal2();
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelected([...selected, e.target.value]);
+    } else {
+      setSelected(selected.filter((item) => item !== e.target.value));
+    }
+  };
+
+  const handleSubmit = () => {
+    console.log(selected);
+    toast.success(`任務單${selected}已審核通過`);
+    setSelected([]);
+  };
+
+  const handleReject = () => {
+    console.log(selected);
+    toast.warning(`任務單${selected}已駁回`);
+    setSelected([]);
   };
 
   return (
@@ -706,15 +808,6 @@ const BasicContainer = () => {
                     isFooterBlurred
                     className="h-[600px] w-[300px] "
                   >
-                    {/* <CardHeader className="relative z-10 top-1 flex gap-4 items-start p-4">
-                      <Chip
-                        color="primary"
-                        className=" text-white/80 uppercase font-bold"
-                      >
-                        {truncateAddress(task.id)}
-                      </Chip>
-                    </CardHeader> */}
-
                     <CardBody className="relative p-4">
                       <Image
                         removeWrapper
@@ -894,72 +987,34 @@ const BasicContainer = () => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader>
-                {selectedTask ? "Manage Task" : "Mint a Task"}
-              </ModalHeader>
+              <ModalHeader>Mint a Task</ModalHeader>
               <ModalBody>
                 <Input
                   label="Reward Type"
-                  value={
-                    selectedTask
-                      ? selectedTask.reward_type
-                      : newTask.reward_type
-                  }
+                  value={newTask.reward_type}
                   onChange={(e) =>
-                    selectedTask
-                      ? setSelectedTask({
-                          ...selectedTask,
-                          reward_type: e.target.value,
-                        })
-                      : setNewTask({ ...newTask, reward_type: e.target.value })
+                    setNewTask({ ...newTask, reward_type: e.target.value })
                   }
                 />
                 <Input
                   label="Task Name"
                   value={selectedTask ? selectedTask.name : newTask.name}
                   onChange={(e) =>
-                    selectedTask
-                      ? setSelectedTask({
-                          ...selectedTask,
-                          name: e.target.value,
-                        })
-                      : setNewTask({ ...newTask, name: e.target.value })
+                    setNewTask({ ...newTask, name: e.target.value })
                   }
                 />
                 <Input
                   label="Description"
-                  value={
-                    selectedTask
-                      ? selectedTask.description[0].description
-                      : newTask.description
-                  }
+                  value={newTask.description}
                   onChange={(e) =>
-                    selectedTask
-                      ? setSelectedTask({
-                          ...selectedTask,
-                          description: [
-                            {
-                              description: e.target.value,
-                              format: 0, // 假設格式是 plaintext
-                              publish_time: Date.now(), // 假設發布時間是當前時間
-                            },
-                          ],
-                        })
-                      : setNewTask({ ...newTask, description: e.target.value })
+                    setNewTask({ ...newTask, description: e.target.value })
                   }
                 />
                 <Input
                   label="Task Image URL"
-                  value={
-                    selectedTask ? selectedTask.image_url : newTask.image_url
-                  }
+                  value={newTask.image_url}
                   onChange={(e) =>
-                    selectedTask
-                      ? setSelectedTask({
-                          ...selectedTask,
-                          image_url: e.target.value,
-                        })
-                      : setNewTask({ ...newTask, image_url: e.target.value })
+                    setNewTask({ ...newTask, image_url: e.target.value })
                   }
                 />
                 <Input
@@ -1029,12 +1084,10 @@ const BasicContainer = () => {
                   color="primary"
                   onPress={onClose}
                   onClick={() => {
-                    selectedTask
-                      ? handleSaveTaskDetails()
-                      : handlePublishTaskChain();
+                    handlePublishTaskChain();
                   }}
                 >
-                  {selectedTask ? "Save Changes" : "Publish Task"}
+                  Publish Task
                 </Button>
               </ModalFooter>
             </>
@@ -1055,27 +1108,36 @@ const BasicContainer = () => {
                 {selectedTask ? selectedTask.name : ""}已完成任務清單
               </ModalHeader>
               <ModalBody>
-                <CheckboxGroup
-                  label="Select submitted tasks"
-                  defaultValue={["tasksheet 1"]}
-                >
-                  <Checkbox value="tasksheet 1">tasksheet 1</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                  <Checkbox value="tasksheet 2">tasksheet 2</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                  <Checkbox value="tasksheet 3">tasksheet 3</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                  <Checkbox value="tasksheet 4">tasksheet 4</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                  <Checkbox value="tasksheet 5">tasksheet 5</Checkbox>
-                  <Input type="string" label="note" placeholder="審批文字" />
-                </CheckboxGroup>
+                <Checkbox value="tasksheet 1" onChange={handleChange}>
+                  tasksheet 1
+                </Checkbox>
+                <Checkbox value="tasksheet 2" onChange={handleChange}>
+                  tasksheet 2
+                </Checkbox>
+                <Checkbox value="tasksheet 3" onChange={handleChange}>
+                  tasksheet 3
+                </Checkbox>
+                <Checkbox value="tasksheet 4" onChange={handleChange}>
+                  tasksheet 4
+                </Checkbox>
+                <Checkbox value="tasksheet 5" onChange={handleChange}>
+                  tasksheet 5
+                </Checkbox>
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="flat" onPress={onClose}>
+                <Button
+                  color="danger"
+                  variant="flat"
+                  onPress={onClose}
+                  onClick={handleReject}
+                >
                   駁回
                 </Button>
-                <Button color="primary" onPress={onClose}>
+                <Button
+                  color="primary"
+                  onPress={onClose}
+                  onClick={handleSubmit}
+                >
                   通過
                 </Button>
               </ModalFooter>
@@ -1105,9 +1167,21 @@ const BasicContainer = () => {
                         ? selectedTask.description[0].description
                         : ""
                     }`}
+                    onChange={(e) => {
+                      setTaskDescription(e.target.value);
+                    }}
                   />
                 </div>
-                <Button onPress={onClose} onClick={handleSaveTaskDetails}>
+                <Button
+                  onPress={onClose}
+                  onClick={() => {
+                    handleTaskDescription(
+                      selectedTask ? selectedTask.id : "",
+                      taskDescription
+                    );
+                  }}
+                  color="primary"
+                >
                   Save Changes
                 </Button>
                 <p>Take Fund</p>
@@ -1116,8 +1190,20 @@ const BasicContainer = () => {
                   label="Amount"
                   placeholder={`${selectedTask ? selectedTask.fund : ""}`}
                   className="max-w-lg"
+                  onChange={(e) => {
+                    setTaskFund(e.target.value);
+                  }}
                 />
-                <Button onClick={handleSaveTaskDetails} onPress={onClose}>
+                <Button
+                  color="danger"
+                  onClick={() =>
+                    handleTakeTaskFund(
+                      selectedTask ? selectedTask.id : "",
+                      taskFund
+                    )
+                  }
+                  onPress={onClose}
+                >
                   Take Fund
                 </Button>
                 <p>Add Fund</p>
@@ -1126,8 +1212,20 @@ const BasicContainer = () => {
                   label="Amount"
                   placeholder={`${selectedTask ? selectedTask.fund : ""}`}
                   className="max-w-lg"
+                  onChange={(e) => {
+                    setTaskFund(e.target.value);
+                  }}
                 />
-                <Button onClick={handleSaveTaskDetails} onPress={onClose}>
+                <Button
+                  color="success"
+                  onClick={() => {
+                    handleAddTaskFund(
+                      selectedTask ? selectedTask.id : "",
+                      taskFund
+                    );
+                  }}
+                  onPress={onClose}
+                >
                   Add Fund
                 </Button>
               </ModalBody>
@@ -1150,12 +1248,36 @@ const BasicContainer = () => {
                     maxRows={3}
                     label="Description"
                     placeholder="Enter your description"
+                    value={taskSheetDescription}
+                    onChange={(e) => {
+                      setTaskSheetDescription(e.target.value);
+                    }}
                   />
                 </div>
-                <Button onClick={handleSendTaskSheet} onPress={onClose}>
-                  Submit Task sheet
-                </Button>
               </ModalBody>
+              <ModalFooter>
+                <Button
+                  color="warning"
+                  onClick={() =>
+                    handleSendTaskSheet(selectedTask ? selectedTask.id : "")
+                  }
+                  onPress={onClose}
+                >
+                  回報任務完成
+                </Button>
+                <Button
+                  color="primary"
+                  onClick={() =>
+                    handleTaskSheetDetails(
+                      selectedTask ? selectedTask.id : "",
+                      taskSheetDescription
+                    )
+                  }
+                  onPress={onClose}
+                >
+                  更新描述
+                </Button>
+              </ModalFooter>
             </>
           )}
         </ModalContent>

@@ -443,7 +443,7 @@ const BasicContainer = () => {
                   rel="noopener noreferrer"
                   style={{color: 'lightblue', textDecoration: 'underline'}}
                   >
-                  Check Transaction on Explore
+                  View on Blockchian
                 </a>
               </div>
             </span>

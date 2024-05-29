@@ -232,7 +232,18 @@ const BasicContainer = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleAcceptTask = async (selectedTask: Task) => {
+    // Logic for test accepting task
+    const acceptedTask = allTasks.find((task) => task.id === selectedTask.id);
+
+    if (acceptedTask) {
+      setAcceptedTasks([...acceptedTasks, acceptedTask]);
+      toast.success(`接受任務成功!`);
+    }
+    console.log(`Accepted task ${selectedTask.id}`);
+    console.log(acceptedTask);
+
     if (!account.address) return;
+
     const txb = new TransactionBlock();
     console.log(selectedTask);
     txb.moveCall({
@@ -284,17 +295,6 @@ const BasicContainer = () => {
     } else {
       toast.error("Something went wrong");
     }
-    // Logic for accepting task
-    const acceptedTask = publishedTasks.find(
-      (task) => task.id === selectedTask.id
-    );
-
-    if (acceptedTask) {
-      setAcceptedTasks([...acceptedTasks, acceptedTask]);
-      // toast.success(`接受任務成功!`);
-    }
-    console.log(`Accepted task ${selectedTask.id}`);
-    console.log(acceptedTask);
   };
 
   const handlePublishTaskChain = async () => {
@@ -603,7 +603,7 @@ const BasicContainer = () => {
             <Tab key="acceptedTasks" title="已接受任務">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!acceptedTasks.length && (
-                  <div className="flex justify-center items-center w-[1200px] h-[300px]">
+                  <div className="flex justify-center items-center h-[300px]">
                     <p className="text-white/80">No accepted tasks</p>
                   </div>
                 )}
@@ -696,7 +696,7 @@ const BasicContainer = () => {
             <Tab key="publishedTasks" title="已發布任務">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!publishedTasks.length && (
-                  <div className="flex justify-center items-center w-[1200px] h-[300px]">
+                  <div className="flex justify-center items-center h-[300px]">
                     <p className="text-white/80">No published tasks</p>
                   </div>
                 )}
@@ -797,7 +797,7 @@ const BasicContainer = () => {
             <Tab key="completedTasks" title="已完成任務">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!completedTasks.length && (
-                  <div className="flex justify-center items-center w-[1200px] h-[300px]">
+                  <div className="flex justify-center items-center h-[300px]">
                     <p className="text-white/80">No completed tasks</p>
                   </div>
                 )}

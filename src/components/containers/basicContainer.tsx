@@ -1005,23 +1005,12 @@ const BasicContainer = () => {
 
   return (
     <>
-      <div className="w-[80%] flex flex-col items-center justify-center gap-4 mt-20">
-        <BasicDataField
-          label="Your Wallet Balance"
-          value={userBalance ?? "0.0000"}
-          spaceWithUnit
-          unit="SUI"
-          minFractionDigits={0}
-        />
-      </div>
-      <Divider className="my-4"></Divider>
-      <div className="mx-auto p-4">
+      {/*<Divider className="my-3"></Divider>*/}
+      <div className="mx-auto pt-20">
         <Button onPress={onOpenModal1} onClick={() => setSelectedTask(null)}>
           Publish Task
         </Button>
       </div>
-      <Divider className="my-4" />
-      <h1 className="my-4">Task List</h1>
       <div className="flex justify-center p-4">
         <div className="flex w-full flex-col">
           <Tabs
@@ -1084,7 +1073,7 @@ const BasicContainer = () => {
             <Tab key="acceptedTasks" title="Accepted Tasks">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!acceptedTasks.length && (
-                  <div className="flex justify-center items-center h-[300px]">
+                  <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                     <p className="text-white/80 text-center">No accepted tasks</p>
                   </div>
                 )}
@@ -1139,8 +1128,8 @@ const BasicContainer = () => {
             <Tab key="publishedTasks" title="Published Tasks">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10"> 
                 {!publishedTasks.length && (
-                  <div className="flex justify-center items-center h-[300px]">
-                    <p className="text-white/80 align-center">No published tasks</p>
+                  <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
+                    <p className="text-white/80 text-center">No published tasks</p>
                   </div>
                 )}
                 {publishedTasks.map((task) => (
@@ -1202,8 +1191,8 @@ const BasicContainer = () => {
             <Tab key="completedTasks" title="Completed Tasks">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!completedTasks.length && (
-                  <div className="flex justify-center items-center h-[300px]">
-                    <p className="text-white/80">No completed tasks</p>
+                  <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
+                    <p className="text-white/80 text-center">No Completed Tasks</p>
                   </div>
                 )}
                 {completedTasks.map((task) => (

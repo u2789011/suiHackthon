@@ -24,7 +24,7 @@ const BasicDataField = ({
   labelClass,
   tooltip = undefined,
   value,
-  valueClass = "text-2xl font-medium !leading-[110%] -tracking-[0.72px] text-white",
+  valueClass = "text-xl font-medium !leading-[110%] -tracking-[0.72px] text-white",
   fieldClass = "w-fit",
   ...props
 }: IBasicDataFieldProps) => {
@@ -38,7 +38,7 @@ const BasicDataField = ({
       open={isTooltipOpen}
       onOpenChange={setIsTooltipOpen}
     >
-      <div className={cn("flex flex-col items-center gap-3", fieldClass)}>
+      <div className={cn("flex flex-col items-center gap-1", fieldClass)}>
         <div className="flex items-center gap-1">
           <span className={cn("text-sm text-white/50", labelClass)}>
             {label}

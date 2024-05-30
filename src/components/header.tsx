@@ -40,9 +40,7 @@ const Header = () => {
         <Link href="/" passHref>
           <div className="flex items-center">
             <Image src="/FrenSuipport.svg" alt="Logo" width={50} height={50} />
-            <span className="text-xl lg:text-3xl font-extrabold">
-              Fren Suipport
-            </span>
+            <Image src="/headerlogo.svg" alt="Logo" width={300} height={50} />
           </div>
         </Link>
         <div className="flex-grow"></div>

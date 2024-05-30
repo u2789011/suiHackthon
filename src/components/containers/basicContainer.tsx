@@ -1147,6 +1147,11 @@ const BasicContainer = () => {
               <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!acceptedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
+                    <Image
+                      alt="voidfren"
+                      src="/frens/voidfren.svg"
+                      className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
+                    />
                     <p className="text-white/80 text-center">No accepted tasks</p>
                   </div>
                 )}
@@ -1202,6 +1207,11 @@ const BasicContainer = () => {
               <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10"> 
                 {!publishedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
+                    <Image
+                      alt="voidfren"
+                      src="/frens/voidfren.svg"
+                      className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
+                    />
                     <p className="text-white/80 text-center">No published tasks</p>
                   </div>
                 )}
@@ -1265,6 +1275,11 @@ const BasicContainer = () => {
               <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!completedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
+                    <Image
+                      alt="voidfren"
+                      src="/frens/voidfren.svg"
+                      className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
+                    />
                     <p className="text-white/80 text-center">No Completed Tasks</p>
                   </div>
                 )}

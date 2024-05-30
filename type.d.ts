@@ -45,6 +45,7 @@ type Task = {
 
 type TaskSheet = {
   data: {
+    digest: string;
     fields: {
       id: any[];
       status: number;
@@ -60,3 +61,22 @@ type TaskSheet = {
   };
 }
 
+type TaskAdminCap = {
+  data: Array<{
+    data: {
+      content: {
+        dataType: string;
+        fields: {
+          id: string[];
+          hasPublicTransfer: boolean;
+          type: string;
+          digest: string;
+          objectId: string;
+          version: string;
+        };
+      };
+    };
+  }>;
+  nextCursor: string;
+  hasNextPage: boolean;
+};

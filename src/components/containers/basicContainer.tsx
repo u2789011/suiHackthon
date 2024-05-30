@@ -88,6 +88,25 @@ const BasicContainer = () => {
     },
   });
 
+  console.log('userTaskSheets',userTaskSheets) //FIXME: for test only
+
+  const { data: userTaskAdminCaps } = useSuiClientQuery("getOwnedObjects", {
+    owner: walletAddress ?? "",
+    filter: {
+      StructType: `${PACKAGE_ID}::public_task::TaskAdminCap`,
+    },
+    options: {
+      showType: true,
+      showContent: true,
+    }
+  });
+
+  console.log('userTaskAdminCaps',userTaskAdminCaps) //FIXME: test use only
+
+  useEffect(() => {
+    if (userTaskAdminCaps && userTaskSheets) {}
+  }, [userTaskAdminCaps, userTaskSheets]);
+
 
   const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const client = useSuiClient();
@@ -128,6 +147,7 @@ const BasicContainer = () => {
   const [taskFund, setTaskFund] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [annotation, setAnnotation] = useState("");
+  const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>([]);
 
   // Get ObjectIDS in TaskManager
   async function fetchTaskList() {
@@ -167,8 +187,6 @@ const BasicContainer = () => {
         multiGetObjectsParams
       );
 
-      //console.log(userTaskSheets); //FIXME: Test Use Only
-      //console.log(allCoins); //FIXME: Test Use Only
       return objectsResponse;
     } catch (error) {
       console.error("Error fetching multiple objects:", error);
@@ -223,6 +241,8 @@ const BasicContainer = () => {
     fetchAllTaskData();
   }, []);
 
+  console.log('all tasks', allTasks)
+
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
     userTaskSheets: TaskSheet[],
@@ -244,29 +264,31 @@ const BasicContainer = () => {
       }
     });
 
-    //console.log('matchedTasks:', matchedTasks); //FIXME: for test only
     setAcceptedTasks(matchedTasks);
-    console.log("Acceptes Tasks:", acceptedTasks); //FIXME: for test only
+
   };
 
-  async function fetchAcceptedTask() {
+  async function fetchAcceptedTask(userTaskSheets: any): Promise<TaskSheet[]> {
     if (userTaskSheets && userTaskSheets.data) {
       const jsonString = JSON.stringify(userTaskSheets, null, 2);
       const jsonObject = JSON.parse(jsonString);
-      //console.log("jsonString:", jsonString); //FIXME: test use only
 
-      //console.log('jsonObject maintask_id', jsonObject.data[0].content.fields.main_task_id);
-      // Turn jsonObject into taskSheets (an array of TaskSheet)
       if (Array.isArray(jsonObject.data)) {
-        const taskSheets: TaskSheet[] = jsonObject.data
+        const usertaskSheets: TaskSheet[] = jsonObject.data
           .map((item: any) => {
             if (
               item &&
               item.data &&
               item.data.content &&
-              item.data.content.fields
+              item.data.content.fields &&
+              item.data.digest // 確保存在 digest 屬性
             ) {
-              return { data: { fields: item.data.content.fields } };
+              return {
+                data: {
+                  digest: item.data.digest, // 提取 digest 屬性
+                  fields: item.data.content.fields
+                }
+              };
             } else {
               console.warn("Item or fields is undefined:", item);
               return null;
@@ -274,20 +296,42 @@ const BasicContainer = () => {
           })
           .filter((item: TaskSheet | null) => item !== null) as TaskSheet[];
 
-        //console.log("taskSheets:", taskSheets); //FIXME: test use only
-        handleMatchAndSetAcceptedTasks(taskSheets, allTasks);
+        return usertaskSheets;
+        //console.log("taskSheets:", userTaskSheets); //FIXME: test use only
       }
     }
+    return [];
   }
 
+  // Data for Accepted Tasks
   useEffect(() => {
-    if (userTaskSheets) {
-      fetchAcceptedTask();
+    async function loadAcceptedTasks() {
+      if (userTaskSheets) {
+        const userTaskSheetsData = await fetchAcceptedTask(userTaskSheets);
+        setProcessedTaskSheets(userTaskSheetsData);
+        handleMatchAndSetAcceptedTasks(userTaskSheetsData, allTasks);
+      }
     }
+
+    loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
-  //選取任務（modal用）
+
+  console.log('processedTaskSheets',processedTaskSheets) //FIXME: for test use only
+
+
+  // Data for Published Tasks
+  useEffect(() => {
+    if (allTasks.length > 0) {
+      const filteredTasks = allTasks.filter(task => task.creator === walletAddress);
+      setPublishedTasks(filteredTasks);
+    }
+  }, [allTasks, walletAddress]);
+
+
+  // select task (for Modal use)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  //接受任務
+  
+  // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account.address) return;
 
@@ -328,7 +372,7 @@ const BasicContainer = () => {
                       rel="noopener noreferrer"
                       style={{color: 'lightblue', textDecoration: 'underline'}}
                       >
-                      Check Transaction on Explore
+                      View on Blockchain
                     </a>
                   </div>
                 </span>
@@ -358,7 +402,8 @@ const BasicContainer = () => {
       toast.error("Something went wrong");
     }
   };
-  //發布任務
+
+  // Publish Public Tasks
   const handlePublishTaskChain = async () => {
     if (!account.address) return;
 
@@ -433,7 +478,7 @@ const BasicContainer = () => {
                   rel="noopener noreferrer"
                   style={{color: 'lightblue', textDecoration: 'underline'}}
                   >
-                  Check Transaction on Explore
+                  View on Blockchian
                 </a>
               </div>
             </span>
@@ -578,79 +623,119 @@ const BasicContainer = () => {
     //   setSelectedTask(null);
     // }
   };
+
   //更新任務單內容 | update_task_sheet_content
-  const handleTaskSheetDetails = (
+  const handleTaskSheetDetails = async (
     selectedTaskID: string,
-    description: string
+    description: string,
   ) => {
-    /* if (!account.address) return;
-        const txb = new TransactionBlock();
-        console.log(selectedTask);
-        txb.moveCall({
-          target: `${PACKAGE_ID}::public_task::update_task_sheet_content`,
-          arguments: [
-            txb.object(
-              selectedTaskId
-            ),
-            txb.pure(SUI_CLOCK_OBJECT_ID),
-            txb.pure(description)
-          ],
-          typeArguments: ["0x2::sui::SUI"],
-        });
-
-        txb.setSender(account.address);
-        const dryrunRes = await client.dryRunTransactionBlock({
-          transactionBlock: await txb.build({ client: client }),
-        });
-        console.log(dryrunRes);
-
-        if (dryrunRes.effects.status.status === "success") {
-          signAndExecuteTransactionBlock(
-            {
-              transactionBlock: txb,
-              options: {
-                showEffects: true,
-              },
-            },
-            {
-              onSuccess: async (res) => {
-                try {
-                  const digest = await txb.getDigest({ client: client });
-                  toast.success(`Transaction Sent, ${digest}`);
-                  console.log(`Transaction Digest`, digest);
-                } catch (digestError) {
-                  if (digestError instanceof Error) {
-                    toast.error(
-                      `Transaction sent, but failed to get digest: ${digestError.message}`
-                    );
-                  } else {
-                    toast.error(
-                      "Transaction sent, but failed to get digest due to an unknown error."
-                    );
-                  }
-                }
-                refetch();
-                fetchData();
-              },
-              onError: (err) => {
-                toast.error("Tx Failed!");
-                console.log(err);
-              },
+    if (!account.address) return;
+  
+    const txb = new TransactionBlock();
+    console.log(selectedTask);
+  
+    /*
+    // Find certain tasksheet from selectedTaskID
+    const matchedTaskSheet = processedTaskSheets.find(
+      taskSheet => taskSheet.data.fields.main_task_id === selectedTaskID
+    );
+  
+    // get user task sheet source data
+    const userAdminCapData = client.getOwnedObjects({
+      owner: walletAddress ?? "",
+      filter: {
+        StructType: `${PACKAGE_ID}::public_task_TaskSheet`,
+      },
+      options: {
+        showType: true,
+        showContent: true
+      }
+    });
+  
+    // turn userAdminCapData into json
+    const jsonString = JSON.stringify(userAdminCapData, null, 2);
+    const userAdminCapDataJson = JSON.parse(jsonString);
+    console.log(userAdminCapDataJson); //FIXME: test user only
+  
+    if (matchedTaskSheet) {
+      const taskSheetID = matchedTaskSheet.data.fields.id;
+      const taskSheetDigest = matchedTaskSheet.data.digest;
+  
+      // Use taskshet.data.digest to match the correct taskadmincap
+      const matchedTaskAdminCap = userAdminCapDataJson.data.find( //TODO: userTaskAdminCaps 轉換資料為 TaskAdminCap Type
+        taskAdminCap => taskAdminCap.data.content.fields.digest === taskSheetDigest
+      );
+      if (matchedTaskAdminCap) {
+        const taskAdminCapID = matchedTaskAdminCap.data.content.fields.id.join(',');
+        console.log('Matched TaskAdminCap ID:', taskAdminCapID);
+    */
+  
+    txb.moveCall({
+      target: `${PACKAGE_ID}::public_task::update_task_sheet_content`,
+      arguments: [
+        txb.pure("0x1ef82e2fa6d05106b7aacc3d70e90073f6c289fb3311341e72c3f23dfef802d0"),
+        txb.pure("test Strings"),
+        txb.pure(SUI_CLOCK_OBJECT_ID),
+        txb.pure("0xc949387d447d4524e8e0038a90b6e92073296a564a8d43fc4b45af0f63f1bb67") // 使用匹配的 TaskAdminCap ID
+      ],
+    });
+  
+    txb.setSender(account.address);
+    const dryrunRes = await client.dryRunTransactionBlock({
+      transactionBlock: await txb.build({ client: client }),
+    });
+    console.log(dryrunRes);
+  
+    if (dryrunRes.effects.status.status === "success") {
+      signAndExecuteTransactionBlock(
+        {
+          transactionBlock: txb,
+          options: {
+            showEffects: true,
+          },
+        },
+        {
+          onSuccess: async (res) => {
+            try {
+              const digest = await txb.getDigest({ client: client });
+              toast.success(`Transaction Sent, ${digest}`);
+              console.log(`Transaction Digest`, digest);
+            } catch (digestError) {
+              if (digestError instanceof Error) {
+                toast.error(
+                  `Transaction sent, but failed to get digest: ${digestError.message}`
+                );
+              } else {
+                toast.error(
+                  "Transaction sent, but failed to get digest due to an unknown error."
+                );
+              }
             }
-          );
-        } else {
-          toast.error("Something went wrong");
-        }*/
+            refetch();
+            fetchAllTaskData();
+          },
+          onError: (err) => {
+            toast.error("Tx Failed!");
+            console.log(err);
+          },
+        }
+      );
+    } else {
+      toast.error("Something went wrong");
+    }
+  
     console.log("Task Sheet Details", selectedTaskID, description);
     toast.success("任務單描述已更新！");
     setTaskSheetDescription("");
   };
+
   //打開發任務者編輯已發布任務的Modal
   const handleModifyTask = (task: Task) => {
     setSelectedTask(task);
     onOpenModal3();
     console.log(task);
-  };
+  };  
+
   //增加獎池資金 | add_task_fund<T>;
   const handleAddTaskFund = (selectedTaskID: string, fund: number) => {
     /* if (!account.address) return;
@@ -845,7 +930,7 @@ const BasicContainer = () => {
           toast.error("Something went wrong");
         }*/
     console.log("Task Sheet Details", selectedTaskID, description);
-    toast.success("任務描述已更新！");
+    toast.success("Task Description Updated");
   };
   //管理已提交任務打開Modal
   const handleSubmittedTask = (task: Task) => {
@@ -922,8 +1007,8 @@ const BasicContainer = () => {
           toast.error("Something went wrong");
         }*/
     console.log(selectedTaskId, selected, annotation);
-    toast.success(`任務單${selected}已審核通過`);
-    toast.success(`審批註釋: ${annotation}`);
+    toast.success(`Task Sheet ${selected} is Approved`);
+    toast.success(`Note: ${annotation}`);
     setSelected([]);
   };
   //認證不通過退回任務單 | reject_and_return_task_sheet
@@ -986,8 +1071,8 @@ const BasicContainer = () => {
           toast.error("Something went wrong");
         }*/
     console.log(selectedTaskId, selected, annotation);
-    toast.warning(`任務單${selected}已駁回`);
-    toast.warning(`審批註釋: ${annotation}`);
+    toast.warning(`Task Sheet ${selected} Denied`);
+    toast.warning(`Note: ${annotation}`);
     setSelected([]);
   };
 
@@ -1009,7 +1094,7 @@ const BasicContainer = () => {
         </Button>
       </div>
       <Divider className="my-4" />
-      <h1 className="my-4">任務列表</h1>
+      <h1 className="my-4">Task List</h1>
       <div className="flex justify-center p-4">
         <div className="flex w-full flex-col">
           <Tabs
@@ -1017,15 +1102,15 @@ const BasicContainer = () => {
             variant="bordered"
             className="min-h-1 mx-auto p-4"
           >
-            <Tab key="allTasks" title="所有任務">
+            <Tab key="allTasks" title="All Tasks">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {allTasks.map((task) => (
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[600px] w-[300px] "
+                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
                   >
-                    <CardBody className="relative p-4">
+                    <CardBody className="relative p-3">
                       <Image
                         removeWrapper
                         alt="Task"
@@ -1033,63 +1118,34 @@ const BasicContainer = () => {
                         className="z-0 w-full h-50 object-cover rounded-lg"
                       />
                     </CardBody>
-                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 w-full p-4 flex justify-between items-center">
+                    <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
                       <div className="flex flex-grow gap-2 items-center">
                         <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow hideScrollBar className="h-[230px]">
-                            <p>
-                              <strong>任務名稱:</strong> {task.name}
-                            </p>
-
-                            <p>
-                              <strong>描述:</strong>{" "}
-                              {task.description[0].description}
-                            </p>
-
-                            <p>
-                              <strong>發佈時間:</strong>{" "}
-                              {new Date(
-                                parseInt(task.publish_date)
-                              ).toLocaleString()}
-                            </p>
-                            <p>
-                              <strong>創建者:</strong>{" "}
-                              {truncateAddress(task.creator)}
-                            </p>
-                            <p>
-                              <strong>主持人:</strong>{" "}
-                              {truncateAddress(task.moderator)}
-                            </p>
-                            <p>
-                              <strong>地區:</strong> {task.area}
-                            </p>
-                            <p>
-                              <strong>狀態:</strong>{" "}
-                              {task.is_active ? "Active" : "Inactive"}
-                            </p>
-                            <p>
-                              <strong>資金:</strong>{" "}
-                              {parseFloat(task.fund) / FLOAT_SCALING}
-                            </p>
-                            <p>
-                              <strong>獎勵金額:</strong>{" "}
-                              {task.reward_amount / FLOAT_SCALING}
-                            </p>
+                          <ScrollShadow hideScrollBar className="max-h-[280px] overflow-y-auto">
+                            <h3 className="text-lg fint-semibold">{task.name}</h3>  
+                            <p><strong>Description:</strong> {task.description[0].description}</p>
+                            <p><strong>Published:</strong> {new Date(parseInt(task.publish_date)).toLocaleString()}</p>
+                            <p><strong>Creator:</strong> {truncateAddress(task.creator)}</p>
+                            <p><strong>MOD:</strong> {truncateAddress(task.moderator)}</p>
+                            <p><strong>Area:</strong> {task.area}</p>
+                            <p><strong>Status:</strong> {task.is_active ? "Active" : "Inactive"}</p>
+                            <p><strong>Reward Pool:</strong> {parseFloat(task.fund) / FLOAT_SCALING}</p>
+                            <p><strong>Reward:</strong> {task.reward_amount / FLOAT_SCALING}</p>
                             <Link
                               isExternal
                               href={`https://suiscan.xyz/devnet/object/${task.id}`}
                               showAnchorIcon
                             >
-                              在區塊鏈上查看
+                              View on Blockchain
                             </Link>
                           </ScrollShadow>
                           <Button
                             isDisabled={!task.is_active}
                             onClick={() => handleAcceptTask(task)}
                             radius="full"
-                            size="sm"
+                            size="md"
                           >
-                            接受任務
+                            Accept Task
                           </Button>
                         </div>
                       </div>
@@ -1098,20 +1154,19 @@ const BasicContainer = () => {
                 ))}
               </div>
             </Tab>
-            <Tab key="acceptedTasks" title="已接受任務">
+            <Tab key="acceptedTasks" title="Accepted Tasks">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!acceptedTasks.length && (
                   <div className="flex justify-center items-center h-[300px]">
-                    <p className="text-white/80">No accepted tasks</p>
+                    <p className="text-white/80 text-center">No accepted tasks</p>
                   </div>
                 )}
                 {acceptedTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    isFooterBlurred
-                    className="h-[600px] w-[300px] "
-                  >
-                    <CardBody className="relative p-4">
+                  <Card key={task.id} 
+                        isFooterBlurred
+                        className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
+                        >
+                    <CardBody className="relative p-3">
                       <Image
                         removeWrapper
                         alt="Task"
@@ -1119,62 +1174,33 @@ const BasicContainer = () => {
                         className="z-0 w-full h-50 object-cover rounded-lg"
                       />
                     </CardBody>
-                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 w-full p-4 flex justify-between items-center">
+                    <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
                       <div className="flex flex-grow gap-2 items-center">
                         <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow hideScrollBar className="h-[230px]">
-                            <p>
-                              <strong>任務名稱:</strong> {task.name}
-                            </p>
-
-                            <p>
-                              <strong>描述:</strong>{" "}
-                              {task.description[0].description}
-                            </p>
-
-                            <p>
-                              <strong>發佈時間:</strong>{" "}
-                              {new Date(
-                                parseInt(task.publish_date)
-                              ).toLocaleString()}
-                            </p>
-                            <p>
-                              <strong>創建者:</strong>{" "}
-                              {truncateAddress(task.creator)}
-                            </p>
-                            <p>
-                              <strong>主持人:</strong>{" "}
-                              {truncateAddress(task.moderator)}
-                            </p>
-                            <p>
-                              <strong>地區:</strong> {task.area}
-                            </p>
-                            <p>
-                              <strong>狀態:</strong>{" "}
-                              {task.is_active ? "Active" : "Inactive"}
-                            </p>
-                            <p>
-                              <strong>資金:</strong>{" "}
-                              {parseFloat(task.fund) / FLOAT_SCALING}
-                            </p>
-                            <p>
-                              <strong>獎勵金額:</strong>{" "}
-                              {task.reward_amount / FLOAT_SCALING}
-                            </p>
+                          <ScrollShadow hideScrollBar className="max-h-[280px] overflow-y-auto">
+                            <p><strong>Task Name:</strong> {task.name}</p>
+                            <p><strong>Description:</strong> {task.description[0].description}</p>
+                            <p><strong>Published:</strong> {new Date(parseInt(task.publish_date)).toLocaleString()}</p>
+                            <p><strong>Creator:</strong> {truncateAddress(task.creator)}</p>
+                            <p><strong>Moderator:</strong> {truncateAddress(task.moderator)}</p>
+                            <p><strong>Area:</strong> {task.area}</p>
+                            <p><strong>Status:</strong> {task.is_active ? "Active" : "Inactive"}</p>
+                            <p><strong>Fund:</strong> {parseFloat(task.fund) / FLOAT_SCALING}</p>
+                            <p><strong>Reward Amount:</strong> {task.reward_amount / FLOAT_SCALING}</p>
                             <Link
                               isExternal
                               href={`https://suiscan.xyz/devnet/object/${task.id}`}
                               showAnchorIcon
                             >
-                              在區塊鏈上查看
+                              View on Blockchain
                             </Link>
                           </ScrollShadow>
                           <Button
                             onPress={() => handleCompleteTask(task)}
                             radius="full"
-                            size="sm"
+                            size="md"
                           >
-                            回報任務完成
+                            Submit Task
                           </Button>
                         </div>
                       </div>
@@ -1183,20 +1209,20 @@ const BasicContainer = () => {
                 ))}
               </div>
             </Tab>
-            <Tab key="publishedTasks" title="已發布任務">
-              <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+            <Tab key="publishedTasks" title="Published Tasks">
+              <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10"> 
                 {!publishedTasks.length && (
                   <div className="flex justify-center items-center h-[300px]">
-                    <p className="text-white/80">No published tasks</p>
+                    <p className="text-white/80 align-center">No published tasks</p>
                   </div>
                 )}
                 {publishedTasks.map((task) => (
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[600px] w-[300px] "
+                    className="h-[700px] w-[320px] shadow-lg rounded-lg overflow-hidden"
                   >
-                    <CardBody className="relative p-4">
+                    <CardBody className="relative p-3">
                       <Image
                         removeWrapper
                         alt="Task"
@@ -1204,69 +1230,40 @@ const BasicContainer = () => {
                         className="z-0 w-full h-50 object-cover rounded-lg"
                       />
                     </CardBody>
-                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 w-full p-4 flex justify-between items-center">
+                    <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
                       <div className="flex flex-grow gap-2 items-center">
                         <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow hideScrollBar className="h-[200px]">
-                            <p>
-                              <strong>任務名稱:</strong> {task.name}
-                            </p>
-
-                            <p>
-                              <strong>描述:</strong>{" "}
-                              {task.description[0].description}
-                            </p>
-
-                            <p>
-                              <strong>發佈時間:</strong>{" "}
-                              {new Date(
-                                parseInt(task.publish_date)
-                              ).toLocaleString()}
-                            </p>
-                            <p>
-                              <strong>創建者:</strong>{" "}
-                              {truncateAddress(task.creator)}
-                            </p>
-                            <p>
-                              <strong>主持人:</strong>{" "}
-                              {truncateAddress(task.moderator)}
-                            </p>
-                            <p>
-                              <strong>地區:</strong> {task.area}
-                            </p>
-                            <p>
-                              <strong>狀態:</strong>{" "}
-                              {task.is_active ? "Active" : "Inactive"}
-                            </p>
-                            <p>
-                              <strong>資金:</strong>{" "}
-                              {parseFloat(task.fund) / FLOAT_SCALING}
-                            </p>
-                            <p>
-                              <strong>獎勵金額:</strong>{" "}
-                              {task.reward_amount / FLOAT_SCALING}
-                            </p>
+                          <ScrollShadow hideScrollBar className="max-h-[280px] overflow-y-auto">
+                            <h3 className="text-lg fint-semibold">{task.name}</h3>  
+                            <p><strong>Description:</strong>{" "}{task.description[0].description}</p>
+                            <p><strong>Published:</strong>{" "}{new Date(parseInt(task.publish_date)).toLocaleString()}</p>
+                            <p><strong>Creator:</strong>{" "}{truncateAddress(task.creator)}</p>
+                            <p><strong>MOD:</strong>{" "}{truncateAddress(task.moderator)}</p>
+                            <p><strong>Area:</strong> {task.area}</p>
+                            <p><strong>Status:</strong>{" "}{task.is_active ? "Active" : "Inactive"}</p>
+                            <p><strong>Reward Pool:</strong>{" "}{parseFloat(task.fund) / FLOAT_SCALING}</p>
+                            <p><strong>Reward:</strong>{" "}{task.reward_amount / FLOAT_SCALING}</p>
                             <Link
                               isExternal
                               href={`https://suiscan.xyz/devnet/object/${task.id}`}
                               showAnchorIcon
                             >
-                              在區塊鏈上查看
+                              View on Blockchain
                             </Link>
                           </ScrollShadow>
                           <Button
                             onPress={() => handleModifyTask(task)}
                             radius="full"
-                            size="sm"
+                            size="md"
                           >
-                            修改任務詳情
+                            Edit Task Description
                           </Button>
                           <Button
                             onPress={() => handleSubmittedTask(task)}
                             radius="full"
-                            size="sm"
+                            size="md"
                           >
-                            管理已提交任務
+                            View Submitted Tasks
                           </Button>
                         </div>
                       </div>
@@ -1275,7 +1272,7 @@ const BasicContainer = () => {
                 ))}
               </div>
             </Tab>
-            <Tab key="completedTasks" title="已完成任務">
+            <Tab key="completedTasks" title="Completed Tasks">
               <div className="max-w-[1200px] gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!completedTasks.length && (
                   <div className="flex justify-center items-center h-[300px]">
@@ -1286,9 +1283,9 @@ const BasicContainer = () => {
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[600px] w-[300px] "
+                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
                   >
-                    <CardBody className="relative p-4">
+                    <CardBody className="relative p-3">
                       <Image
                         removeWrapper
                         alt="Task"
@@ -1296,54 +1293,25 @@ const BasicContainer = () => {
                         className="z-0 w-full h-50 object-cover rounded-lg"
                       />
                     </CardBody>
-                    <CardFooter className="absolute bg-black/80 bottom-0 z-10 w-full p-4 flex justify-between items-center">
+                    <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
                       <div className="flex flex-grow gap-2 items-center">
                         <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow hideScrollBar className="h-[250px]">
-                            <p>
-                              <strong>任務名稱:</strong> {task.name}
-                            </p>
-
-                            <p>
-                              <strong>描述:</strong>{" "}
-                              {task.description[0].description}
-                            </p>
-
-                            <p>
-                              <strong>發佈時間:</strong>{" "}
-                              {new Date(
-                                parseInt(task.publish_date)
-                              ).toLocaleString()}
-                            </p>
-                            <p>
-                              <strong>創建者:</strong>{" "}
-                              {truncateAddress(task.creator)}
-                            </p>
-                            <p>
-                              <strong>主持人:</strong>{" "}
-                              {truncateAddress(task.moderator)}
-                            </p>
-                            <p>
-                              <strong>地區:</strong> {task.area}
-                            </p>
-                            <p>
-                              <strong>狀態:</strong>{" "}
-                              {task.is_active ? "Active" : "Inactive"}
-                            </p>
-                            <p>
-                              <strong>資金:</strong>{" "}
-                              {parseFloat(task.fund) / FLOAT_SCALING}
-                            </p>
-                            <p>
-                              <strong>獎勵金額:</strong>{" "}
-                              {task.reward_amount / FLOAT_SCALING}
-                            </p>
+                          <ScrollShadow hideScrollBar className="max-h-[280px] overflow-y-auto">
+                            <h3 className="text-lg fint-semibold">{task.name}</h3>  
+                            <p><strong>Description:</strong> {task.description[0].description}</p>
+                            <p><strong>Published:</strong>{" "}{new Date(parseInt(task.publish_date)).toLocaleString()}</p>
+                            <p><strong>Creator:</strong>{" "}{truncateAddress(task.creator)}</p>
+                            <p><strong>MOD:</strong>{" "}{truncateAddress(task.moderator)}</p>
+                            <p><strong>Area:</strong> {task.area}</p>
+                            <p><strong>Status:</strong>{" "}{task.is_active ? "Active" : "Inactive"}</p>
+                            <p><strong>Reward Pool:</strong>{" "}{parseFloat(task.fund) / FLOAT_SCALING}</p>
+                            <p><strong>Reward:</strong>{" "}{task.reward_amount / FLOAT_SCALING}</p>
                             <Link
                               isExternal
                               href={`https://suiscan.xyz/devnet/object/${task.id}`}
                               showAnchorIcon
                             >
-                              在區塊鏈上查看
+                              View on Blockchain
                             </Link>
                           </ScrollShadow>
                         </div>
@@ -1646,8 +1614,8 @@ const BasicContainer = () => {
               <ModalBody>
                 <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
                   <Textarea
-                    maxRows={3}
-                    label="Description"
+                    minRows={80}
+                    label="Task Record"
                     placeholder="Enter your description"
                     value={taskSheetDescription}
                     onChange={(e) => {
@@ -1660,23 +1628,23 @@ const BasicContainer = () => {
                 <Button
                   color="warning"
                   onClick={() =>
-                    handleSendTaskSheet(selectedTask ? selectedTask.id : "")
-                  }
-                  onPress={onClose}
-                >
-                  回報任務完成
-                </Button>
-                <Button
-                  color="primary"
-                  onClick={() =>
                     handleTaskSheetDetails(
                       selectedTask ? selectedTask.id : "",
-                      taskSheetDescription
+                      taskSheetDescription,
                     )
                   }
                   onPress={onClose}
                 >
-                  更新描述
+                  Update
+                </Button>
+                <Button
+                  color="primary"
+                  onClick={() =>
+                    handleSendTaskSheet(selectedTask ? selectedTask.id : "")
+                  }
+                  onPress={onClose}
+                >
+                  Submit
                 </Button>
               </ModalFooter>
             </>

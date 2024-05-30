@@ -40,7 +40,7 @@ const Header = () => {
         <Link href="/" passHref>
           <div className="flex items-center">
             <Image src="/FrenSuipport.svg" alt="Logo" width={50} height={50} />
-            <Image src="/headerlogo.svg" alt="Logo" width={300} height={50} />
+            <Image src="/Frensuipportfont.svg" alt="Logo" width={280} height={50} />
           </div>
         </Link>
         <div className="flex-grow"></div>

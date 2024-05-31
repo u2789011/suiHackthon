@@ -62,9 +62,11 @@ const BasicContainer = () => {
 
   // version 20240527
   const PACKAGE_ID =
-    "0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
+    //"0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
+    "0xafb7c825ba78477cb42702a896eb1c8f758e5f4d9ff972f0f868b782f2623728";
   const TASK_MANAGER_ID =
-    "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
+    //"0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
+    "0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b"
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
 
@@ -1436,7 +1438,7 @@ const BasicContainer = () => {
                             radius="full"
                             size="md"
                           >
-                            Edit Task Description
+                            Manage Your Task
                           </Button>
                           <Button
                             onPress={() => handleSubmittedTask(task)}
@@ -1657,19 +1659,17 @@ const BasicContainer = () => {
           )}
         </ModalContent>
       </Modal>
-      {/* Modal for 通過或駁回已提交任務*/}
+      {/* Modal for Task MOD*/}
       <Modal
         isOpen={isOpenModal2}
         onOpenChange={onOpenChangeModal2}
-        size="full"
         scrollBehavior="inside"
       >
         <ModalContent>
           {(onClose) => (
             <>
               <ModalHeader>
-                回報
-                {selectedTask ? selectedTask.name : ""}已完成任務清單
+              Submissions for {selectedTask ? selectedTask.name : ""}
               </ModalHeader>
               <ModalBody>
                 {/* //TODO: 這裡要抓到selectedTask中的任務單們 */}
@@ -1747,10 +1747,10 @@ const BasicContainer = () => {
           {(onClose) => (
             <>
               <ModalHeader>
-                Task Name :{selectedTask ? selectedTask.name : ""}
+                {selectedTask ? selectedTask.name : ""}
               </ModalHeader>
               <ModalBody>
-                <p>Modify Task Desciption</p>
+                <p>Edit Task Description</p>
                 <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
                   <Textarea
                     maxRows={3}
@@ -1778,7 +1778,15 @@ const BasicContainer = () => {
                   Save Changes
                 </Button>
                 <p>Take Fund</p>
-                setTaskFund(Number(e.target.value));
+                <Input
+                  type="number"
+                  label="Amount"
+                  placeholder={`${selectedTask ? selectedTask.fund : 0}`}
+                  className="max-w-lg"
+                  onChange={(e) => {
+                    setTaskFund(Number(e.target.value));
+                  }}
+                />
                 <Button
                   color="danger"
                   onClick={() =>

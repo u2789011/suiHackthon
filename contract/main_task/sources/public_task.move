@@ -501,6 +501,8 @@ module main_task::public_task {
         let task_admin_cap = TaskAdminCap { id: object::new(ctx) };
         let task_sheet_id = &task_sheet.id;
 
+        attach_task_id(main_task, &task_sheet);
+
         emit(TaskSheetMintedEvent {
             task_id: get_task_id(main_task),
             task_sheet_id: object::uid_to_inner(task_sheet_id),
@@ -596,6 +598,13 @@ module main_task::public_task {
     ): ID {
         object::uid_to_inner(&task_sheet.id)
     }
+
+    fun attach_task_id<T>(
+    task: &mut Task<T>,
+    task_sheet: &TaskSheet
+) {
+    vector::push_back(&mut task.task_sheets, get_task_sheet_id(task_sheet));
+}
     
 
 }

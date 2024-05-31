@@ -1436,7 +1436,7 @@ const BasicContainer = () => {
                             radius="full"
                             size="md"
                           >
-                            Edit Task Description
+                            Manage Your Task
                           </Button>
                           <Button
                             onPress={() => handleSubmittedTask(task)}
@@ -1657,19 +1657,17 @@ const BasicContainer = () => {
           )}
         </ModalContent>
       </Modal>
-      {/* Modal for 通過或駁回已提交任務*/}
+      {/* Modal for Task MOD*/}
       <Modal
         isOpen={isOpenModal2}
         onOpenChange={onOpenChangeModal2}
-        size="full"
         scrollBehavior="inside"
       >
         <ModalContent>
           {(onClose) => (
             <>
               <ModalHeader>
-                回報
-                {selectedTask ? selectedTask.name : ""}已完成任務清單
+              Submissions for {selectedTask ? selectedTask.name : ""}
               </ModalHeader>
               <ModalBody>
                 {/* //TODO: 這裡要抓到selectedTask中的任務單們 */}
@@ -1747,10 +1745,10 @@ const BasicContainer = () => {
           {(onClose) => (
             <>
               <ModalHeader>
-                Task Name :{selectedTask ? selectedTask.name : ""}
+                {selectedTask ? selectedTask.name : ""}
               </ModalHeader>
               <ModalBody>
-                <p>Modify Task Desciption</p>
+                <p>Edit Task Description</p>
                 <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
                   <Textarea
                     maxRows={3}
@@ -1778,7 +1776,15 @@ const BasicContainer = () => {
                   Save Changes
                 </Button>
                 <p>Take Fund</p>
-                setTaskFund(Number(e.target.value));
+                <Input
+                  type="number"
+                  label="Amount"
+                  placeholder={`${selectedTask ? selectedTask.fund : 0}`}
+                  className="max-w-lg"
+                  onChange={(e) => {
+                    setTaskFund(Number(e.target.value));
+                  }}
+                />
                 <Button
                   color="danger"
                   onClick={() =>

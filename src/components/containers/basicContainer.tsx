@@ -110,6 +110,20 @@ const BasicContainer = () => {
 
   console.log("userTaskAdminCaps", userTaskAdminCaps); //FIXME: test use only
 
+  const { data: userModCaps } = useSuiClientQuery("getOwnedObjects", {
+    owner: walletAddress ?? "",
+    filter: {
+      StructType: `${PACKAGE_ID}::public_task::ModCap`,
+    },
+    options:{
+      showType: true,
+      showContent: true,
+      showPreviousTransaction: true,
+    }
+  });
+
+  console.log("userModCaps::", userModCaps) //FIXME: test use only
+
   useEffect(() => {
     if (userTaskAdminCaps && userTaskSheets) {
     }
@@ -1051,7 +1065,7 @@ const BasicContainer = () => {
           target: `${PACKAGE_ID}::public_task::approve_and_send_reward`,
           arguments: [
             txb.pure(selectedTaskId),
-            txb.pure(selectedTaskSheets[0]), // 需要寫一個 for 迴圈便利傳入角標
+            txb.pure(selectedTaskSheets[0]), // 需要寫一個 for 迴圈 txb.movecall 傳入迭代
             txb.pure(annotation),
             txb.pure(SUI_CLOCK_OBJECT_ID),
             //txb.pure(modcap) // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap

@@ -306,17 +306,17 @@ const BasicContainer = () => {
     }
     return [];
   }
+  
+  async function loadAcceptedTasks() {
+    if (userTaskSheets) {
+      const userTaskSheetsData = await fetchAcceptedTask(userTaskSheets);
+      setProcessedTaskSheets(userTaskSheetsData);
+      handleMatchAndSetAcceptedTasks(userTaskSheetsData, allTasks);
+    }
+  }
 
   // Data for Accepted Tasks
   useEffect(() => {
-    async function loadAcceptedTasks() {
-      if (userTaskSheets) {
-        const userTaskSheetsData = await fetchAcceptedTask(userTaskSheets);
-        setProcessedTaskSheets(userTaskSheetsData);
-        handleMatchAndSetAcceptedTasks(userTaskSheetsData, allTasks);
-      }
-    }
-
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
@@ -518,8 +518,6 @@ const BasicContainer = () => {
 
             setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
 
-            await fetchAllTaskData();
-
             setNewTask({
               reward_type: "",
               name: "",
@@ -546,6 +544,8 @@ const BasicContainer = () => {
             }
           }
           refetch();
+          fetchAllTaskData();
+          await loadAcceptedTasks();
         },
         onError: (err) => {
           toast.error("Transaction Failed!");
@@ -1261,7 +1261,7 @@ const BasicContainer = () => {
                 ))}
               </div>
             </Tab>
-            <Tab key="acceptedTasks" title="Accepted Tasks">
+            <Tab key="acceptedTasks" title="On Going Tasks">
               <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!acceptedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
@@ -1354,7 +1354,7 @@ const BasicContainer = () => {
                 ))}
               </div>
             </Tab>
-            <Tab key="publishedTasks" title="Published Tasks">
+            <Tab key="publishedTasks" title="Published by Me">
               <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!publishedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">

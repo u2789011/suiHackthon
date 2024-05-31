@@ -63,12 +63,12 @@ const BasicContainer = () => {
   // version 20240527
   const PACKAGE_ID =
     //"0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
-    "0xafb7c825ba78477cb42702a896eb1c8f758e5f4d9ff972f0f868b782f2623728";
-    //"0xd84bf8f814a797c2e04a31dba8d4ba276489dc835e6b3ee725059a756b0cfe14";
+    //"0xafb7c825ba78477cb42702a896eb1c8f758e5f4d9ff972f0f868b782f2623728";
+    "0xd84bf8f814a797c2e04a31dba8d4ba276489dc835e6b3ee725059a756b0cfe14";
   const TASK_MANAGER_ID =
     //"0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
-    "0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b";
-    //"0x8a1f4de7e060da0fd3e14839c7c9e8250895061c1f39f0bacf90c9b7744a78a2";
+    //"0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b";
+    "0x8a1f4de7e060da0fd3e14839c7c9e8250895061c1f39f0bacf90c9b7744a78a2";
 
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
@@ -1049,6 +1049,9 @@ const BasicContainer = () => {
       setSelected(selected.filter((item) => item !== e.target.value));
     }
   };
+
+  const jsonStrUserModCaps = JSON.stringify(userModCaps);
+
   //認證通過並發送獎勵 | approve_and_send_reward<T> TODO: FIXME:
   const handleApprove = async (
     annotation: string,
@@ -1057,23 +1060,35 @@ const BasicContainer = () => {
   ) => {
      if (!account.address) return;
 
+     try {
+      if(!userModCaps) {
+        throw new Error("UserModCaps is undefined");
+      }
+
+      const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
+      const userModCapsArray = jsonObjUserModCaps.data;
+      console.log("userModCapsArray:::", userModCapsArray);
+      //TODO: here to continue
 
 
-        const txb = new TransactionBlock();
-        console.log(selectedTask);
-        txb.moveCall({
-          target: `${PACKAGE_ID}::public_task::approve_and_send_reward`,
-          arguments: [
-            txb.pure(selectedTaskId),
-            txb.pure(selectedTaskSheets[0]), // 需要寫一個 for 迴圈 txb.movecall 傳入迭代
-            txb.pure(annotation),
-            txb.pure(SUI_CLOCK_OBJECT_ID),
-            //txb.pure(modcap) // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
-          ],
-          typeArguments: ["0x2::sui::SUI"], //從 alltask 中找 selectedTaskId 符合的 item 回傳 item<Task>.type
-        });
 
-        txb.setSender(account.address);
+      const txb = new TransactionBlock();
+      console.log(selectedTaskId);
+      console.log(selectedTaskSheets);
+
+      txb.moveCall({
+        target: `${PACKAGE_ID}::public_task::approve_and_send_reward`,
+        arguments: [
+          txb.pure(selectedTaskId),
+          txb.pure(selectedTaskSheets[0]), // 需要寫一個 for 迴圈 txb.movecall 傳入迭代
+          txb.pure(annotation),
+          txb.pure(SUI_CLOCK_OBJECT_ID),
+          //txb.pure(modcap) // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
+        ],
+        typeArguments: ["0x2::sui::SUI"], //從 alltask 中找 selectedTaskId 符合的 item 回傳 item<Task>.type
+      });
+
+      txb.setSender(account.address);
         const dryrunRes = await client.dryRunTransactionBlock({
           transactionBlock: await txb.build({ client: client }),
         });
@@ -1115,11 +1130,17 @@ const BasicContainer = () => {
         } else {
           toast.error("Something went wrong");
         }
-    console.log(selectedTaskId, selected, annotation);
-    toast.success(`Task Sheet ${selected} is Approved`);
-    toast.success(`Note: ${annotation}`);
-    setSelected([]);
-  };
+      console.log(selectedTaskId, selected, annotation);
+      toast.success(`Task Sheet ${selected} is Approved`);
+      toast.success(`Note: ${annotation}`);
+      setSelected([]);
+
+     } catch (error) {
+      console.error("Error handling task sheet details", error);
+  }
+}
+
+
   //認證不通過退回任務單 | reject_and_return_task_sheet
   const handleReject = (annotation: string, selectedTaskId: string) => {
     /* if (!account.address) return;

@@ -560,79 +560,130 @@ const BasicContainer = () => {
     onOpenModal4();
     console.log("Send Task Sheet", task);
   };
-  //提交任務單 | submit_task_sheet
-  const handleSendTaskSheet = async (selectedTaskID: string) => {
-    console.log(`Send Task Sheet ${selectedTaskID}`);
-    if (!account.address) return;
-
-    const txb = new TransactionBlock();
-    console.log(selectedTask);
-    txb.moveCall({
-      target: `${PACKAGE_ID}::public_task::submit_task_sheet`,
-      arguments: [
-        txb.object(
-          "0x49806003f14dac78b61bbc0455aa1f437de190d66bb2cc9512c8524f47b9f70f"
-          //要抓到任務單的ID
-        ),
-        txb.pure(SUI_CLOCK_OBJECT_ID),
-        txb.object(selectedTaskID),
-      ],
-      typeArguments: ["0x2::sui::SUI"],
-    });
-
-    txb.setSender(account.address);
-    const dryrunRes = await client.dryRunTransactionBlock({
-      transactionBlock: await txb.build({ client: client }),
-    });
-    console.log(dryrunRes);
-
-    if (dryrunRes.effects.status.status === "success") {
-      signAndExecuteTransactionBlock(
-        {
-          transactionBlock: txb,
-          options: {
-            showEffects: true,
-          },
-        },
-        {
-          onSuccess: async (res) => {
-            try {
-              const digest = await txb.getDigest({ client: client });
-              toast.success(`Transaction Sent, ${digest}`);
-              console.log(`Transaction Digest`, digest);
-            } catch (digestError) {
-              if (digestError instanceof Error) {
-                toast.error(
-                  `Transaction sent, but failed to get digest: ${digestError.message}`
-                );
-              } else {
-                toast.error(
-                  "Transaction sent, but failed to get digest due to an unknown error."
-                );
-              }
-            }
-            refetch();
-            fetchAllTaskData();
-          },
-          onError: (err) => {
-            toast.error("Tx Failed!");
-            console.log(err);
-          },
-        }
-      );
-    } else {
-      toast.error("Something went wrong");
-    }
-    // if (selectedTask) {
-    //   toast.success("任務完成申請已送出!");
-    //   setSelectedTask(null);
-    // }
-  };
 
   const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
   const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
 
-  //更新任務單內容 | update_task_sheet_content FIXME:TODO:
+  // submit_task_sheet
+  const handleSendTaskSheet = async (selectedTaskID: string) => {
+    console.log(`Send Task Sheet ${selectedTaskID}`);
+    if (!account.address) return;
+  
+    // Get Movecall params
+    try {
+      if (!userTaskSheets) {
+        throw new Error("UserTaskSheet is undefined");
+      }
+  
+      const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
+      const userTaskSheetArray = jsonObjUserTaskSheet.data;
+  
+      const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
+        (tasksheet: TaskSheetArr) => {
+          //console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
+          return tasksheet.data.content.fields.main_task_id.includes(selectedTaskID);
+        }
+      );
+  
+      if (!relateTaskSheet) {
+        throw new Error("No matching TaskSheet found");
+      }
+      const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
+  
+      // TaskAdminCap
+      const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
+      const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
+  
+      const relatedTaskAdminCap: TaskAdminCap | undefined = userTaskAdminCapArray.find(
+        (item: TaskAdminCapArr) => {
+          //console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction);
+          return item.data.previousTransaction === relateTaskSheet.data.previousTransaction;
+        }
+      );
+  
+      if (!relatedTaskAdminCap) {
+        throw new Error("No Matching TaskAdminCap found");
+      }
+      const relatedTaskAdminCapID = relatedTaskAdminCap.data.content.fields.id.id;
+  
+      // Movecall
+      const txb = new TransactionBlock();
+      console.log(selectedTask);
+  
+      txb.moveCall({
+        target: `${PACKAGE_ID}::public_task::submit_task_sheet`,
+        arguments: [
+          txb.pure(relateTaskSheetId),
+          txb.pure(SUI_CLOCK_OBJECT_ID),
+          txb.pure(relatedTaskAdminCapID),
+        ],
+      });
+  
+      txb.setSender(account.address);
+      const dryrunRes = await client.dryRunTransactionBlock({
+        transactionBlock: await txb.build({ client: client }),
+      });
+      console.log(dryrunRes);
+  
+      if (dryrunRes.effects.status.status === "success") {
+        signAndExecuteTransactionBlock(
+          {
+            transactionBlock: txb,
+            options: {
+              showEffects: true,
+            },
+          },
+          {
+            onSuccess: async (res) => {
+              try {
+                const digest = await txb.getDigest({ client: client });
+                const explorerUrl = `${DEVNET_EXPLORE + digest}`;
+                toast.success(
+                  <span>
+                    Transaction Sent
+                    <div>
+                      <a
+                        href={explorerUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "lightblue", textDecoration: "underline" }}
+                      >
+                        View on Blockchain
+                      </a>
+                    </div>
+                  </span>
+                );
+                console.log(`Transaction Digest`, digest);
+              } catch (digestError) {
+                if (digestError instanceof Error) {
+                  toast.error(
+                    `Transaction sent, but failed to get digest: ${digestError.message}`
+                  );
+                } else {
+                  toast.error(
+                    "Transaction sent, but failed to get digest due to an unknown error."
+                  );
+                }
+              }
+              refetch();
+              fetchAllTaskData();
+            },
+            onError: (err) => {
+              toast.error("Tx Failed!");
+              console.log(err);
+            },
+          }
+        );
+      } else {
+        toast.error("Something went wrong");
+      }
+    } catch (error) {
+      console.error("Error handling task sheet submit");
+    }
+  };
+
+
+  // update_task_sheet_content
   const handleTaskSheetDetails = async (
     selectedTaskID: string,
     description: string,
@@ -646,16 +697,10 @@ const BasicContainer = () => {
 
       const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
       const userTaskSheetArray = jsonObjUserTaskSheet.data
-      
-      // FIXME: Test Use Only
-      console.log("jsonObjUserTaskSheet.data:", jsonObjUserTaskSheet.data);
-      console.log("userTaskSheetArray",userTaskSheetArray);
-      console.log(selectedTaskID);
-      console.log(typeof(selectedTaskID));
 
       const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
         (tasksheet: TaskSheetArr ) => {
-          console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
+          //console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
           return tasksheet.data.content.fields.main_task_id.includes(selectedTaskID)
         }
       );
@@ -664,34 +709,24 @@ const BasicContainer = () => {
         throw new Error("No matching TaskSheet found");
       }
       const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
-      console.log("relateTaskSheet", relateTaskSheet)
-      console.log("relateTaskSheet_tx:::", relateTaskSheet.data.previousTransaction)
 
 
       // TaskAdminCap
       const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
       const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
 
-      console.log("userTaskAdminCapArray::", userTaskAdminCapArray)
-
       const relatedTaskAdminCap: TaskAdminCap | undefined = userTaskAdminCapArray.find(
         (item: TaskAdminCapArr) => {
-          console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction)
+          //console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction)
           return item.data.previousTransaction === relateTaskSheet.data.previousTransaction
         }
       );
 
-      console.log("relatedTaskAdminCap", relatedTaskAdminCap)
-      
       if (!relatedTaskAdminCap) {
         throw new Error("No Matching TaskAdminCap found");
       }
       const relatedTaskAdminCapID = relatedTaskAdminCap.data.content.fields.id.id;
 
-      //FIXME: test only
-      console.log("selectedTask:", selectedTask);
-      console.log("relateTaskSheetId", relateTaskSheetId);
-      console.log("relatedTaskAdminCapID", relatedTaskAdminCapID);
 
       // Move Call Function
       const txb = new TransactionBlock();
@@ -724,7 +759,22 @@ const BasicContainer = () => {
             onSuccess: async (res) => {
               try {
                 const digest = await txb.getDigest({ client: client });
-                toast.success(`Transaction Sent, ${digest}`);
+                const explorerUrl = `${DEVNET_EXPLORE + digest}`;
+                toast.success(
+                  <span>
+                    Transaction Sent
+                    <div>
+                      <a
+                        href={explorerUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "lightblue", textDecoration: "underline" }}
+                      >
+                        View on Blockchian
+                      </a>
+                    </div>
+                  </span>
+                );
                 console.log(`Transaction Digest`, digest);
               } catch (digestError) {
                 if (digestError instanceof Error) {
@@ -751,7 +801,6 @@ const BasicContainer = () => {
       }
 
       console.log("Task Sheet Details", selectedTaskID, description);
-      toast.success("任務單描述已更新！");
       setTaskSheetDescription("");
 
     } catch (error) {

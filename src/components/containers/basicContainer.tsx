@@ -1731,7 +1731,7 @@ const BasicContainer = () => {
                     )
                   }
                 >
-                  駁回
+                  Reject
                 </Button>
                 <Button
                   color="primary"
@@ -1743,7 +1743,7 @@ const BasicContainer = () => {
                     )
                   }
                 >
-                  通過
+                  Approve
                 </Button>
               </ModalFooter>
             </>

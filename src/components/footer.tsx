@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-
+import "tailwindcss/tailwind.css";
 const Footer = () => {
   return (
     <div
-      className="fixed bottom-0 left-0 w-full backdrop-blur-md z-50"
+      className="fixed bottom-0 left-0 w-full backdrop-blur-md z-50 font-sans"
       style={{
         WebkitBackdropFilter: "blur(12px)",
       }}

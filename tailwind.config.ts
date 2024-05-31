@@ -16,6 +16,10 @@ const config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        sans: ["Varela Round", "sans-serif"],
+        serif: ["Lilita One", "sans-serif"],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

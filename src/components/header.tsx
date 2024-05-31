@@ -9,10 +9,8 @@ import ConnectMenu from "./ui/connectMenu";
 import "@mysten/dapp-kit/dist/index.css";
 import { AppContext } from "@/context/AppContext";
 import { Link as LinkIcon } from "lucide-react";
-import {
-  useSuiClientQuery,
-} from "@mysten/dapp-kit";
-
+import { useSuiClientQuery } from "@mysten/dapp-kit";
+import "tailwindcss/tailwind.css";
 // import SlideInMenu from "./slideInMenu";
 // import RpcSetting from "./rpcSetting";
 
@@ -31,7 +29,7 @@ const Header = () => {
 
   return (
     <div
-      className="fixed top-0 left-0 w-full backdrop-blur-md z-50"
+      className="fixed top-0 left-0 w-full backdrop-blur-md z-50 font-sans"
       style={{
         WebkitBackdropFilter: "blur(12px)",
       }}
@@ -40,7 +38,12 @@ const Header = () => {
         <Link href="/" passHref>
           <div className="flex items-center">
             <Image src="/FrenSuipport.svg" alt="Logo" width={50} height={50} />
-            <Image src="/Frensuipportfont.svg" alt="Logo" width={280} height={50} />
+            <Image
+              src="/Frensuipportfont.svg"
+              alt="Logo"
+              width={280}
+              height={50}
+            />
           </div>
         </Link>
         <div className="flex-grow"></div>
@@ -75,6 +78,6 @@ const Header = () => {
       </header>
     </div>
   );
-}
-  
+};
+
 export default Header;

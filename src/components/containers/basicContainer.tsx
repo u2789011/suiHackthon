@@ -35,6 +35,7 @@ import {
   user,
 } from "@nextui-org/react";
 import { log } from "console";
+import "tailwindcss/tailwind.css";
 
 const BasicContainer = () => {
   const {
@@ -65,7 +66,7 @@ const BasicContainer = () => {
     "0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
-  
+
   const { walletAddress, suiName } = useContext(AppContext);
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
     owner: walletAddress ?? "",
@@ -85,7 +86,7 @@ const BasicContainer = () => {
     },
   });
 
-  console.log('userTaskSheets',userTaskSheets) //FIXME: for test only
+  console.log("userTaskSheets", userTaskSheets); //FIXME: for test only
 
   const { data: userTaskAdminCaps } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
@@ -95,15 +96,15 @@ const BasicContainer = () => {
     options: {
       showType: true,
       showContent: true,
-    }
+    },
   });
 
-  console.log('userTaskAdminCaps',userTaskAdminCaps) //FIXME: test use only
+  console.log("userTaskAdminCaps", userTaskAdminCaps); //FIXME: test use only
 
   useEffect(() => {
-    if (userTaskAdminCaps && userTaskSheets) {}
+    if (userTaskAdminCaps && userTaskSheets) {
+    }
   }, [userTaskAdminCaps, userTaskSheets]);
-
 
   const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const client = useSuiClient();
@@ -144,7 +145,9 @@ const BasicContainer = () => {
   const [taskFund, setTaskFund] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [annotation, setAnnotation] = useState("");
-  const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>([]);
+  const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>(
+    []
+  );
 
   // Get ObjectIDS in TaskManager
   async function fetchTaskList() {
@@ -238,7 +241,7 @@ const BasicContainer = () => {
     fetchAllTaskData();
   }, []);
 
-  console.log('all tasks', allTasks)
+  console.log("all tasks", allTasks);
 
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
@@ -262,7 +265,6 @@ const BasicContainer = () => {
     });
 
     setAcceptedTasks(matchedTasks);
-
   };
 
   async function fetchAcceptedTask(userTaskSheets: any): Promise<TaskSheet[]> {
@@ -283,8 +285,8 @@ const BasicContainer = () => {
               return {
                 data: {
                   digest: item.data.digest, // 提取 digest 屬性
-                  fields: item.data.content.fields
-                }
+                  fields: item.data.content.fields,
+                },
               };
             } else {
               console.warn("Item or fields is undefined:", item);
@@ -313,21 +315,21 @@ const BasicContainer = () => {
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
-  console.log('processedTaskSheets',processedTaskSheets) //FIXME: for test use only
-
+  console.log("processedTaskSheets", processedTaskSheets); //FIXME: for test use only
 
   // Data for Published Tasks
   useEffect(() => {
     if (allTasks.length > 0) {
-      const filteredTasks = allTasks.filter(task => task.creator === walletAddress);
+      const filteredTasks = allTasks.filter(
+        (task) => task.creator === walletAddress
+      );
       setPublishedTasks(filteredTasks);
     }
   }, [allTasks, walletAddress]);
 
-
   // select task (for Modal use)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  
+
   // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account.address) return;
@@ -358,17 +360,20 @@ const BasicContainer = () => {
           onSuccess: async (res) => {
             try {
               const digest = await txb.getDigest({ client: client });
-              const explorerUrl = `${DEVNET_EXPLORE+digest}`;
+              const explorerUrl = `${DEVNET_EXPLORE + digest}`;
               toast.success(
                 <span>
                   Transaction Sent
                   <div>
-                    <a 
+                    <a
                       href={explorerUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{color: 'lightblue', textDecoration: 'underline'}}
-                      >
+                      style={{
+                        color: "lightblue",
+                        textDecoration: "underline",
+                      }}
+                    >
                       View on Blockchain
                     </a>
                   </div>
@@ -464,21 +469,21 @@ const BasicContainer = () => {
             console.log(createdObject);
 
             const digest = await txb.getDigest({ client: client });
-            const explorerUrl = `${DEVNET_EXPLORE+digest}`;
+            const explorerUrl = `${DEVNET_EXPLORE + digest}`;
             toast.success(
               <span>
-              Transaction Sent
-              <div>
-                <a 
-                  href={explorerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{color: 'lightblue', textDecoration: 'underline'}}
+                Transaction Sent
+                <div>
+                  <a
+                    href={explorerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "lightblue", textDecoration: "underline" }}
                   >
-                  View on Blockchian
-                </a>
-              </div>
-            </span>
+                    View on Blockchian
+                  </a>
+                </div>
+              </span>
             );
             console.log(`Transaction Digest`, digest);
 
@@ -507,7 +512,7 @@ const BasicContainer = () => {
             };
 
             setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
-            
+
             await fetchAllTaskData();
 
             setNewTask({
@@ -624,13 +629,13 @@ const BasicContainer = () => {
   //更新任務單內容 | update_task_sheet_content
   const handleTaskSheetDetails = async (
     selectedTaskID: string,
-    description: string,
+    description: string
   ) => {
     if (!account.address) return;
-  
+
     const txb = new TransactionBlock();
     console.log(selectedTask);
-  
+
     /*
     // Find certain tasksheet from selectedTaskID
     const matchedTaskSheet = processedTaskSheets.find(
@@ -666,23 +671,27 @@ const BasicContainer = () => {
         const taskAdminCapID = matchedTaskAdminCap.data.content.fields.id.join(',');
         console.log('Matched TaskAdminCap ID:', taskAdminCapID);
     */
-  
+
     txb.moveCall({
       target: `${PACKAGE_ID}::public_task::update_task_sheet_content`,
       arguments: [
-        txb.pure("0x1ef82e2fa6d05106b7aacc3d70e90073f6c289fb3311341e72c3f23dfef802d0"),
+        txb.pure(
+          "0x1ef82e2fa6d05106b7aacc3d70e90073f6c289fb3311341e72c3f23dfef802d0"
+        ),
         txb.pure("test Strings"),
         txb.pure(SUI_CLOCK_OBJECT_ID),
-        txb.pure("0xc949387d447d4524e8e0038a90b6e92073296a564a8d43fc4b45af0f63f1bb67") // 使用匹配的 TaskAdminCap ID
+        txb.pure(
+          "0xc949387d447d4524e8e0038a90b6e92073296a564a8d43fc4b45af0f63f1bb67"
+        ), // 使用匹配的 TaskAdminCap ID
       ],
     });
-  
+
     txb.setSender(account.address);
     const dryrunRes = await client.dryRunTransactionBlock({
       transactionBlock: await txb.build({ client: client }),
     });
     console.log(dryrunRes);
-  
+
     if (dryrunRes.effects.status.status === "success") {
       signAndExecuteTransactionBlock(
         {
@@ -720,7 +729,7 @@ const BasicContainer = () => {
     } else {
       toast.error("Something went wrong");
     }
-  
+
     console.log("Task Sheet Details", selectedTaskID, description);
     toast.success("任務單描述已更新！");
     setTaskSheetDescription("");
@@ -731,7 +740,7 @@ const BasicContainer = () => {
     setSelectedTask(task);
     onOpenModal3();
     console.log(task);
-  };  
+  };
 
   //增加獎池資金 | add_task_fund<T>;
   const handleAddTaskFund = (selectedTaskID: string, fund: number) => {
@@ -1077,11 +1086,17 @@ const BasicContainer = () => {
     <>
       {/*<Divider className="my-3"></Divider>*/}
       <div className="mx-auto pt-20">
-        <Button onPress={onOpenModal1} onClick={() => setSelectedTask(null)}>
+        <Button
+          onPress={onOpenModal1}
+          onClick={() => setSelectedTask(null)}
+          size="lg"
+          className="font-serif uppercase"
+          color="secondary"
+        >
           Publish Task
         </Button>
       </div>
-      <div className="flex justify-center p-4">
+      <div className="flex justify-center p-4 font-sans">
         <div className="flex w-full flex-col">
           <Tabs
             aria-label="Options"
@@ -1107,16 +1122,46 @@ const BasicContainer = () => {
                     <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
                       <div className="flex flex-grow gap-2 items-center">
                         <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow hideScrollBar className="max-h-[280px] overflow-y-auto">
-                            <h3 className="text-lg fint-semibold">{task.name}</h3>  
-                            <p><strong>Description:</strong> {task.description[0].description}</p>
-                            <p><strong>Published:</strong> {new Date(parseInt(task.publish_date)).toLocaleString()}</p>
-                            <p><strong>Creator:</strong> {truncateAddress(task.creator)}</p>
-                            <p><strong>MOD:</strong> {truncateAddress(task.moderator)}</p>
-                            <p><strong>Area:</strong> {task.area}</p>
-                            <p><strong>Status:</strong> {task.is_active ? "Active" : "Inactive"}</p>
-                            <p><strong>Reward Pool:</strong> {parseFloat(task.fund) / FLOAT_SCALING}</p>
-                            <p><strong>Reward:</strong> {task.reward_amount / FLOAT_SCALING}</p>
+                          <ScrollShadow
+                            hideScrollBar
+                            className="max-h-[280px] overflow-y-auto"
+                          >
+                            <h3 className="text-lg fint-semibold">
+                              {task.name}
+                            </h3>
+                            <p>
+                              <strong>Description:</strong>{" "}
+                              {task.description[0].description}
+                            </p>
+                            <p>
+                              <strong>Published:</strong>{" "}
+                              {new Date(
+                                parseInt(task.publish_date)
+                              ).toLocaleString()}
+                            </p>
+                            <p>
+                              <strong>Creator:</strong>{" "}
+                              {truncateAddress(task.creator)}
+                            </p>
+                            <p>
+                              <strong>MOD:</strong>{" "}
+                              {truncateAddress(task.moderator)}
+                            </p>
+                            <p>
+                              <strong>Area:</strong> {task.area}
+                            </p>
+                            <p>
+                              <strong>Status:</strong>{" "}
+                              {task.is_active ? "Active" : "Inactive"}
+                            </p>
+                            <p>
+                              <strong>Reward Pool:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
+                            </p>
+                            <p>
+                              <strong>Reward:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
+                            </p>
                             <Link
                               isExternal
                               href={`https://suiscan.xyz/devnet/object/${task.id}`}
@@ -1130,6 +1175,7 @@ const BasicContainer = () => {
                             onClick={() => handleAcceptTask(task)}
                             radius="full"
                             size="md"
+                            className=" text-white shadow-lg mt-10"
                           >
                             Accept Task
                           </Button>
@@ -1149,14 +1195,17 @@ const BasicContainer = () => {
                       src="/frens/voidfren.svg"
                       className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
                     />
-                    <p className="text-white/80 text-center">No accepted tasks</p>
+                    <p className="text-white/80 text-center">
+                      No accepted tasks
+                    </p>
                   </div>
                 )}
                 {acceptedTasks.map((task) => (
-                  <Card key={task.id} 
-                        isFooterBlurred
-                        className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
-                        >
+                  <Card
+                    key={task.id}
+                    isFooterBlurred
+                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
+                  >
                     <CardBody className="relative p-3">
                       <Image
                         removeWrapper
@@ -1168,16 +1217,46 @@ const BasicContainer = () => {
                     <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
                       <div className="flex flex-grow gap-2 items-center">
                         <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow hideScrollBar className="max-h-[280px] overflow-y-auto">
-                            <p><strong>Task Name:</strong> {task.name}</p>
-                            <p><strong>Description:</strong> {task.description[0].description}</p>
-                            <p><strong>Published:</strong> {new Date(parseInt(task.publish_date)).toLocaleString()}</p>
-                            <p><strong>Creator:</strong> {truncateAddress(task.creator)}</p>
-                            <p><strong>Moderator:</strong> {truncateAddress(task.moderator)}</p>
-                            <p><strong>Area:</strong> {task.area}</p>
-                            <p><strong>Status:</strong> {task.is_active ? "Active" : "Inactive"}</p>
-                            <p><strong>Fund:</strong> {parseFloat(task.fund) / FLOAT_SCALING}</p>
-                            <p><strong>Reward Amount:</strong> {task.reward_amount / FLOAT_SCALING}</p>
+                          <ScrollShadow
+                            hideScrollBar
+                            className="max-h-[280px] overflow-y-auto"
+                          >
+                            <p>
+                              <strong>Task Name:</strong> {task.name}
+                            </p>
+                            <p>
+                              <strong>Description:</strong>{" "}
+                              {task.description[0].description}
+                            </p>
+                            <p>
+                              <strong>Published:</strong>{" "}
+                              {new Date(
+                                parseInt(task.publish_date)
+                              ).toLocaleString()}
+                            </p>
+                            <p>
+                              <strong>Creator:</strong>{" "}
+                              {truncateAddress(task.creator)}
+                            </p>
+                            <p>
+                              <strong>Moderator:</strong>{" "}
+                              {truncateAddress(task.moderator)}
+                            </p>
+                            <p>
+                              <strong>Area:</strong> {task.area}
+                            </p>
+                            <p>
+                              <strong>Status:</strong>{" "}
+                              {task.is_active ? "Active" : "Inactive"}
+                            </p>
+                            <p>
+                              <strong>Fund:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
+                            </p>
+                            <p>
+                              <strong>Reward Amount:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
+                            </p>
                             <Link
                               isExternal
                               href={`https://suiscan.xyz/devnet/object/${task.id}`}
@@ -1201,7 +1280,7 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="publishedTasks" title="Published Tasks">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10"> 
+              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!publishedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                     <Image
@@ -1209,7 +1288,9 @@ const BasicContainer = () => {
                       src="/frens/voidfren.svg"
                       className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
                     />
-                    <p className="text-white/80 text-center">No published tasks</p>
+                    <p className="text-white/80 text-center">
+                      No published tasks
+                    </p>
                   </div>
                 )}
                 {publishedTasks.map((task) => (
@@ -1229,16 +1310,46 @@ const BasicContainer = () => {
                     <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
                       <div className="flex flex-grow gap-2 items-center">
                         <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow hideScrollBar className="max-h-[280px] overflow-y-auto">
-                            <h3 className="text-lg fint-semibold">{task.name}</h3>  
-                            <p><strong>Description:</strong>{" "}{task.description[0].description}</p>
-                            <p><strong>Published:</strong>{" "}{new Date(parseInt(task.publish_date)).toLocaleString()}</p>
-                            <p><strong>Creator:</strong>{" "}{truncateAddress(task.creator)}</p>
-                            <p><strong>MOD:</strong>{" "}{truncateAddress(task.moderator)}</p>
-                            <p><strong>Area:</strong> {task.area}</p>
-                            <p><strong>Status:</strong>{" "}{task.is_active ? "Active" : "Inactive"}</p>
-                            <p><strong>Reward Pool:</strong>{" "}{parseFloat(task.fund) / FLOAT_SCALING}</p>
-                            <p><strong>Reward:</strong>{" "}{task.reward_amount / FLOAT_SCALING}</p>
+                          <ScrollShadow
+                            hideScrollBar
+                            className="max-h-[280px] overflow-y-auto"
+                          >
+                            <h3 className="text-lg fint-semibold">
+                              {task.name}
+                            </h3>
+                            <p>
+                              <strong>Description:</strong>{" "}
+                              {task.description[0].description}
+                            </p>
+                            <p>
+                              <strong>Published:</strong>{" "}
+                              {new Date(
+                                parseInt(task.publish_date)
+                              ).toLocaleString()}
+                            </p>
+                            <p>
+                              <strong>Creator:</strong>{" "}
+                              {truncateAddress(task.creator)}
+                            </p>
+                            <p>
+                              <strong>MOD:</strong>{" "}
+                              {truncateAddress(task.moderator)}
+                            </p>
+                            <p>
+                              <strong>Area:</strong> {task.area}
+                            </p>
+                            <p>
+                              <strong>Status:</strong>{" "}
+                              {task.is_active ? "Active" : "Inactive"}
+                            </p>
+                            <p>
+                              <strong>Reward Pool:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
+                            </p>
+                            <p>
+                              <strong>Reward:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
+                            </p>
                             <Link
                               isExternal
                               href={`https://suiscan.xyz/devnet/object/${task.id}`}
@@ -1277,7 +1388,9 @@ const BasicContainer = () => {
                       src="/frens/voidfren.svg"
                       className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
                     />
-                    <p className="text-white/80 text-center">No Completed Tasks</p>
+                    <p className="text-white/80 text-center">
+                      No Completed Tasks
+                    </p>
                   </div>
                 )}
                 {completedTasks.map((task) => (
@@ -1297,16 +1410,46 @@ const BasicContainer = () => {
                     <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
                       <div className="flex flex-grow gap-2 items-center">
                         <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow hideScrollBar className="max-h-[280px] overflow-y-auto">
-                            <h3 className="text-lg fint-semibold">{task.name}</h3>  
-                            <p><strong>Description:</strong> {task.description[0].description}</p>
-                            <p><strong>Published:</strong>{" "}{new Date(parseInt(task.publish_date)).toLocaleString()}</p>
-                            <p><strong>Creator:</strong>{" "}{truncateAddress(task.creator)}</p>
-                            <p><strong>MOD:</strong>{" "}{truncateAddress(task.moderator)}</p>
-                            <p><strong>Area:</strong> {task.area}</p>
-                            <p><strong>Status:</strong>{" "}{task.is_active ? "Active" : "Inactive"}</p>
-                            <p><strong>Reward Pool:</strong>{" "}{parseFloat(task.fund) / FLOAT_SCALING}</p>
-                            <p><strong>Reward:</strong>{" "}{task.reward_amount / FLOAT_SCALING}</p>
+                          <ScrollShadow
+                            hideScrollBar
+                            className="max-h-[280px] overflow-y-auto"
+                          >
+                            <h3 className="text-lg fint-semibold">
+                              {task.name}
+                            </h3>
+                            <p>
+                              <strong>Description:</strong>{" "}
+                              {task.description[0].description}
+                            </p>
+                            <p>
+                              <strong>Published:</strong>{" "}
+                              {new Date(
+                                parseInt(task.publish_date)
+                              ).toLocaleString()}
+                            </p>
+                            <p>
+                              <strong>Creator:</strong>{" "}
+                              {truncateAddress(task.creator)}
+                            </p>
+                            <p>
+                              <strong>MOD:</strong>{" "}
+                              {truncateAddress(task.moderator)}
+                            </p>
+                            <p>
+                              <strong>Area:</strong> {task.area}
+                            </p>
+                            <p>
+                              <strong>Status:</strong>{" "}
+                              {task.is_active ? "Active" : "Inactive"}
+                            </p>
+                            <p>
+                              <strong>Reward Pool:</strong>{" "}
+                              {parseFloat(task.fund) / FLOAT_SCALING}
+                            </p>
+                            <p>
+                              <strong>Reward:</strong>{" "}
+                              {task.reward_amount / FLOAT_SCALING}
+                            </p>
                             <Link
                               isExternal
                               href={`https://suiscan.xyz/devnet/object/${task.id}`}
@@ -1631,7 +1774,7 @@ const BasicContainer = () => {
                   onClick={() =>
                     handleTaskSheetDetails(
                       selectedTask ? selectedTask.id : "",
-                      taskSheetDescription,
+                      taskSheetDescription
                     )
                   }
                   onPress={onClose}

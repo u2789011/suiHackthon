@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Header from "@/components/header";
 import BasicContainer from "@/components/containers/basicContainer";
+import HomePage from "@/components/containers/homePage";
 import Footer from "@/components/footer";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -15,7 +16,8 @@ export default function Home() {
       )}
     >
       <Header />
-      <BasicContainer />
+      <HomePage />
+      {/* <BasicContainer /> */}
       <Footer />
     </main>
   );

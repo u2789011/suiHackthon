@@ -69,6 +69,7 @@ const BasicContainer = () => {
     "0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b"
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
+  const DEVNET_EXPLOR_OBJ = "https://suiscan.xyz/devnet/object/";
 
   const { walletAddress, suiName } = useContext(AppContext);
   const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
@@ -1673,16 +1674,28 @@ const BasicContainer = () => {
               </ModalHeader>
               <ModalBody>
                 {/* //TODO: 這裡要抓到selectedTask中的任務單們 */}
-                {selectedTask?.task_sheets?.map((taskSheet, index) => (
+                {selectedTask?.task_sheets?.map((taskSheet, index) => {
+                  const explorerObjUrl = `${DEVNET_EXPLOR_OBJ + taskSheet}`;
+
+                  return(
                   <Checkbox
                     key={index}
                     value={taskSheet}
                     onChange={handleChange}
                   >
-                    {taskSheet}
+                    {truncateAddress(taskSheet)} {"| "}
+                    <a
+                      href={explorerObjUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'lightblue', textDecoration: 'underline' }}
+                    >
+                      View on Blockchain
+                    </a>
                   </Checkbox>
-                ))}
-                <Checkbox value="tasksheet 1" onChange={handleChange}>
+                  );
+                })}
+                {/*<Checkbox value="tasksheet 1" onChange={handleChange}>
                   tasksheet 1
                 </Checkbox>
                 <Checkbox value="tasksheet 2" onChange={handleChange}>
@@ -1696,11 +1709,11 @@ const BasicContainer = () => {
                 </Checkbox>
                 <Checkbox value="tasksheet 5" onChange={handleChange}>
                   tasksheet 5
-                </Checkbox>
+              </Checkbox>*/}
                 <Textarea
                   maxRows={3}
-                  label="Annotation"
-                  placeholder="Enter your annotation"
+                  label="Comments"
+                  placeholder="Enter your comments"
                   onChange={(e) => {
                     setAnnotation(e.target.value);
                   }}

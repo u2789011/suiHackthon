@@ -45,38 +45,91 @@ type Task = {
 
 type TaskSheet = {
   data: {
-    digest: string;
+    content:{
+      dataType: string;
+      fields: any;
+    };
     fields: {
-      id: any[];
-      status: number;
-      main_task_id: string;
-      task_description: TaskDescription;
-      content?: string | null;
       annotation?: string | null;
-      moderator: string;
-      creator: string;
+      content?: string | null;
       created_time: string;
+      creator: string;
+      id: {
+        id: string;
+      }
+      main_task_id: string;
+      moderator: string;
+      status: number;
+      task_description: TaskDescription;
       update_time: string;
     };
+    hasPublicTransfer: boolean;
+  digest: string;
+  previousTransaction: string;
   };
 }
 
 type TaskAdminCap = {
-  data: Array<{
-    data: {
+  data: {
+      objectId: string,
+      version: string,
+      digest: string,
+      type: string,
       content: {
-        dataType: string;
-        fields: {
-          id: string[];
-          hasPublicTransfer: boolean;
-          type: string;
-          digest: string;
-          objectId: string;
-          version: string;
+          dataType: string,
+          type: string,
+          hasPublicTransfer: boolean,
+          fields: {
+              id: {
+                  id: string
+              }
+          }
+      }
+  }
+}
+
+interface TaskSheetArr {
+  data: {
+    content: {
+      dataType: string;
+      fields: {
+        annotation: string | null;
+        content: string;
+        created_time: string;
+        creator: string;
+        id: {
+          id: string;
         };
+        main_task_id: string;
+        moderator: string;
+        status: number;
+        subtask_description: string;
+        update_time: string;
       };
     };
-  }>;
-  nextCursor: string;
-  hasNextPage: boolean;
-};
+    digest: string;
+    objectId: string;
+    previousTransaction: string;
+    version: string;
+  };
+}
+
+interface TaskAdminCapArr {
+  data: {
+    content: {
+      dataType: string;
+      fields: {
+        id: {
+          id: string;
+        };
+      };
+      hasPublicTransfer: boolean;
+      type: string;
+      };
+    digest: string;
+    objectId: string
+    type: string;
+    version: string;
+    previousTransaction: string;
+    };
+  };

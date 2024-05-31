@@ -36,6 +36,7 @@ import {
 } from "@nextui-org/react";
 import { log } from "console";
 import "tailwindcss/tailwind.css";
+import { json } from "stream/consumers";
 
 const BasicContainer = () => {
   const {
@@ -83,6 +84,7 @@ const BasicContainer = () => {
     options: {
       showType: true,
       showContent: true,
+      showPreviousTransaction: true,
     },
   });
 
@@ -96,6 +98,7 @@ const BasicContainer = () => {
     options: {
       showType: true,
       showContent: true,
+      showPreviousTransaction: true,
     },
   });
 
@@ -315,7 +318,7 @@ const BasicContainer = () => {
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
-  console.log("processedTaskSheets", processedTaskSheets); //FIXME: for test use only
+  //console.log("processedTaskSheets", processedTaskSheets); //FIXME: for test use only
 
   // Data for Published Tasks
   useEffect(() => {
@@ -626,113 +629,134 @@ const BasicContainer = () => {
     // }
   };
 
-  //更新任務單內容 | update_task_sheet_content
+  const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
+  const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
+
+  //更新任務單內容 | update_task_sheet_content FIXME:TODO:
   const handleTaskSheetDetails = async (
     selectedTaskID: string,
-    description: string
+    description: string,
   ) => {
     if (!account.address) return;
 
-    const txb = new TransactionBlock();
-    console.log(selectedTask);
-
-    /*
-    // Find certain tasksheet from selectedTaskID
-    const matchedTaskSheet = processedTaskSheets.find(
-      taskSheet => taskSheet.data.fields.main_task_id === selectedTaskID
-    );
-  
-    // get user task sheet source data
-    const userAdminCapData = client.getOwnedObjects({
-      owner: walletAddress ?? "",
-      filter: {
-        StructType: `${PACKAGE_ID}::public_task_TaskSheet`,
-      },
-      options: {
-        showType: true,
-        showContent: true
+    try {
+      if(!userTaskSheets) {
+        throw new Error("UserTaskSheet is undefined");
       }
-    });
-  
-    // turn userAdminCapData into json
-    const jsonString = JSON.stringify(userAdminCapData, null, 2);
-    const userAdminCapDataJson = JSON.parse(jsonString);
-    console.log(userAdminCapDataJson); //FIXME: test user only
-  
-    if (matchedTaskSheet) {
-      const taskSheetID = matchedTaskSheet.data.fields.id;
-      const taskSheetDigest = matchedTaskSheet.data.digest;
-  
-      // Use taskshet.data.digest to match the correct taskadmincap
-      const matchedTaskAdminCap = userAdminCapDataJson.data.find( //TODO: userTaskAdminCaps 轉換資料為 TaskAdminCap Type
-        taskAdminCap => taskAdminCap.data.content.fields.digest === taskSheetDigest
-      );
-      if (matchedTaskAdminCap) {
-        const taskAdminCapID = matchedTaskAdminCap.data.content.fields.id.join(',');
-        console.log('Matched TaskAdminCap ID:', taskAdminCapID);
-    */
 
-    txb.moveCall({
-      target: `${PACKAGE_ID}::public_task::update_task_sheet_content`,
-      arguments: [
-        txb.pure(
-          "0x1ef82e2fa6d05106b7aacc3d70e90073f6c289fb3311341e72c3f23dfef802d0"
-        ),
-        txb.pure("test Strings"),
-        txb.pure(SUI_CLOCK_OBJECT_ID),
-        txb.pure(
-          "0xc949387d447d4524e8e0038a90b6e92073296a564a8d43fc4b45af0f63f1bb67"
-        ), // 使用匹配的 TaskAdminCap ID
-      ],
-    });
+      const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
+      const userTaskSheetArray = jsonObjUserTaskSheet.data
+      
+      // FIXME: Test Use Only
+      console.log("jsonObjUserTaskSheet.data:", jsonObjUserTaskSheet.data);
+      console.log("userTaskSheetArray",userTaskSheetArray);
+      console.log(selectedTaskID);
+      console.log(typeof(selectedTaskID));
 
-    txb.setSender(account.address);
-    const dryrunRes = await client.dryRunTransactionBlock({
-      transactionBlock: await txb.build({ client: client }),
-    });
-    console.log(dryrunRes);
-
-    if (dryrunRes.effects.status.status === "success") {
-      signAndExecuteTransactionBlock(
-        {
-          transactionBlock: txb,
-          options: {
-            showEffects: true,
-          },
-        },
-        {
-          onSuccess: async (res) => {
-            try {
-              const digest = await txb.getDigest({ client: client });
-              toast.success(`Transaction Sent, ${digest}`);
-              console.log(`Transaction Digest`, digest);
-            } catch (digestError) {
-              if (digestError instanceof Error) {
-                toast.error(
-                  `Transaction sent, but failed to get digest: ${digestError.message}`
-                );
-              } else {
-                toast.error(
-                  "Transaction sent, but failed to get digest due to an unknown error."
-                );
-              }
-            }
-            refetch();
-            fetchAllTaskData();
-          },
-          onError: (err) => {
-            toast.error("Tx Failed!");
-            console.log(err);
-          },
+      const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
+        (tasksheet: TaskSheetArr ) => {
+          console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
+          return tasksheet.data.content.fields.main_task_id.includes(selectedTaskID)
         }
       );
-    } else {
-      toast.error("Something went wrong");
-    }
 
-    console.log("Task Sheet Details", selectedTaskID, description);
-    toast.success("任務單描述已更新！");
-    setTaskSheetDescription("");
+      if (!relateTaskSheet) {
+        throw new Error("No matching TaskSheet found");
+      }
+      const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
+      console.log("relateTaskSheet", relateTaskSheet)
+      console.log("relateTaskSheet_tx:::", relateTaskSheet.data.previousTransaction)
+
+
+      // TaskAdminCap
+      const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
+      const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
+
+      console.log("userTaskAdminCapArray::", userTaskAdminCapArray)
+
+      const relatedTaskAdminCap: TaskAdminCap | undefined = userTaskAdminCapArray.find(
+        (item: TaskAdminCapArr) => {
+          console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction)
+          return item.data.previousTransaction === relateTaskSheet.data.previousTransaction
+        }
+      );
+
+      console.log("relatedTaskAdminCap", relatedTaskAdminCap)
+      
+      if (!relatedTaskAdminCap) {
+        throw new Error("No Matching TaskAdminCap found");
+      }
+      const relatedTaskAdminCapID = relatedTaskAdminCap.data.content.fields.id.id;
+
+      //FIXME: test only
+      console.log("selectedTask:", selectedTask);
+      console.log("relateTaskSheetId", relateTaskSheetId);
+      console.log("relatedTaskAdminCapID", relatedTaskAdminCapID);
+
+      // Move Call Function
+      const txb = new TransactionBlock();
+
+      txb.moveCall({
+        target: `${PACKAGE_ID}::public_task::update_task_sheet_content`,
+        arguments: [
+          txb.pure(relateTaskSheetId),
+          txb.pure(description),
+          txb.pure(SUI_CLOCK_OBJECT_ID),
+          txb.pure(relatedTaskAdminCapID) // 使用匹配的 TaskAdminCap ID
+        ],
+      });
+
+      txb.setSender(account.address);
+      const dryrunRes = await client.dryRunTransactionBlock({
+        transactionBlock: await txb.build({ client: client }),
+      });
+      console.log(dryrunRes);
+
+      if (dryrunRes.effects.status.status === "success") {
+        signAndExecuteTransactionBlock(
+          {
+            transactionBlock: txb,
+            options: {
+              showEffects: true,
+            },
+          },
+          {
+            onSuccess: async (res) => {
+              try {
+                const digest = await txb.getDigest({ client: client });
+                toast.success(`Transaction Sent, ${digest}`);
+                console.log(`Transaction Digest`, digest);
+              } catch (digestError) {
+                if (digestError instanceof Error) {
+                  toast.error(
+                    `Transaction sent, but failed to get digest: ${digestError.message}`
+                  );
+                } else {
+                  toast.error(
+                    "Transaction sent, but failed to get digest due to an unknown error."
+                  );
+                }
+              }
+              refetch();
+              fetchAllTaskData();
+            },
+            onError: (err) => {
+              toast.error("Tx Failed!");
+              console.log(err);
+            },
+          }
+        );
+      } else {
+        toast.error("Something went wrong");
+      }
+
+      console.log("Task Sheet Details", selectedTaskID, description);
+      toast.success("任務單描述已更新！");
+      setTaskSheetDescription("");
+
+    } catch (error) {
+      console.error("Error handling task sheet details", error);
+    }
   };
 
   //打開發任務者編輯已發布任務的Modal

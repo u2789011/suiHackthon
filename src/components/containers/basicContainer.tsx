@@ -647,7 +647,7 @@ const BasicContainer = () => {
   const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
   const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
 
-  //更新任務單內容 | update_task_sheet_content FIXME:TODO:
+  //更新任務單內容 | update_task_sheet_content
   const handleTaskSheetDetails = async (
     selectedTaskID: string,
     description: string,
@@ -661,16 +661,10 @@ const BasicContainer = () => {
 
       const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
       const userTaskSheetArray = jsonObjUserTaskSheet.data
-      
-      // FIXME: Test Use Only
-      console.log("jsonObjUserTaskSheet.data:", jsonObjUserTaskSheet.data);
-      console.log("userTaskSheetArray",userTaskSheetArray);
-      console.log(selectedTaskID);
-      console.log(typeof(selectedTaskID));
 
       const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
         (tasksheet: TaskSheetArr ) => {
-          console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
+          //console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
           return tasksheet.data.content.fields.main_task_id.includes(selectedTaskID)
         }
       );
@@ -679,25 +673,19 @@ const BasicContainer = () => {
         throw new Error("No matching TaskSheet found");
       }
       const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
-      console.log("relateTaskSheet", relateTaskSheet)
-      console.log("relateTaskSheet_tx:::", relateTaskSheet.data.previousTransaction)
 
 
       // TaskAdminCap
       const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
       const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
 
-      console.log("userTaskAdminCapArray::", userTaskAdminCapArray)
-
       const relatedTaskAdminCap: TaskAdminCap | undefined = userTaskAdminCapArray.find(
         (item: TaskAdminCapArr) => {
-          console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction)
+          //console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction)
           return item.data.previousTransaction === relateTaskSheet.data.previousTransaction
         }
       );
 
-      console.log("relatedTaskAdminCap", relatedTaskAdminCap)
-      
       if (!relatedTaskAdminCap) {
         throw new Error("No Matching TaskAdminCap found");
       }

@@ -63,10 +63,13 @@ const BasicContainer = () => {
   // version 20240527
   const PACKAGE_ID =
     //"0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
-    "0xafb7c825ba78477cb42702a896eb1c8f758e5f4d9ff972f0f868b782f2623728";
+    //"0xafb7c825ba78477cb42702a896eb1c8f758e5f4d9ff972f0f868b782f2623728";
+    "0xd84bf8f814a797c2e04a31dba8d4ba276489dc835e6b3ee725059a756b0cfe14";
   const TASK_MANAGER_ID =
     //"0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
-    "0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b"
+    //"0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b";
+    "0x8a1f4de7e060da0fd3e14839c7c9e8250895061c1f39f0bacf90c9b7744a78a2";
+        
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
   const DEVNET_EXPLOR_OBJ = "https://suiscan.xyz/devnet/object/";
@@ -1014,13 +1017,17 @@ const BasicContainer = () => {
     console.log("Task Sheet Details", selectedTaskID, description);
     toast.success("Task Description Updated");
   };
-  //管理已提交任務打開Modal
+
+
+  //管理已提交任務打開 Modal
   const handleSubmittedTask = (task: Task) => {
     setSelectedTask(task);
     console.log("Submitted Task", task);
     onOpenModal2();
   };
-  //紀錄選取了哪些任務單
+
+
+  //紀錄選取了哪些任務單 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       setSelected([...selected, e.target.value]);
@@ -1028,21 +1035,28 @@ const BasicContainer = () => {
       setSelected(selected.filter((item) => item !== e.target.value));
     }
   };
-  //認證通過並發送獎勵 | approve_and_send_reward<T>
-  const handleSubmit = (annotation: string, selectedTaskId: string) => {
-    /* if (!account.address) return;
+  //認證通過並發送獎勵 | approve_and_send_reward<T> TODO: FIXME:
+  const handleApprove = async (
+    annotation: string,
+    selectedTaskId: string,
+    selectedTaskSheets: string[],
+  ) => {
+     if (!account.address) return;
+
+
+
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
           target: `${PACKAGE_ID}::public_task::approve_and_send_reward`,
           arguments: [
-            txb.object(
-              selectedTaskId
-            ),
-            txb.pure(SUI_CLOCK_OBJECT_ID),
+            txb.pure(selectedTaskId),
+            txb.pure(selectedTaskSheets[0]), // 需要寫一個 for 迴圈便利傳入角標
             txb.pure(annotation),
+            txb.pure(SUI_CLOCK_OBJECT_ID),
+            //txb.pure(modcap) // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
           ],
-          typeArguments: ["0x2::sui::SUI"],
+          typeArguments: ["0x2::sui::SUI"], //從 alltask 中找 selectedTaskId 符合的 item 回傳 item<Task>.type
         });
 
         txb.setSender(account.address);
@@ -1077,7 +1091,6 @@ const BasicContainer = () => {
                   }
                 }
                 refetch();
-                fetchData();
               },
               onError: (err) => {
                 toast.error("Tx Failed!");
@@ -1087,7 +1100,7 @@ const BasicContainer = () => {
           );
         } else {
           toast.error("Something went wrong");
-        }*/
+        }
     console.log(selectedTaskId, selected, annotation);
     toast.success(`Task Sheet ${selected} is Approved`);
     toast.success(`Note: ${annotation}`);
@@ -1697,19 +1710,7 @@ const BasicContainer = () => {
                 })}
                 {/*<Checkbox value="tasksheet 1" onChange={handleChange}>
                   tasksheet 1
-                </Checkbox>
-                <Checkbox value="tasksheet 2" onChange={handleChange}>
-                  tasksheet 2
-                </Checkbox>
-                <Checkbox value="tasksheet 3" onChange={handleChange}>
-                  tasksheet 3
-                </Checkbox>
-                <Checkbox value="tasksheet 4" onChange={handleChange}>
-                  tasksheet 4
-                </Checkbox>
-                <Checkbox value="tasksheet 5" onChange={handleChange}>
-                  tasksheet 5
-              </Checkbox>*/}
+                </Checkbox>*/}
                 <Textarea
                   maxRows={3}
                   label="Comments"
@@ -1737,9 +1738,10 @@ const BasicContainer = () => {
                   color="primary"
                   onPress={onClose}
                   onClick={() =>
-                    handleSubmit(
+                    handleApprove(
                       annotation,
-                      selectedTask ? selectedTask.id : ""
+                      selectedTask ? selectedTask.id : "",
+                      selected
                     )
                   }
                 >

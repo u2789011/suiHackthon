@@ -598,7 +598,22 @@ const BasicContainer = () => {
           onSuccess: async (res) => {
             try {
               const digest = await txb.getDigest({ client: client });
-              toast.success(`Transaction Sent, ${digest}`);
+              const explorerUrl = `${DEVNET_EXPLORE + digest}`;
+              toast.success(
+                <span>
+                  Transaction Sent
+                  <div>
+                    <a
+                      href={explorerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "lightblue", textDecoration: "underline" }}
+                    >
+                      View on Blockchian
+                    </a>
+                  </div>
+                </span>
+              );
               console.log(`Transaction Digest`, digest);
             } catch (digestError) {
               if (digestError instanceof Error) {
@@ -688,10 +703,6 @@ const BasicContainer = () => {
       }
       const relatedTaskAdminCapID = relatedTaskAdminCap.data.content.fields.id.id;
 
-      //FIXME: test only
-      console.log("selectedTask:", selectedTask);
-      console.log("relateTaskSheetId", relateTaskSheetId);
-      console.log("relatedTaskAdminCapID", relatedTaskAdminCapID);
 
       // Move Call Function
       const txb = new TransactionBlock();
@@ -724,7 +735,22 @@ const BasicContainer = () => {
             onSuccess: async (res) => {
               try {
                 const digest = await txb.getDigest({ client: client });
-                toast.success(`Transaction Sent, ${digest}`);
+                const explorerUrl = `${DEVNET_EXPLORE + digest}`;
+                toast.success(
+                  <span>
+                    Transaction Sent
+                    <div>
+                      <a
+                        href={explorerUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "lightblue", textDecoration: "underline" }}
+                      >
+                        View on Blockchian
+                      </a>
+                    </div>
+                  </span>
+                );
                 console.log(`Transaction Digest`, digest);
               } catch (digestError) {
                 if (digestError instanceof Error) {
@@ -751,7 +777,6 @@ const BasicContainer = () => {
       }
 
       console.log("Task Sheet Details", selectedTaskID, description);
-      toast.success("任務單描述已更新！");
       setTaskSheetDescription("");
 
     } catch (error) {

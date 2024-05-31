@@ -63,13 +63,13 @@ const BasicContainer = () => {
   // version 20240527
   const PACKAGE_ID =
     //"0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
-    //"0xafb7c825ba78477cb42702a896eb1c8f758e5f4d9ff972f0f868b782f2623728";
-    "0xd84bf8f814a797c2e04a31dba8d4ba276489dc835e6b3ee725059a756b0cfe14";
+    "0xafb7c825ba78477cb42702a896eb1c8f758e5f4d9ff972f0f868b782f2623728";
+    //"0xd84bf8f814a797c2e04a31dba8d4ba276489dc835e6b3ee725059a756b0cfe14";
   const TASK_MANAGER_ID =
     //"0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
-    //"0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b";
-    "0x8a1f4de7e060da0fd3e14839c7c9e8250895061c1f39f0bacf90c9b7744a78a2";
-        
+    "0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b";
+    //"0x8a1f4de7e060da0fd3e14839c7c9e8250895061c1f39f0bacf90c9b7744a78a2";
+
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
   const DEVNET_EXPLOR_OBJ = "https://suiscan.xyz/devnet/object/";

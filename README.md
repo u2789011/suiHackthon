@@ -115,7 +115,7 @@ This object is minted and transferred to the completer's address when the task i
 
 ---
 
-## about the Team
+## About the Team
 **Fren Suipport**
 > The team consists of 5 members from the ***Blockchain Research Club at National Chung Hsing University***.
 > One of the members joined the club the day after meeting the others at the Sui Hacker House event in Taipei.

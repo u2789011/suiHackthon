@@ -11,6 +11,12 @@ Currently, the first phase has implemented the public tasks feature.<br/>
 <br/>
 Fren Suipport aims to enable individuals without any web3 assets to seamlessly enter the web3 world. Without relying on centralized exchanges, users can earn their first web3 assets directly through activities such as learning, providing labor, and participating in submission competitions.
 
+***For more details about our project, just head to our homepage and scroll down.***
+<br>
+
+![image](https://github.com/u2789011/suiHackthon/assets/153002627/e1b07300-09ba-49db-8b51-5c8a2466b2be)
+
+
 <br/>
 
 **Links:** 
@@ -23,8 +29,8 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 <br/>
 <br/>
 
-
-## Public Tasks User Guide (Currently works on Sui Devnet)
+---
+## Public Tasks User Guide (Currently on Sui Devnet)
 
 ### 0. Overview
 #### This is the homepage for public tasks. Our public task model is designed with the following features:

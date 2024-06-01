@@ -41,6 +41,7 @@ type Task = {
   reward_amount: number;
   task_sheets: any[]; // assuming task_sheets is an array of objects
   poc_img_url: string;
+  previousTransaction: string;
 };
 
 type TaskSheet = {
@@ -133,3 +134,23 @@ interface TaskAdminCapArr {
     previousTransaction: string;
     };
   };
+
+  interface ModCapArr {
+    data: {
+        objectId: string;
+        version: string;
+        digest: string;
+        type: string;
+        previousTransaction: string;
+        content: {
+            dataType: string;
+            type: string;
+            hasPublicTransfer: boolean;
+            fields: {
+                id: {
+                    id: string;
+                }
+            }
+        }
+    }
+}

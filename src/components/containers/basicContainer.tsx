@@ -81,6 +81,7 @@ const BasicContainer = () => {
   const { data: allCoins } = useSuiClientQuery("getAllCoins", {
     owner: walletAddress ?? "",
   });
+
   // Get TaskSheets Owned By User
   const { data: userTaskSheets } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
@@ -203,6 +204,7 @@ const BasicContainer = () => {
         ids: publishedTaskIdsArr,
         options: {
           showContent: true,
+          showPreviousTransaction: true
         },
       };
 
@@ -210,6 +212,7 @@ const BasicContainer = () => {
         multiGetObjectsParams
       );
 
+      console.log("Add Previous Trasaction Query",objectsResponse); //FIXME: test only 
       return objectsResponse;
     } catch (error) {
       console.error("Error fetching multiple objects:", error);
@@ -225,6 +228,7 @@ const BasicContainer = () => {
       const fields = item.data.content.fields;
       const type = item.data.content.type;
       const descriptionField = fields.description[0].fields;
+      const previoustx = item.data.previousTransaction;
 
       return {
         reward_type: (type.match(/<([^>]+)>/) || [])[1] || "",
@@ -248,6 +252,7 @@ const BasicContainer = () => {
         reward_amount: parseFloat(fields.reward_amount),
         task_sheets: fields.task_sheets,
         poc_img_url: fields.poc_img_url,
+        previousTransaction: previoustx
       };
     });
   }
@@ -264,7 +269,7 @@ const BasicContainer = () => {
     fetchAllTaskData();
   }, []);
 
-  console.log("all tasks", allTasks);
+  console.log("all tasks are:::", allTasks);
 
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
@@ -532,6 +537,7 @@ const BasicContainer = () => {
               reward_amount: parseInt(newTask.reward_amount),
               task_sheets: [],
               poc_img_url: newTask.poc_img_url,
+              previousTransaction: ""
             };
 
             setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
@@ -1067,8 +1073,30 @@ const BasicContainer = () => {
 
       const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
       const userModCapsArray = jsonObjUserModCaps.data;
+      //console.log("publishedTasks:::",allTasks)
+      
+      // 找到與 selectedTaskId 對應的任務
+      const selectedTask = allTasks.find(task => task.id === selectedTaskId);
+      if (!selectedTask) {
+        throw new Error("Selected task not found");
+      }
+
+      // TODO: HERE TO Change a way to find the right modcap
       console.log("userModCapsArray:::", userModCapsArray);
-      //TODO: here to continue
+      console.log("passed in selectedtask is:::", selectedTask)
+
+      // 找到與 selectedTask 的 PreviousTransaction 相同的 modCap
+      const relatedModCap: ModCapArr | undefined = userModCapsArray.find(
+        (modCap: ModCapArr) => modCap.data.previousTransaction === selectedTask.previousTransaction
+      );
+
+      if (!relatedModCap) {
+        throw new Error("Related modCap not found");
+      }
+      
+      console.log("Selected Task PreviousTransaction:", selectedTask.previousTransaction);
+      console.log("Related ModCap PreviousTransaction:", relatedModCap.data.previousTransaction);
+
 
 
 
@@ -1083,7 +1111,7 @@ const BasicContainer = () => {
           txb.pure(selectedTaskSheets[0]), // 需要寫一個 for 迴圈 txb.movecall 傳入迭代
           txb.pure(annotation),
           txb.pure(SUI_CLOCK_OBJECT_ID),
-          //txb.pure(modcap) // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
+          txb.pure(relatedModCap) // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
         ],
         typeArguments: ["0x2::sui::SUI"], //從 alltask 中找 selectedTaskId 符合的 item 回傳 item<Task>.type
       });

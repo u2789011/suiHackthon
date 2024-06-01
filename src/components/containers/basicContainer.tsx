@@ -434,7 +434,10 @@ const BasicContainer = () => {
 
   // Publish Public Tasks
   const handlePublishTaskChain = async () => {
-    if (!account.address) return;
+    if (!account) {
+      toast.error("Please connect your wallet");
+      return;
+    }
 
     const txb = new TransactionBlock();
 

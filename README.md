@@ -114,6 +114,7 @@ This object is minted and transferred to the completer's address when the task i
 > The team consists of 5 members from the ***Blockchain Research Club at National Chung Hsing University***.
 > One of the members joined the club the day after meeting the others at the Sui Hacker House event in Taipei.
 <br>
+
 ![image](https://github.com/u2789011/suiHackthon/assets/153002627/43e88b8f-58f7-4f9d-8467-ddca024a4a86)
 
 

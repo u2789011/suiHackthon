@@ -1075,34 +1075,38 @@ const BasicContainer = () => {
       const userModCapsArray = jsonObjUserModCaps.data;
       //console.log("publishedTasks:::",allTasks)
       
-      // 找到與 selectedTaskId 對應的任務
+      // find Related Task
       const selectedTask = allTasks.find(task => task.id === selectedTaskId);
       if (!selectedTask) {
         throw new Error("Selected task not found");
       }
 
-      // TODO: HERE TO Change a way to find the right modcap
-      console.log("userModCapsArray:::", userModCapsArray);
-      console.log("passed in selectedtask is:::", selectedTask)
+      const res = await client.queryTransactionBlocks({ filter: { ChangedObject: selectedTaskId } });
+      const taskLastDataDigest = res.data[res.data.length - 1].digest;
 
-      // 找到與 selectedTask 的 PreviousTransaction 相同的 modCap
-      const relatedModCap: ModCapArr | undefined = userModCapsArray.find(
-        (modCap: ModCapArr) => modCap.data.previousTransaction === selectedTask.previousTransaction
-      );
+      let relatedModCap: any;
+      for (const modCap of userModCapsArray) {
+        const modCapLatestTx = await client.queryTransactionBlocks({ filter: { ChangedObject: modCap.data.objectId } });
+        const ModCapLatestDigest = modCapLatestTx.data[modCapLatestTx.data.length - 1].digest;
+
+        if (ModCapLatestDigest === taskLastDataDigest) {
+          relatedModCap = modCap;
+          break;
+        }
+      }
 
       if (!relatedModCap) {
         throw new Error("Related modCap not found");
       }
-      
-      console.log("Selected Task PreviousTransaction:", selectedTask.previousTransaction);
-      console.log("Related ModCap PreviousTransaction:", relatedModCap.data.previousTransaction);
 
-
-
+      const relatedModCapId = relatedModCap.data.objectId;
+      const rewardType = selectedTask.reward_type;
+      const selectedTaskSheet = selectedTaskSheets[0].toString()
+      console.log("Related ModCapId: ", relatedModCapId);
+      console.log('selectedTaskId:', selectedTaskId, typeof selectedTaskId);
+      console.log('selectedTaskSheet:', selectedTaskSheet, typeof selectedTaskSheets);
 
       const txb = new TransactionBlock();
-      console.log(selectedTaskId);
-      console.log(selectedTaskSheets);
 
       txb.moveCall({
         target: `${PACKAGE_ID}::public_task::approve_and_send_reward`,
@@ -1111,9 +1115,9 @@ const BasicContainer = () => {
           txb.pure(selectedTaskSheets[0]), // 需要寫一個 for 迴圈 txb.movecall 傳入迭代
           txb.pure(annotation),
           txb.pure(SUI_CLOCK_OBJECT_ID),
-          txb.pure(relatedModCap) // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
+          txb.pure(relatedModCapId) // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
         ],
-        typeArguments: ["0x2::sui::SUI"], //從 alltask 中找 selectedTaskId 符合的 item 回傳 item<Task>.type
+        typeArguments: [rewardType], //從 alltask 中找 selectedTaskId 符合的 item 回傳 item<Task>.type
       });
 
       txb.setSender(account.address);
@@ -1134,7 +1138,22 @@ const BasicContainer = () => {
               onSuccess: async (res) => {
                 try {
                   const digest = await txb.getDigest({ client: client });
-                  toast.success(`Transaction Sent, ${digest}`);
+                  const explorerUrl = `${DEVNET_EXPLORE + digest}`;
+                  toast.success(
+                    <span>
+                      Task Sheet Approved
+                      <div>
+                        <a
+                          href={explorerUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "lightblue", textDecoration: "underline" }}
+                        >
+                          View on Blockchian
+                        </a>
+                      </div>
+                    </span>
+                  );
                   console.log(`Transaction Digest`, digest);
                 } catch (digestError) {
                   if (digestError instanceof Error) {
@@ -1159,8 +1178,8 @@ const BasicContainer = () => {
           toast.error("Something went wrong");
         }
       console.log(selectedTaskId, selected, annotation);
-      toast.success(`Task Sheet ${selected} is Approved`);
-      toast.success(`Note: ${annotation}`);
+      //toast.success(`Task Sheet ${selected} is Approved`);
+      //toast.success(`Note: ${annotation}`);
       setSelected([]);
 
      } catch (error) {

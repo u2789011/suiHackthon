@@ -349,7 +349,7 @@ const BasicContainer = () => {
   useEffect(() => {
     if (allTasks.length > 0) {
       const filteredTasks = allTasks.filter(
-        (task) => task.creator === walletAddress
+        (task) => task.creator === walletAddress || task.moderator === walletAddress
       );
       setPublishedTasks(filteredTasks);
     }

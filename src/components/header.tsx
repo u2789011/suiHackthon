@@ -34,7 +34,7 @@ const Header = () => {
         WebkitBackdropFilter: "blur(12px)",
       }}
     >
-      <header className="w-full max-w-360 mx-auto h-20 flex items-center justify-between pt-4 pb-3 px-4 z-50">
+      <header className="w-full max-w-360 mx-auto h-auto sm:h-20 flex flex-col sm:flex-row items-center justify-between pt-4 pb-3 px-4 z-50">
         <Link href="/" passHref>
           <div className="flex items-center">
             <Image src="/FrenSuipport.svg" alt="Logo" width={50} height={50} />
@@ -47,7 +47,7 @@ const Header = () => {
           </div>
         </Link>
         <div className="flex-grow"></div>
-        <div className="flex items-center gap-4 ml-auto">
+        <div className="flex items-center gap-4 ml-auto mt-4 sm:mt-0">
           <BasicDataField
             label="Sui Balance"
             value={userBalance ?? "0.0000"}

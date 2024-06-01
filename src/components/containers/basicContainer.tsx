@@ -116,14 +116,14 @@ const BasicContainer = () => {
     filter: {
       StructType: `${PACKAGE_ID}::public_task::ModCap`,
     },
-    options: {
+    options:{
       showType: true,
       showContent: true,
       showPreviousTransaction: true,
-    },
+    }
   });
 
-  console.log("userModCaps::", userModCaps); //FIXME: test use only
+  console.log("userModCaps::", userModCaps) //FIXME: test use only
 
   useEffect(() => {
     if (userTaskAdminCaps && userTaskSheets) {
@@ -329,7 +329,7 @@ const BasicContainer = () => {
     }
     return [];
   }
-
+  
   async function loadAcceptedTasks() {
     if (userTaskSheets) {
       const userTaskSheetsData = await fetchAcceptedTask(userTaskSheets);
@@ -360,10 +360,7 @@ const BasicContainer = () => {
 
   // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
+    if (!account.address) return;
 
     const txb = new TransactionBlock();
     console.log(selectedTask);
@@ -411,7 +408,6 @@ const BasicContainer = () => {
                 </span>
               );
               console.log(`Transaction Digest`, digest);
-              loadAcceptedTasks();
             } catch (digestError) {
               if (digestError instanceof Error) {
                 toast.error(
@@ -439,10 +435,7 @@ const BasicContainer = () => {
 
   // Publish Public Tasks
   const handlePublishTaskChain = async () => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
+    if (!account.address) return;
 
     const txb = new TransactionBlock();
 
@@ -598,67 +591,51 @@ const BasicContainer = () => {
   const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
 
   // submit_task_sheet
-  const handleSendTaskSheet = async (
-    selectedTaskID: string,
-    description: string
-  ) => {
+  const handleSendTaskSheet = async (selectedTaskID: string) => {
     console.log(`Send Task Sheet ${selectedTaskID}`);
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
-
-    // if (description === "") {
-    //   toast.error("Description cannot be empty");
-    //   return;
-    // }
-
+    if (!account.address) return;
+  
     // Get Movecall params
     try {
       if (!userTaskSheets) {
         throw new Error("UserTaskSheet is undefined");
       }
-
+  
       const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
       const userTaskSheetArray = jsonObjUserTaskSheet.data;
-
+  
       const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
         (tasksheet: TaskSheetArr) => {
           //console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
-          return tasksheet.data.content.fields.main_task_id.includes(
-            selectedTaskID
-          );
+          return tasksheet.data.content.fields.main_task_id.includes(selectedTaskID);
         }
       );
-
+  
       if (!relateTaskSheet) {
         throw new Error("No matching TaskSheet found");
       }
       const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
-
+  
       // TaskAdminCap
       const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
       const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
-
-      const relatedTaskAdminCap: TaskAdminCap | undefined =
-        userTaskAdminCapArray.find((item: TaskAdminCapArr) => {
+  
+      const relatedTaskAdminCap: TaskAdminCap | undefined = userTaskAdminCapArray.find(
+        (item: TaskAdminCapArr) => {
           //console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction);
-          return (
-            item.data.previousTransaction ===
-            relateTaskSheet.data.previousTransaction
-          );
-        });
-
+          return item.data.previousTransaction === relateTaskSheet.data.previousTransaction;
+        }
+      );
+  
       if (!relatedTaskAdminCap) {
         throw new Error("No Matching TaskAdminCap found");
       }
-      const relatedTaskAdminCapID =
-        relatedTaskAdminCap.data.content.fields.id.id;
-
+      const relatedTaskAdminCapID = relatedTaskAdminCap.data.content.fields.id.id;
+  
       // Movecall
       const txb = new TransactionBlock();
       console.log(selectedTask);
-
+  
       txb.moveCall({
         target: `${PACKAGE_ID}::public_task::submit_task_sheet`,
         arguments: [
@@ -667,13 +644,13 @@ const BasicContainer = () => {
           txb.pure(relatedTaskAdminCapID),
         ],
       });
-
+  
       txb.setSender(account.address);
       const dryrunRes = await client.dryRunTransactionBlock({
         transactionBlock: await txb.build({ client: client }),
       });
       console.log(dryrunRes);
-
+  
       if (dryrunRes.effects.status.status === "success") {
         signAndExecuteTransactionBlock(
           {
@@ -695,10 +672,7 @@ const BasicContainer = () => {
                         href={explorerUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{
-                          color: "lightblue",
-                          textDecoration: "underline",
-                        }}
+                        style={{ color: "lightblue", textDecoration: "underline" }}
                       >
                         View on Blockchain
                       </a>
@@ -719,7 +693,6 @@ const BasicContainer = () => {
               }
               refetch();
               fetchAllTaskData();
-              setTaskSheetDescription("");
             },
             onError: (err) => {
               toast.error("Tx Failed!");
@@ -735,35 +708,26 @@ const BasicContainer = () => {
     }
   };
 
+
   // update_task_sheet_content
   const handleTaskSheetDetails = async (
     selectedTaskID: string,
-    description: string
+    description: string,
   ) => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
-
-    if (description === "") {
-      toast.error("Description cannot be empty");
-      return;
-    }
+    if (!account.address) return;
 
     try {
-      if (!userTaskSheets) {
+      if(!userTaskSheets) {
         throw new Error("UserTaskSheet is undefined");
       }
 
       const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
-      const userTaskSheetArray = jsonObjUserTaskSheet.data;
+      const userTaskSheetArray = jsonObjUserTaskSheet.data
 
       const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
-        (tasksheet: TaskSheetArr) => {
+        (tasksheet: TaskSheetArr ) => {
           //console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
-          return tasksheet.data.content.fields.main_task_id.includes(
-            selectedTaskID
-          );
+          return tasksheet.data.content.fields.main_task_id.includes(selectedTaskID)
         }
       );
 
@@ -772,24 +736,23 @@ const BasicContainer = () => {
       }
       const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
 
+
       // TaskAdminCap
       const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
       const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
 
-      const relatedTaskAdminCap: TaskAdminCap | undefined =
-        userTaskAdminCapArray.find((item: TaskAdminCapArr) => {
+      const relatedTaskAdminCap: TaskAdminCap | undefined = userTaskAdminCapArray.find(
+        (item: TaskAdminCapArr) => {
           //console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction)
-          return (
-            item.data.previousTransaction ===
-            relateTaskSheet.data.previousTransaction
-          );
-        });
+          return item.data.previousTransaction === relateTaskSheet.data.previousTransaction
+        }
+      );
 
       if (!relatedTaskAdminCap) {
         throw new Error("No Matching TaskAdminCap found");
       }
-      const relatedTaskAdminCapID =
-        relatedTaskAdminCap.data.content.fields.id.id;
+      const relatedTaskAdminCapID = relatedTaskAdminCap.data.content.fields.id.id;
+
 
       // Move Call Function
       const txb = new TransactionBlock();
@@ -800,7 +763,7 @@ const BasicContainer = () => {
           txb.pure(relateTaskSheetId),
           txb.pure(description),
           txb.pure(SUI_CLOCK_OBJECT_ID),
-          txb.pure(relatedTaskAdminCapID), // 使用匹配的 TaskAdminCap ID
+          txb.pure(relatedTaskAdminCapID) // 使用匹配的 TaskAdminCap ID
         ],
       });
 
@@ -831,10 +794,7 @@ const BasicContainer = () => {
                         href={explorerUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{
-                          color: "lightblue",
-                          textDecoration: "underline",
-                        }}
+                        style={{ color: "lightblue", textDecoration: "underline" }}
                       >
                         View on Blockchian
                       </a>
@@ -867,6 +827,8 @@ const BasicContainer = () => {
       }
 
       console.log("Task Sheet Details", selectedTaskID, description);
+      setTaskSheetDescription("");
+
     } catch (error) {
       console.error("Error handling task sheet details", error);
     }
@@ -881,11 +843,7 @@ const BasicContainer = () => {
 
   //增加獎池資金 | add_task_fund<T>;
   const handleAddTaskFund = (selectedTaskID: string, fund: number) => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
-    /* 
+    /* if (!account.address) return;
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -950,11 +908,7 @@ const BasicContainer = () => {
   };
   //取出獎池資金 | retrieve_task_fund<T>
   const handleTakeTaskFund = (selectedTaskID: string, fund: number) => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
-    /* 
+    /* if (!account.address) return;
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -1022,11 +976,7 @@ const BasicContainer = () => {
     selectedTaskID: string,
     description: string
   ) => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
-    /* 
+    /* if (!account.address) return;
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -1088,6 +1038,7 @@ const BasicContainer = () => {
     toast.success("Task Description Updated");
   };
 
+
   //管理已提交任務打開 Modal
   const handleSubmittedTask = (task: Task) => {
     setSelectedTask(task);
@@ -1095,7 +1046,8 @@ const BasicContainer = () => {
     onOpenModal2();
   };
 
-  //紀錄選取了哪些任務單
+
+  //紀錄選取了哪些任務單 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       setSelected([...selected, e.target.value]);
@@ -1110,15 +1062,12 @@ const BasicContainer = () => {
   const handleApprove = async (
     annotation: string,
     selectedTaskId: string,
-    selectedTaskSheets: string[]
+    selectedTaskSheets: string[],
   ) => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
+     if (!account.address) return;
 
-    try {
-      if (!userModCaps) {
+     try {
+      if(!userModCaps) {
         throw new Error("UserModCaps is undefined");
       }
 
@@ -1134,7 +1083,6 @@ const BasicContainer = () => {
 
       const res = await client.queryTransactionBlocks({ filter: { ChangedObject: selectedTaskId } });
       const taskLastDataDigest = res.data[res.data.length - 1].digest;
-
 
       let relatedModCap: any;
       for (const modCap of userModCapsArray) {
@@ -1173,17 +1121,18 @@ const BasicContainer = () => {
       });
 
       txb.setSender(account.address);
-      const dryrunRes = await client.dryRunTransactionBlock({
-        transactionBlock: await txb.build({ client: client }),
-      });
-      console.log(dryrunRes);
+        const dryrunRes = await client.dryRunTransactionBlock({
+          transactionBlock: await txb.build({ client: client }),
+        });
+        console.log(dryrunRes);
 
-      if (dryrunRes.effects.status.status === "success") {
-        signAndExecuteTransactionBlock(
-          {
-            transactionBlock: txb,
-            options: {
-              showEffects: true,
+        if (dryrunRes.effects.status.status === "success") {
+          signAndExecuteTransactionBlock(
+            {
+              transactionBlock: txb,
+              options: {
+                showEffects: true,
+              },
             },
             {
               onSuccess: async (res) => {
@@ -1217,34 +1166,31 @@ const BasicContainer = () => {
                     );
                   }
                 }
-              }
-              refetch();
-            },
-            onError: (err) => {
-              toast.error("Tx Failed!");
-              console.log(err);
-            },
-          }
-        );
-      } else {
-        toast.error("Something went wrong");
-      }
+                refetch();
+              },
+              onError: (err) => {
+                toast.error("Tx Failed!");
+                console.log(err);
+              },
+            }
+          );
+        } else {
+          toast.error("Something went wrong");
+        }
       console.log(selectedTaskId, selected, annotation);
       //toast.success(`Task Sheet ${selected} is Approved`);
       //toast.success(`Note: ${annotation}`);
       setSelected([]);
-    } catch (error) {
+
+     } catch (error) {
       console.error("Error handling task sheet details", error);
-    }
-  };
+  }
+}
+
 
   //認證不通過退回任務單 | reject_and_return_task_sheet
   const handleReject = (annotation: string, selectedTaskId: string) => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
-    /* 
+    /* if (!account.address) return;
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -1310,7 +1256,7 @@ const BasicContainer = () => {
   return (
     <>
       {/*<Divider className="my-3"></Divider>*/}
-      <div className="mx-auto pt-[150px] p-4 md:pt-32 lg:pt-40">
+      <div className="mx-auto pt-20">
         <Button
           onPress={onOpenModal1}
           onClick={() => setSelectedTask(null)}
@@ -1321,20 +1267,20 @@ const BasicContainer = () => {
           Publish Task
         </Button>
       </div>
-      <div className="flex justify-center font-sans">
+      <div className="flex justify-center p-4 font-sans">
         <div className="flex w-full flex-col">
           <Tabs
             aria-label="Options"
             variant="bordered"
-            className="min-h-1 mx-auto"
+            className="min-h-1 mx-auto p-4"
           >
             <Tab key="allTasks" title="All Tasks">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {allTasks.map((task) => (
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
+                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
                   >
                     <CardBody className="relative p-3">
                       <Image
@@ -1412,7 +1358,7 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="acceptedTasks" title="On Going Tasks">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!acceptedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                     <Image
@@ -1429,7 +1375,7 @@ const BasicContainer = () => {
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
+                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
                   >
                     <CardBody className="relative p-3">
                       <Image
@@ -1505,7 +1451,7 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="publishedTasks" title="Published by Me">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!publishedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                     <Image
@@ -1522,7 +1468,7 @@ const BasicContainer = () => {
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[700px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
+                    className="h-[700px] w-[320px] shadow-lg rounded-lg overflow-hidden"
                   >
                     <CardBody className="relative p-3">
                       <Image
@@ -1604,7 +1550,7 @@ const BasicContainer = () => {
                 ))}
               </div>
             </Tab>
-            {/* <Tab key="completedTasks" title="Completed Tasks">
+            <Tab key="completedTasks" title="Completed Tasks">
               <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!completedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
@@ -1689,7 +1635,7 @@ const BasicContainer = () => {
                   </Card>
                 ))}
               </div>
-            </Tab> */}
+            </Tab>
           </Tabs>
         </div>
       </div>
@@ -1819,32 +1765,29 @@ const BasicContainer = () => {
           {(onClose) => (
             <>
               <ModalHeader>
-                Submissions for {selectedTask ? selectedTask.name : ""}
+              Submissions for {selectedTask ? selectedTask.name : ""}
               </ModalHeader>
               <ModalBody>
                 {/* //TODO: 這裡要抓到selectedTask中的任務單們 */}
                 {selectedTask?.task_sheets?.map((taskSheet, index) => {
                   const explorerObjUrl = `${DEVNET_EXPLOR_OBJ + taskSheet}`;
 
-                  return (
-                    <Checkbox
-                      key={index}
-                      value={taskSheet}
-                      onChange={handleChange}
+                  return(
+                  <Checkbox
+                    key={index}
+                    value={taskSheet}
+                    onChange={handleChange}
+                  >
+                    {truncateAddress(taskSheet)} {"| "}
+                    <a
+                      href={explorerObjUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'lightblue', textDecoration: 'underline' }}
                     >
-                      {truncateAddress(taskSheet)} {"| "}
-                      <a
-                        href={explorerObjUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: "lightblue",
-                          textDecoration: "underline",
-                        }}
-                      >
-                        View on Blockchain
-                      </a>
-                    </Checkbox>
+                      View on Blockchain
+                    </a>
+                  </Checkbox>
                   );
                 })}
                 {/*<Checkbox value="tasksheet 1" onChange={handleChange}>
@@ -1900,7 +1843,9 @@ const BasicContainer = () => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader>{selectedTask ? selectedTask.name : ""}</ModalHeader>
+              <ModalHeader>
+                {selectedTask ? selectedTask.name : ""}
+              </ModalHeader>
               <ModalBody>
                 <p>Edit Task Description</p>
                 <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
@@ -1993,13 +1938,15 @@ const BasicContainer = () => {
                   <Textarea
                     minRows={80}
                     label="Task Record"
-                    placeholder={"Enter your task record here"}
+                    placeholder="Enter your description"
                     value={taskSheetDescription}
                     onChange={(e) => {
                       setTaskSheetDescription(e.target.value);
                     }}
                   />
                 </div>
+              </ModalBody>
+              <ModalFooter>
                 <Button
                   color="warning"
                   onClick={() =>
@@ -2012,22 +1959,16 @@ const BasicContainer = () => {
                 >
                   Update
                 </Button>
-
-                <Divider className="my-3" />
                 <Button
                   color="primary"
                   onClick={() =>
-                    handleSendTaskSheet(
-                      selectedTask ? selectedTask.id : "",
-                      taskSheetDescription
-                    )
+                    handleSendTaskSheet(selectedTask ? selectedTask.id : "")
                   }
                   onPress={onClose}
                 >
                   Submit
                 </Button>
-              </ModalBody>
-              <ModalFooter></ModalFooter>
+              </ModalFooter>
             </>
           )}
         </ModalContent>

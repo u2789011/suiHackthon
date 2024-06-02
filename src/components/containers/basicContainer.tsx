@@ -130,7 +130,8 @@ const BasicContainer = () => {
     }
   }, [userTaskAdminCaps, userTaskSheets]);
 
-  const [selectedToken, setSelectedToken] = useState<string>("SUI");
+
+  const jsonStrUserModCaps = JSON.stringify(userModCaps);
   const client = useSuiClient();
   const [account] = useAccounts();
   const { mutate: signAndExecuteTransactionBlock } =
@@ -160,6 +161,7 @@ const BasicContainer = () => {
     moderator: "",
     fund: "",
   });
+  const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
   const [publishedTasks, setPublishedTasks] = useState<Task[]>([]);
@@ -172,6 +174,9 @@ const BasicContainer = () => {
   const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>(
     []
   );
+  // select task (for Modal use)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [filteredTaskSheets, setFilteredTaskSheets] = useState<TaskSheetPendingReview[]>([]);
 
   // Get ObjectIDS in TaskManager
   async function fetchTaskList() {
@@ -355,8 +360,6 @@ const BasicContainer = () => {
     }
   }, [allTasks, walletAddress]);
 
-  // select task (for Modal use)
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
@@ -1095,7 +1098,48 @@ const BasicContainer = () => {
     }
   };
 
-  const jsonStrUserModCaps = JSON.stringify(userModCaps);
+  // TODO: // FIXME:HERE!!
+  useEffect(() => {
+    const fetchFilteredTaskSheets = async () => {
+        if (selectedTask?.task_sheets) {
+            try {
+                const uniqueTaskSheets = Array.from(new Set(selectedTask.task_sheets));
+                const response: any = await client.multiGetObjects({
+                    ids: uniqueTaskSheets,
+                    options: {
+                        showContent: true,
+                    },
+                });
+
+                console.log("response:::", response);
+
+                // 明確地聲明 responseObj 的類型
+                const responseObj: TaskSheetPendingReview[] = response.map((item: any) => JSON.parse(JSON.stringify(item)));
+
+                if (Array.isArray(responseObj)) {
+                    const filtered: TaskSheetPendingReview[] = responseObj.filter(taskSheet =>
+                        taskSheet.data.content.fields.status === 1
+                    );
+
+                    setFilteredTaskSheets(filtered);
+
+                    console.log("Filtered tasksheets with status 1:", filtered);
+                } else {
+                    console.error("Response is not an array or is empty");
+                    setFilteredTaskSheets([]);
+                }
+
+            } catch (error) {
+                console.error("Failed to fetch task sheets:", error);
+                setFilteredTaskSheets([]);
+            }
+        }
+    };
+
+    fetchFilteredTaskSheets();
+}, [selectedTask]);
+
+
 
   //認證通過並發送獎勵 | approve_and_send_reward<T> TODO: FIXME:
   const handleApprove = async (
@@ -1128,8 +1172,9 @@ const BasicContainer = () => {
 
       let relatedModCap: any;
       for (const modCap of userModCapsArray) {
-        const modCapLatestTx = await client.queryTransactionBlocks({ filter: { ChangedObject: modCap.data.objectId } });
-        const ModCapLatestDigest = modCapLatestTx.data[modCapLatestTx.data.length - 1].digest;
+        const ModCapLatestDigest = (await client.queryTransactionBlocks({
+          filter: { ChangedObject: modCap.data.objectId }
+        })).data.slice(-1)[0].digest;
 
         if (ModCapLatestDigest === taskLastDataDigest) {
           relatedModCap = modCap;
@@ -1138,6 +1183,7 @@ const BasicContainer = () => {
       }
 
       if (!relatedModCap) {
+        toast.error("You are not assigned as a Task Moderator for this task")
         throw new Error("Related modCap not found");
       }
 
@@ -1814,16 +1860,16 @@ const BasicContainer = () => {
               </ModalHeader>
               <ModalBody>
                 {/* //TODO: 這裡要抓到selectedTask中的任務單們 */}
-                {selectedTask?.task_sheets?.map((taskSheet, index) => {
+                {filteredTaskSheets.map((taskSheet, index) => {
                   const explorerObjUrl = `${DEVNET_EXPLOR_OBJ + taskSheet}`;
 
                   return(
                   <Checkbox
                     key={index}
-                    value={taskSheet}
+                    value={taskSheet.data.content.fields.id.id}
                     onChange={handleChange}
                   >
-                    {truncateAddress(taskSheet)} {"| "}
+                    {truncateAddress(taskSheet.data.content.fields.id.id)} {"| "}
                     <a
                       href={explorerObjUrl}
                       target="_blank"

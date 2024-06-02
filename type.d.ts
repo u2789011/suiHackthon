@@ -135,22 +135,22 @@ interface TaskAdminCapArr {
     };
   };
 
-  interface ModCapArr {
-    data: {
-        objectId: string;
-        version: string;
-        digest: string;
-        type: string;
-        previousTransaction: string;
-        content: {
-            dataType: string;
-            type: string;
-            hasPublicTransfer: boolean;
-            fields: {
-                id: {
-                    id: string;
-                }
-            }
-        }
-    }
+interface ModCapArr {
+  data: {
+      objectId: string;
+      version: string;
+      digest: string;
+      type: string;
+      previousTransaction: string;
+      content: {
+          dataType: string;
+          type: string;
+          hasPublicTransfer: boolean;
+          fields: {
+              id: {
+                  id: string;
+              }
+          }
+      }
+  }
 }

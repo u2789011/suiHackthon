@@ -120,10 +120,10 @@ const BasicContainer = () => {
       showType: true,
       showContent: true,
       showPreviousTransaction: true,
-    }
+    },
   });
 
-  console.log("userModCaps::", userModCaps) //FIXME: test use only
+  console.log("userModCaps::", userModCaps); //FIXME: test use only
 
   useEffect(() => {
     if (userTaskAdminCaps && userTaskSheets) {
@@ -360,7 +360,10 @@ const BasicContainer = () => {
 
   // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
-    if (!account.address) return;
+    if (!account) {
+      toast.error("Please connect your wallet");
+      return;
+    }
 
     const txb = new TransactionBlock();
     console.log(selectedTask);
@@ -408,6 +411,7 @@ const BasicContainer = () => {
                 </span>
               );
               console.log(`Transaction Digest`, digest);
+              loadAcceptedTasks();
             } catch (digestError) {
               if (digestError instanceof Error) {
                 toast.error(
@@ -435,7 +439,10 @@ const BasicContainer = () => {
 
   // Publish Public Tasks
   const handlePublishTaskChain = async () => {
-    if (!account.address) return;
+    if (!account) {
+      toast.error("Please connect your wallet");
+      return;
+    }
 
     const txb = new TransactionBlock();
 
@@ -591,9 +598,20 @@ const BasicContainer = () => {
   const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
 
   // submit_task_sheet
-  const handleSendTaskSheet = async (selectedTaskID: string) => {
+  const handleSendTaskSheet = async (
+    selectedTaskID: string,
+    description: string
+  ) => {
     console.log(`Send Task Sheet ${selectedTaskID}`);
-    if (!account.address) return;
+    if (!account) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+
+    // if (description === "") {
+    //   toast.error("Description cannot be empty");
+    //   return;
+    // }
   
     // Get Movecall params
     try {
@@ -607,7 +625,9 @@ const BasicContainer = () => {
       const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
         (tasksheet: TaskSheetArr) => {
           //console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
-          return tasksheet.data.content.fields.main_task_id.includes(selectedTaskID);
+          return tasksheet.data.content.fields.main_task_id.includes(
+            selectedTaskID
+          );
         }
       );
   
@@ -623,7 +643,9 @@ const BasicContainer = () => {
       const relatedTaskAdminCap: TaskAdminCap | undefined = userTaskAdminCapArray.find(
         (item: TaskAdminCapArr) => {
           //console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction);
-          return item.data.previousTransaction === relateTaskSheet.data.previousTransaction;
+          return (item.data.previousTransaction ===
+          relateTaskSheet.data.previousTransaction
+          );
         }
       );
   
@@ -693,6 +715,7 @@ const BasicContainer = () => {
               }
               refetch();
               fetchAllTaskData();
+              setTaskSheetDescription("");
             },
             onError: (err) => {
               toast.error("Tx Failed!");
@@ -714,7 +737,15 @@ const BasicContainer = () => {
     selectedTaskID: string,
     description: string,
   ) => {
-    if (!account.address) return;
+    if (!account) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+
+    if (description === "") {
+      toast.error("Description cannot be empty");
+      return;
+    }
 
     try {
       if(!userTaskSheets) {
@@ -722,7 +753,7 @@ const BasicContainer = () => {
       }
 
       const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
-      const userTaskSheetArray = jsonObjUserTaskSheet.data
+      const userTaskSheetArray = jsonObjUserTaskSheet.data;
 
       const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
         (tasksheet: TaskSheetArr ) => {
@@ -827,7 +858,6 @@ const BasicContainer = () => {
       }
 
       console.log("Task Sheet Details", selectedTaskID, description);
-      setTaskSheetDescription("");
 
     } catch (error) {
       console.error("Error handling task sheet details", error);
@@ -843,7 +873,10 @@ const BasicContainer = () => {
 
   //增加獎池資金 | add_task_fund<T>;
   const handleAddTaskFund = (selectedTaskID: string, fund: number) => {
-    /* if (!account.address) return;
+    /* if (!account) {
+          toast.error("Please connect your wallet");
+          return;
+        }
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -908,7 +941,10 @@ const BasicContainer = () => {
   };
   //取出獎池資金 | retrieve_task_fund<T>
   const handleTakeTaskFund = (selectedTaskID: string, fund: number) => {
-    /* if (!account.address) return;
+    /*   if (!account) {
+          toast.error("Please connect your wallet");
+          return;
+        }
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -976,7 +1012,10 @@ const BasicContainer = () => {
     selectedTaskID: string,
     description: string
   ) => {
-    /* if (!account.address) return;
+    /* if (!account) {
+          toast.error("Please connect your wallet");
+          return;
+        }
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -1062,9 +1101,12 @@ const BasicContainer = () => {
   const handleApprove = async (
     annotation: string,
     selectedTaskId: string,
-    selectedTaskSheets: string[],
+    selectedTaskSheets: string[]
   ) => {
-     if (!account.address) return;
+      if (!account) {
+        toast.error("Please connect your wallet");
+        return;
+      }
 
      try {
       if(!userModCaps) {
@@ -1190,7 +1232,10 @@ const BasicContainer = () => {
 
   //認證不通過退回任務單 | reject_and_return_task_sheet
   const handleReject = (annotation: string, selectedTaskId: string) => {
-    /* if (!account.address) return;
+    /* if (!account) {
+          toast.error("Please connect your wallet");
+          return;
+        }
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -1256,7 +1301,7 @@ const BasicContainer = () => {
   return (
     <>
       {/*<Divider className="my-3"></Divider>*/}
-      <div className="mx-auto pt-20">
+      <div className="mx-auto pt-[150px] p-4 md:pt-32 lg:pt-40">
         <Button
           onPress={onOpenModal1}
           onClick={() => setSelectedTask(null)}
@@ -1267,20 +1312,20 @@ const BasicContainer = () => {
           Publish Task
         </Button>
       </div>
-      <div className="flex justify-center p-4 font-sans">
+      <div className="flex justify-center font-sans">
         <div className="flex w-full flex-col">
           <Tabs
             aria-label="Options"
             variant="bordered"
-            className="min-h-1 mx-auto p-4"
+            className="min-h-1 mx-auto"
           >
             <Tab key="allTasks" title="All Tasks">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
                 {allTasks.map((task) => (
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
+                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
                   >
                     <CardBody className="relative p-3">
                       <Image
@@ -1358,7 +1403,7 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="acceptedTasks" title="On Going Tasks">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">  
                 {!acceptedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                     <Image
@@ -1375,7 +1420,7 @@ const BasicContainer = () => {
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden"
+                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
                   >
                     <CardBody className="relative p-3">
                       <Image
@@ -1451,7 +1496,7 @@ const BasicContainer = () => {
               </div>
             </Tab>
             <Tab key="publishedTasks" title="Published by Me">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
+              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10"> 
                 {!publishedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                     <Image
@@ -1468,7 +1513,7 @@ const BasicContainer = () => {
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[700px] w-[320px] shadow-lg rounded-lg overflow-hidden"
+                    className="h-[700px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
                   >
                     <CardBody className="relative p-3">
                       <Image
@@ -1550,7 +1595,7 @@ const BasicContainer = () => {
                 ))}
               </div>
             </Tab>
-            <Tab key="completedTasks" title="Completed Tasks">
+            {/*<Tab key="completedTasks" title="Completed Tasks">
               <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!completedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
@@ -1635,7 +1680,7 @@ const BasicContainer = () => {
                   </Card>
                 ))}
               </div>
-            </Tab>
+              </Tab>*/}
           </Tabs>
         </div>
       </div>
@@ -1765,7 +1810,7 @@ const BasicContainer = () => {
           {(onClose) => (
             <>
               <ModalHeader>
-              Submissions for {selectedTask ? selectedTask.name : ""}
+                Submissions for {selectedTask ? selectedTask.name : ""}
               </ModalHeader>
               <ModalBody>
                 {/* //TODO: 這裡要抓到selectedTask中的任務單們 */}
@@ -1938,15 +1983,13 @@ const BasicContainer = () => {
                   <Textarea
                     minRows={80}
                     label="Task Record"
-                    placeholder="Enter your description"
+                    placeholder={"Enter your task record here"}
                     value={taskSheetDescription}
                     onChange={(e) => {
                       setTaskSheetDescription(e.target.value);
                     }}
                   />
                 </div>
-              </ModalBody>
-              <ModalFooter>
                 <Button
                   color="warning"
                   onClick={() =>
@@ -1959,16 +2002,21 @@ const BasicContainer = () => {
                 >
                   Update
                 </Button>
+                <Divider className="my-3" />
                 <Button
                   color="primary"
                   onClick={() =>
-                    handleSendTaskSheet(selectedTask ? selectedTask.id : "")
+                    handleSendTaskSheet(
+                      selectedTask ? selectedTask.id : "",
+                      taskSheetDescription
+                    )
                   }
                   onPress={onClose}
                 >
                   Submit
                 </Button>
-              </ModalFooter>
+                </ModalBody>
+                <ModalFooter></ModalFooter>
             </>
           )}
         </ModalContent>

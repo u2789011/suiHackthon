@@ -159,12 +159,34 @@ const BasicContainer = () => {
   const [taskFund, setTaskFund] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [annotation, setAnnotation] = useState("");
-  const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>(
-    []
-  );
+  const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>([]);
   // select task (for Modal use)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [filteredTaskSheets, setFilteredTaskSheets] = useState<TaskSheetPendingReview[]>([]);
+
+  // Set Accepted Tasks Data From Task Sheets Owned by User
+  const handleMatchAndSetAcceptedTasks = (
+    userTaskSheets: TaskSheet[],
+    allTasks: Task[]
+  ) => {
+    const matchedTasks: Task[] = [];
+    const seenTaskIds = new Set<String>();
+
+    userTaskSheets.forEach((taskSheet) => {
+      if (taskSheet.data && taskSheet.data.fields) {
+        const mainTaskId = taskSheet.data.fields.main_task_id;
+        const matchedTask = allTasks.find((task) => task.id === mainTaskId);
+        if (matchedTask && !seenTaskIds.has(matchedTask.id)) {
+          matchedTasks.push(matchedTask);
+          seenTaskIds.add(matchedTask.id);
+        }
+      } else {
+        console.warn("Task sheet data or fields is undefined:", taskSheet);
+      }
+    });
+
+    setAcceptedTasks(matchedTasks);
+  };
 
   // Get ObjectIDS in TaskManager
   async function fetchTaskList() {
@@ -258,30 +280,6 @@ const BasicContainer = () => {
 
   console.log("all tasks are:::", allTasks);
 
-  // Set Accepted Tasks Data From Task Sheets Owned by User
-  const handleMatchAndSetAcceptedTasks = (
-    userTaskSheets: TaskSheet[],
-    allTasks: Task[]
-  ) => {
-    const matchedTasks: Task[] = [];
-    const seenTaskIds = new Set<String>();
-
-    userTaskSheets.forEach((taskSheet) => {
-      if (taskSheet.data && taskSheet.data.fields) {
-        const mainTaskId = taskSheet.data.fields.main_task_id;
-        const matchedTask = allTasks.find((task) => task.id === mainTaskId);
-        if (matchedTask && !seenTaskIds.has(matchedTask.id)) {
-          matchedTasks.push(matchedTask);
-          seenTaskIds.add(matchedTask.id);
-        }
-      } else {
-        console.warn("Task sheet data or fields is undefined:", taskSheet);
-      }
-    });
-
-    setAcceptedTasks(matchedTasks);
-  };
-
   async function fetchAcceptedTask(userTaskSheets: any): Promise<TaskSheet[]> {
     if (userTaskSheets && userTaskSheets.data) {
       const jsonString = JSON.stringify(userTaskSheets, null, 2);
@@ -320,7 +318,6 @@ const BasicContainer = () => {
     if (userTaskSheets) {
       const userTaskSheetsData = await fetchAcceptedTask(userTaskSheets);
       setProcessedTaskSheets(userTaskSheetsData);
-      handleMatchAndSetAcceptedTasks(userTaskSheetsData, allTasks);
     }
   }
 
@@ -328,15 +325,17 @@ const BasicContainer = () => {
     fetchAllTaskData();
   }, []);
 
-  useEffect(() => {
-    if (userTaskAdminCaps && userTaskSheets) {
-    }
-  }, [userTaskAdminCaps, userTaskSheets]);
-
   // Data for Accepted Tasks
   useEffect(() => {
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
+
+  // Data for Accepted Tasks //TODO: HERE
+  useEffect(() => {
+    if (processedTaskSheets.length > 0) {
+      handleMatchAndSetAcceptedTasks(processedTaskSheets, allTasks);
+    }
+  }, [processedTaskSheets, allTasks]);
 
   // Data for Published Tasks
   useEffect(() => {

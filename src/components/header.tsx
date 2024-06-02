@@ -68,7 +68,7 @@ const Header = () => {
                     <span className="text-sm">
                       {walletAddress ? "Connected" : "Connect Wallet"}
                     </span>
-                    <LinkIcon size={17} className="text-black" />
+                    <LinkIcon size={17} className="text-white" />
                   </div>
                 </button>
               }

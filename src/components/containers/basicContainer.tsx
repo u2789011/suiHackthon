@@ -83,7 +83,7 @@ const BasicContainer = () => {
   });
 
   // Get TaskSheets Owned By User
-  const { data: userTaskSheets } = useSuiClientQuery("getOwnedObjects", {
+  const { data: userTaskSheets, refetch: refetchUserTaskSheets } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
     filter: {
       StructType: `${PACKAGE_ID}::public_task::TaskSheet`,
@@ -210,7 +210,7 @@ const BasicContainer = () => {
     }
   }
 
-  // Get objects data for eash intem in `publishedTaskIdsArr`
+  // Get objects data for eash intm in `publishedTaskIdsArr`
   async function fetchAllTaskList() {
     try {
       const publishedTaskIdsArr = await fetchTaskList();
@@ -356,7 +356,7 @@ const BasicContainer = () => {
     }
 
     const txb = new TransactionBlock();
-    console.log(selectedTask);
+    //console.log(selectedTask);
     txb.moveCall({
       target: `${PACKAGE_ID}::public_task::mint_task_sheet`,
       arguments: [txb.object(selectedTask.id), txb.pure(SUI_CLOCK_OBJECT_ID)],
@@ -401,7 +401,7 @@ const BasicContainer = () => {
                 </span>
               );
               console.log(`Transaction Digest`, digest);
-              loadAcceptedTasks();
+              setAcceptedTasks(prevTasks => [...prevTasks, selectedTask]);
             } catch (digestError) {
               if (digestError instanceof Error) {
                 toast.error(
@@ -413,8 +413,9 @@ const BasicContainer = () => {
                 );
               }
             }
-            refetch();
-            fetchAllTaskData();
+            //refetch();
+            //fetchAllTaskData();
+            refetchUserTaskSheets();
           },
           onError: (err) => {
             toast.error("Tx Failed!");

@@ -46,7 +46,7 @@ type Task = {
 
 type TaskSheet = {
   data: {
-    content:{
+    content: {
       dataType: string;
       fields: any;
     };
@@ -57,7 +57,7 @@ type TaskSheet = {
       creator: string;
       id: {
         id: string;
-      }
+      };
       main_task_id: string;
       moderator: string;
       status: number;
@@ -65,10 +65,10 @@ type TaskSheet = {
       update_time: string;
     };
     hasPublicTransfer: boolean;
-  digest: string;
-  previousTransaction: string;
+    digest: string;
+    previousTransaction: string;
   };
-}
+};
 
 type TaskAdminCap = {
   data: {
@@ -153,4 +153,38 @@ interface ModCapArr {
           }
       }
   }
+}
+
+interface TaskSheetPendingReview {
+  data: {
+    content: {
+      dataType: string;
+      fields: {
+        annotation: string | null;
+        content: string | null;
+        created_time: string;
+        creator: string;
+        id: {
+          id: string;
+        };
+        main_task_id: string;
+        moderator: string;
+        status: number;
+        task_description: {
+          fields: {
+            description: string;
+            format: number;
+            publish_time: string;
+            type: string;
+            update_time: string;
+          };
+        };
+      };
+    };
+    hasPublicTransfer: boolean;
+    type: string;
+    digest: string;
+    previousTransaction: string;
+    version: string;
+  };
 }

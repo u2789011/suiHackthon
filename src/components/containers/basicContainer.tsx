@@ -95,8 +95,6 @@ const BasicContainer = () => {
     },
   });
 
-  console.log("userTaskSheets", userTaskSheets); //FIXME: for test only
-
   const { data: userTaskAdminCaps } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
     filter: {
@@ -108,8 +106,6 @@ const BasicContainer = () => {
       showPreviousTransaction: true,
     },
   });
-
-  console.log("userTaskAdminCaps", userTaskAdminCaps); //FIXME: test use only
 
   const { data: userModCaps } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
@@ -123,14 +119,13 @@ const BasicContainer = () => {
     },
   });
 
-  console.log("userModCaps::", userModCaps); //FIXME: test use only
-
   useEffect(() => {
     if (userTaskAdminCaps && userTaskSheets) {
     }
   }, [userTaskAdminCaps, userTaskSheets]);
 
-  const [selectedToken, setSelectedToken] = useState<string>("SUI");
+
+  const jsonStrUserModCaps = JSON.stringify(userModCaps);
   const client = useSuiClient();
   const [account] = useAccounts();
   const { mutate: signAndExecuteTransactionBlock } =
@@ -160,6 +155,7 @@ const BasicContainer = () => {
     moderator: "",
     fund: "",
   });
+  const [selectedToken, setSelectedToken] = useState<string>("SUI");
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [acceptedTasks, setAcceptedTasks] = useState<Task[]>([]);
   const [publishedTasks, setPublishedTasks] = useState<Task[]>([]);
@@ -172,6 +168,9 @@ const BasicContainer = () => {
   const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>(
     []
   );
+  // select task (for Modal use)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [filteredTaskSheets, setFilteredTaskSheets] = useState<TaskSheetPendingReview[]>([]);
 
   // Get ObjectIDS in TaskManager
   async function fetchTaskList() {
@@ -211,8 +210,6 @@ const BasicContainer = () => {
       const objectsResponse = await client.multiGetObjects(
         multiGetObjectsParams
       );
-
-      console.log("Add Previous Trasaction Query",objectsResponse); //FIXME: test only 
       return objectsResponse;
     } catch (error) {
       console.error("Error fetching multiple objects:", error);
@@ -324,7 +321,6 @@ const BasicContainer = () => {
           .filter((item: TaskSheet | null) => item !== null) as TaskSheet[];
 
         return usertaskSheets;
-        //console.log("taskSheets:", userTaskSheets); //FIXME: test use only
       }
     }
     return [];
@@ -343,7 +339,6 @@ const BasicContainer = () => {
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
-  //console.log("processedTaskSheets", processedTaskSheets); //FIXME: for test use only
 
   // Data for Published Tasks
   useEffect(() => {
@@ -355,8 +350,6 @@ const BasicContainer = () => {
     }
   }, [allTasks, walletAddress]);
 
-  // select task (for Modal use)
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
@@ -1095,9 +1088,45 @@ const BasicContainer = () => {
     }
   };
 
-  const jsonStrUserModCaps = JSON.stringify(userModCaps);
+  // filtered Display for Pending Review TaskShets
+  useEffect(() => {
+    const fetchFilteredTaskSheets = async () => {
+        if (selectedTask?.task_sheets) {
+            try {
+                const uniqueTaskSheets = Array.from(new Set(selectedTask.task_sheets));
+                const response: any = await client.multiGetObjects({
+                    ids: uniqueTaskSheets,
+                    options: {
+                        showContent: true,
+                    },
+                });
+                const responseObj: TaskSheetPendingReview[] = response;
 
-  //認證通過並發送獎勵 | approve_and_send_reward<T> TODO: FIXME:
+                if (Array.isArray(responseObj)) {
+                    const filtered: TaskSheetPendingReview[] = responseObj.filter(taskSheet =>
+                        taskSheet.data.content.fields.status === 1
+                    );
+
+                    setFilteredTaskSheets(filtered);
+
+                    console.log("Filtered tasksheets with status 1:", filtered);
+                } else {
+                    console.error("Response is not an array or is empty");
+                    setFilteredTaskSheets([]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch task sheets:", error);
+                setFilteredTaskSheets([]);
+            }
+        }
+    };
+
+    fetchFilteredTaskSheets();
+}, [selectedTask]);
+
+
+
+  // approve_and_send_reward<T>
   const handleApprove = async (
     annotation: string,
     selectedTaskId: string,
@@ -1128,8 +1157,9 @@ const BasicContainer = () => {
 
       let relatedModCap: any;
       for (const modCap of userModCapsArray) {
-        const modCapLatestTx = await client.queryTransactionBlocks({ filter: { ChangedObject: modCap.data.objectId } });
-        const ModCapLatestDigest = modCapLatestTx.data[modCapLatestTx.data.length - 1].digest;
+        const ModCapLatestDigest = (await client.queryTransactionBlocks({
+          filter: { ChangedObject: modCap.data.objectId }
+        })).data.slice(-1)[0].digest;
 
         if (ModCapLatestDigest === taskLastDataDigest) {
           relatedModCap = modCap;
@@ -1138,6 +1168,7 @@ const BasicContainer = () => {
       }
 
       if (!relatedModCap) {
+        toast.error("You are not assigned as a Task Moderator for this task")
         throw new Error("Related modCap not found");
       }
 
@@ -1813,28 +1844,39 @@ const BasicContainer = () => {
                 Submissions for {selectedTask ? selectedTask.name : ""}
               </ModalHeader>
               <ModalBody>
-                {/* //TODO: 這裡要抓到selectedTask中的任務單們 */}
-                {selectedTask?.task_sheets?.map((taskSheet, index) => {
-                  const explorerObjUrl = `${DEVNET_EXPLOR_OBJ + taskSheet}`;
-
+                {/* // Display Pending Review Tasks */}
+                {filteredTaskSheets.length ===0 ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <Image
+                      removeWrapper
+                      alt="Eyes"
+                      src="/frens/pureEyes.png"
+                      className="z-0 w-12 h-12"
+                    />
+                    <p style={{ textAlign: 'center', marginLeft: '8px' }}>No Submission Yet</p>
+                  </div>
+                ) : (
+                  filteredTaskSheets.map((taskSheet, index) => {
+                    const explorerObjUrl = `${DEVNET_EXPLOR_OBJ}${taskSheet.data.content.fields.id.id}`;
                   return(
-                  <Checkbox
-                    key={index}
-                    value={taskSheet}
-                    onChange={handleChange}
-                  >
-                    {truncateAddress(taskSheet)} {"| "}
-                    <a
-                      href={explorerObjUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: 'lightblue', textDecoration: 'underline' }}
+                    <Checkbox
+                      key={index}
+                      value={taskSheet.data.content.fields.id.id}
+                      onChange={handleChange}
                     >
-                      View on Blockchain
-                    </a>
-                  </Checkbox>
-                  );
-                })}
+                      {truncateAddress(taskSheet.data.content.fields.id.id)} {"| "}
+                      <a
+                        href={explorerObjUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: 'lightblue', textDecoration: 'underline' }}
+                      >
+                        View on Blockchain
+                      </a>
+                    </Checkbox>
+                    );
+                  })
+                )}
                 {/*<Checkbox value="tasksheet 1" onChange={handleChange}>
                   tasksheet 1
                 </Checkbox>*/}

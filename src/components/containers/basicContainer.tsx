@@ -65,10 +65,12 @@ const BasicContainer = () => {
     //"0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
     //"0xafb7c825ba78477cb42702a896eb1c8f758e5f4d9ff972f0f868b782f2623728";
     "0xd84bf8f814a797c2e04a31dba8d4ba276489dc835e6b3ee725059a756b0cfe14";
+    //"0xecf2634415b80825ed7c8eb0665d72634a724c20fdfecc2829d342cc919a4bc3";
   const TASK_MANAGER_ID =
     //"0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
     //"0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b";
     "0x8a1f4de7e060da0fd3e14839c7c9e8250895061c1f39f0bacf90c9b7744a78a2";
+    //"0xbd611efa720db9f59e49f0619b4bd03edfb6ad157cd85520f8caf341b98315c0";
 
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
@@ -83,7 +85,7 @@ const BasicContainer = () => {
   });
 
   // Get TaskSheets Owned By User
-  const { data: userTaskSheets } = useSuiClientQuery("getOwnedObjects", {
+  const { data: userTaskSheets, refetch: refetchUserTaskSheets } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
     filter: {
       StructType: `${PACKAGE_ID}::public_task::TaskSheet`,
@@ -118,12 +120,6 @@ const BasicContainer = () => {
       showPreviousTransaction: true,
     },
   });
-
-  useEffect(() => {
-    if (userTaskAdminCaps && userTaskSheets) {
-    }
-  }, [userTaskAdminCaps, userTaskSheets]);
-
 
   const jsonStrUserModCaps = JSON.stringify(userModCaps);
   const client = useSuiClient();
@@ -165,12 +161,34 @@ const BasicContainer = () => {
   const [taskFund, setTaskFund] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [annotation, setAnnotation] = useState("");
-  const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>(
-    []
-  );
+  const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>([]);
   // select task (for Modal use)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [filteredTaskSheets, setFilteredTaskSheets] = useState<TaskSheetPendingReview[]>([]);
+
+  // Set Accepted Tasks Data From Task Sheets Owned by User
+  const handleMatchAndSetAcceptedTasks = (
+    userTaskSheets: TaskSheet[],
+    allTasks: Task[]
+  ) => {
+    const matchedTasks: Task[] = [];
+    const seenTaskIds = new Set<String>();
+
+    userTaskSheets.forEach((taskSheet) => {
+      if (taskSheet.data && taskSheet.data.fields) {
+        const mainTaskId = taskSheet.data.fields.main_task_id;
+        const matchedTask = allTasks.find((task) => task.id === mainTaskId);
+        if (matchedTask && !seenTaskIds.has(matchedTask.id)) {
+          matchedTasks.push(matchedTask);
+          seenTaskIds.add(matchedTask.id);
+        }
+      } else {
+        console.warn("Task sheet data or fields is undefined:", taskSheet);
+      }
+    });
+
+    setAcceptedTasks(matchedTasks);
+  };
 
   // Get ObjectIDS in TaskManager
   async function fetchTaskList() {
@@ -194,7 +212,7 @@ const BasicContainer = () => {
     }
   }
 
-  // Get objects data for eash intem in `publishedTaskIdsArr`
+  // Get objects data for eash intm in `publishedTaskIdsArr`
   async function fetchAllTaskList() {
     try {
       const publishedTaskIdsArr = await fetchTaskList();
@@ -262,35 +280,7 @@ const BasicContainer = () => {
     }
   }
 
-  useEffect(() => {
-    fetchAllTaskData();
-  }, []);
-
   console.log("all tasks are:::", allTasks);
-
-  // Set Accepted Tasks Data From Task Sheets Owned by User
-  const handleMatchAndSetAcceptedTasks = (
-    userTaskSheets: TaskSheet[],
-    allTasks: Task[]
-  ) => {
-    const matchedTasks: Task[] = [];
-    const seenTaskIds = new Set<String>();
-
-    userTaskSheets.forEach((taskSheet) => {
-      if (taskSheet.data && taskSheet.data.fields) {
-        const mainTaskId = taskSheet.data.fields.main_task_id;
-        const matchedTask = allTasks.find((task) => task.id === mainTaskId);
-        if (matchedTask && !seenTaskIds.has(matchedTask.id)) {
-          matchedTasks.push(matchedTask);
-          seenTaskIds.add(matchedTask.id);
-        }
-      } else {
-        console.warn("Task sheet data or fields is undefined:", taskSheet);
-      }
-    });
-
-    setAcceptedTasks(matchedTasks);
-  };
 
   async function fetchAcceptedTask(userTaskSheets: any): Promise<TaskSheet[]> {
     if (userTaskSheets && userTaskSheets.data) {
@@ -330,15 +320,24 @@ const BasicContainer = () => {
     if (userTaskSheets) {
       const userTaskSheetsData = await fetchAcceptedTask(userTaskSheets);
       setProcessedTaskSheets(userTaskSheetsData);
-      handleMatchAndSetAcceptedTasks(userTaskSheetsData, allTasks);
     }
   }
+
+  useEffect(() => {
+    fetchAllTaskData();
+  }, []);
 
   // Data for Accepted Tasks
   useEffect(() => {
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
+  // Data for Accepted Tasks
+  useEffect(() => {
+    if (processedTaskSheets.length > 0) {
+      handleMatchAndSetAcceptedTasks(processedTaskSheets, allTasks);
+    }
+  }, [processedTaskSheets, allTasks]);
 
   // Data for Published Tasks
   useEffect(() => {
@@ -359,7 +358,7 @@ const BasicContainer = () => {
     }
 
     const txb = new TransactionBlock();
-    console.log(selectedTask);
+    //console.log(selectedTask);
     txb.moveCall({
       target: `${PACKAGE_ID}::public_task::mint_task_sheet`,
       arguments: [txb.object(selectedTask.id), txb.pure(SUI_CLOCK_OBJECT_ID)],
@@ -404,7 +403,7 @@ const BasicContainer = () => {
                 </span>
               );
               console.log(`Transaction Digest`, digest);
-              loadAcceptedTasks();
+              setAcceptedTasks(prevTasks => [...prevTasks, selectedTask]);
             } catch (digestError) {
               if (digestError instanceof Error) {
                 toast.error(
@@ -416,8 +415,9 @@ const BasicContainer = () => {
                 );
               }
             }
-            refetch();
-            fetchAllTaskData();
+            //refetch();
+            //fetchAllTaskData();
+            refetchUserTaskSheets();
           },
           onError: (err) => {
             toast.error("Tx Failed!");
@@ -430,7 +430,7 @@ const BasicContainer = () => {
     }
   };
 
-  // Publish Public Tasks
+  // Publish Public Tasks 
   const handlePublishTaskChain = async () => {
     if (!account) {
       toast.error("Please connect your wallet");
@@ -601,10 +601,10 @@ const BasicContainer = () => {
       return;
     }
 
-    // if (description === "") {
-    //   toast.error("Description cannot be empty");
-    //   return;
-    // }
+     if (description === "") {
+       toast.error("Description cannot be empty");
+       return;
+     }
   
     // Get Movecall params
     try {
@@ -650,7 +650,10 @@ const BasicContainer = () => {
       // Movecall
       const txb = new TransactionBlock();
       console.log(selectedTask);
-  
+
+      console.log(description);
+      
+      // Submit TaskSheet
       txb.moveCall({
         target: `${PACKAGE_ID}::public_task::submit_task_sheet`,
         arguments: [
@@ -659,8 +662,9 @@ const BasicContainer = () => {
           txb.pure(relatedTaskAdminCapID),
         ],
       });
-  
+      
       txb.setSender(account.address);
+
       const dryrunRes = await client.dryRunTransactionBlock({
         transactionBlock: await txb.build({ client: client }),
       });

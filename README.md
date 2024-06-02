@@ -40,7 +40,7 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 #### The homepage has 4 tabs:
 - ***All Tasks:*** Displays all currently published tasks. Tasks can be accepted from the task card's bottom section.
 - ***On Going Tasks:*** Displays tasks that have been accepted. The task cards have a "Submit Task" button at the bottom, providing the ability to update task information and submit.
-- ***Published by Me:*** Displays tasks published by you, with access to manage tasks (for creators) and task list management (for task MOD). (Currently, the frontend is still under construction)
+- ***Published by Me:*** Displays tasks published by you or tasks where you have been assigned as the task MOD, providing access to manage tasks (for creators) and task list management (for task MODs).
 - ***Completed Tasks:*** Displays tasks/task lists that have been completed. (Currently, the frontend is still under construction)
 
 ![image](https://github.com/u2789011/suiHackthon/assets/153002627/ff7239c5-447c-41de-9164-b3413c8b4656)

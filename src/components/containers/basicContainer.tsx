@@ -1845,27 +1845,38 @@ const BasicContainer = () => {
               </ModalHeader>
               <ModalBody>
                 {/* // Display Pending Review Tasks */}
-                {filteredTaskSheets.map((taskSheet, index) => {
-                  const explorerObjUrl = `${DEVNET_EXPLOR_OBJ + taskSheet}`;
-
+                {filteredTaskSheets.length ===0 ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <Image
+                      removeWrapper
+                      alt="Eyes"
+                      src="/frens/pureEyes.png"
+                      className="z-0 w-12 h-12"
+                    />
+                    <p style={{ textAlign: 'center', marginLeft: '8px' }}>No Submission Yet</p>
+                  </div>
+                ) : (
+                  filteredTaskSheets.map((taskSheet, index) => {
+                    const explorerObjUrl = `${DEVNET_EXPLOR_OBJ}${taskSheet.data.content.fields.id.id}`;
                   return(
-                  <Checkbox
-                    key={index}
-                    value={taskSheet.data.content.fields.id.id}
-                    onChange={handleChange}
-                  >
-                    {truncateAddress(taskSheet.data.content.fields.id.id)} {"| "}
-                    <a
-                      href={explorerObjUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: 'lightblue', textDecoration: 'underline' }}
+                    <Checkbox
+                      key={index}
+                      value={taskSheet.data.content.fields.id.id}
+                      onChange={handleChange}
                     >
-                      View on Blockchain
-                    </a>
-                  </Checkbox>
-                  );
-                })}
+                      {truncateAddress(taskSheet.data.content.fields.id.id)} {"| "}
+                      <a
+                        href={explorerObjUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: 'lightblue', textDecoration: 'underline' }}
+                      >
+                        View on Blockchain
+                      </a>
+                    </Checkbox>
+                    );
+                  })
+                )}
                 {/*<Checkbox value="tasksheet 1" onChange={handleChange}>
                   tasksheet 1
                 </Checkbox>*/}

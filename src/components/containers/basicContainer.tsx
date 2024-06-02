@@ -119,12 +119,6 @@ const BasicContainer = () => {
     },
   });
 
-  useEffect(() => {
-    if (userTaskAdminCaps && userTaskSheets) {
-    }
-  }, [userTaskAdminCaps, userTaskSheets]);
-
-
   const jsonStrUserModCaps = JSON.stringify(userModCaps);
   const client = useSuiClient();
   const [account] = useAccounts();
@@ -262,10 +256,6 @@ const BasicContainer = () => {
     }
   }
 
-  useEffect(() => {
-    fetchAllTaskData();
-  }, []);
-
   console.log("all tasks are:::", allTasks);
 
   // Set Accepted Tasks Data From Task Sheets Owned by User
@@ -334,11 +324,19 @@ const BasicContainer = () => {
     }
   }
 
+  useEffect(() => {
+    fetchAllTaskData();
+  }, []);
+
+  useEffect(() => {
+    if (userTaskAdminCaps && userTaskSheets) {
+    }
+  }, [userTaskAdminCaps, userTaskSheets]);
+
   // Data for Accepted Tasks
   useEffect(() => {
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
-
 
   // Data for Published Tasks
   useEffect(() => {
@@ -351,7 +349,7 @@ const BasicContainer = () => {
   }, [allTasks, walletAddress]);
 
 
-  // Accept Task
+  // Accept Task //TODO: HERE
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account) {
       toast.error("Please connect your wallet");
@@ -430,7 +428,7 @@ const BasicContainer = () => {
     }
   };
 
-  // Publish Public Tasks
+  // Publish Public Tasks 
   const handlePublishTaskChain = async () => {
     if (!account) {
       toast.error("Please connect your wallet");

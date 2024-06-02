@@ -87,11 +87,17 @@ When users see a task they want to execute, they can click Accept Task under the
 
 ![image](https://github.com/u2789011/suiHackthon/assets/153002627/d0b1fe03-2b0f-420a-b40d-9e6fb41e5376)
 
-### 5. Task Executor Receives Reward [This Feature is Still Under Construction]
+### 5. Task Executor Receives Reward [Reject Function is Still Under Construction]
 - When the task sheet is approved by the MOD, the smart contract will automatically distribute the agreed-upon reward amount from the reward pool to the task executor.
 - The TaskSheet will be permanently frozen on the blockchain using the freeze object function to preserve the record.
 - At this point, a POC (Proof of Completion) will be minted and transferred to the task completer, thus concluding the public task process.
 <br/>
+
+*As you can see on the screenshot below, This transaction automatically disburses the reward, freezes the task sheet, and mints a Proof of Completion.*
+<br>
+
+![image](https://github.com/do0x0ob/suiHackathon/assets/153002627/8686c0a6-7fb3-4be7-bde8-901d1e817553)
+
 
 ---
 
@@ -136,7 +142,8 @@ This object is minted and transferred to the completer's address when the task i
 ### 1. Public Task Module
 **Bugs**
 - Fix Complete Tasks Listing
-- Fix Approve/Reject Tasksheets Fuctions
+- ~~Fix Approve Tasksheets Fuctions~~ (Done By d0x0b, 20240602)
+- Fix Reject Tasksheets Fuctions
 - ~~Fix Submit Task Function~~ (Done By d0x0b, 20240531)
 - ~~Fix Edit Description Function~~ (Done By d0x0b, 20240531)
 

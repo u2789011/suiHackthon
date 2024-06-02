@@ -559,6 +559,33 @@ module main_task::public_task {
 
     }
 
+    // Edit Task Record Before Submit TaskSheet to Mod
+
+    public entry fun edit_and_submit_task_sheet (
+        mut task_sheet: TaskSheet,
+        date: &Clock,
+        _: &TaskAdminCap
+    ) {
+        task_sheet.update_time = clock::timestamp_ms(date);
+        task_sheet.status = 1u8;
+
+        let task_id = task_sheet.main_task_id;
+        let receipient = task_sheet.moderator;
+        let tasker = task_sheet.creator;
+        let task_sheet_id = object::uid_to_inner(&task_sheet.id);
+
+        emit(TaskSheetSubmittedEvent {
+            task_id,
+            task_sheet_id,
+            tasker,
+            receipient,
+            timestamp: clock::timestamp_ms(date)
+        });
+
+        transfer::public_transfer(task_sheet, receipient);
+
+    }
+
 
     // Getter functions
 

@@ -6,8 +6,8 @@ const MetaTagsContainer = () => {
   const router = useRouter();
   //Set your product name, description, twitter account, and metadata image path
   const name = "Fren Suipport";
-  const description = "Product description";
-  const twitterAccount = "@yourTwitterAccount";
+  const description = "Addressing Funding Bottlenecks in the Web3 Ecosystem";
+  const twitterAccount = "@FrenSuipport";
   const metadataImagePath = `http://localhost:3000${MetaThumbnail.src}`;
   const pathname = router.pathname;
   const page = pathname.split("/")[1] ?? "";
@@ -55,7 +55,7 @@ const MetaTagsContainer = () => {
         key="twitterimage"
       />
       {/* Favicon */}
-      <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+      <link rel="shortcut icon" type="image/png" href="/favicon.ico" />
       <link
         rel="icon"
         type="image/png"

@@ -332,7 +332,7 @@ const BasicContainer = () => {
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
-  // Data for Accepted Tasks //TODO: HERE
+  // Data for Accepted Tasks
   useEffect(() => {
     if (processedTaskSheets.length > 0) {
       handleMatchAndSetAcceptedTasks(processedTaskSheets, allTasks);
@@ -350,7 +350,7 @@ const BasicContainer = () => {
   }, [allTasks, walletAddress]);
 
 
-  // Accept Task //TODO: HERE
+  // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account) {
       toast.error("Please connect your wallet");

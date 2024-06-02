@@ -1100,14 +1100,15 @@ const BasicContainer = () => {
                         showContent: true,
                     },
                 });
-
-                const responseObj: TaskSheetPendingReview[] = response.map((item: any) => JSON.parse(JSON.stringify(item)));
+                const responseObj: TaskSheetPendingReview[] = response;
 
                 if (Array.isArray(responseObj)) {
                     const filtered: TaskSheetPendingReview[] = responseObj.filter(taskSheet =>
                         taskSheet.data.content.fields.status === 1
                     );
+
                     setFilteredTaskSheets(filtered);
+
                     console.log("Filtered tasksheets with status 1:", filtered);
                 } else {
                     console.error("Response is not an array or is empty");

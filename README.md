@@ -67,8 +67,11 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 | **Proof of Completion Image URL** | The image link for the completion proof NFT                         | `https://example.com/proof.png`                                     |
 
 ### 2. Accept Task
-When users see a task they want to execute, they can click Accept Task under the All Task tab to mint a Task Sheet associated with the main task, as well as a TaskAdminCap that controls the modification and submission permissions of the Task Sheet. In the future, this Task Sheet will be used as a record of the task results.
+- When users see a task they want to execute, they can click Accept Task under the All Task tab to mint a Task Sheet associated with the main task.
+- A TaskAdminCap that controls the modification and submission permissions of the Task Sheet will also be minted in the same transaction.
+- In the future, this Task Sheet will be used as a record of the task results.
 <br>
+
 ![image](https://github.com/u2789011/suiHackthon/assets/153002627/1a62147b-971c-4cee-b8c1-f7cb2ebc4517)
 
 

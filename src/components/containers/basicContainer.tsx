@@ -95,8 +95,6 @@ const BasicContainer = () => {
     },
   });
 
-  console.log("userTaskSheets", userTaskSheets); //FIXME: for test only
-
   const { data: userTaskAdminCaps } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
     filter: {
@@ -109,8 +107,6 @@ const BasicContainer = () => {
     },
   });
 
-  console.log("userTaskAdminCaps", userTaskAdminCaps); //FIXME: test use only
-
   const { data: userModCaps } = useSuiClientQuery("getOwnedObjects", {
     owner: walletAddress ?? "",
     filter: {
@@ -122,8 +118,6 @@ const BasicContainer = () => {
       showPreviousTransaction: true,
     },
   });
-
-  console.log("userModCaps::", userModCaps); //FIXME: test use only
 
   useEffect(() => {
     if (userTaskAdminCaps && userTaskSheets) {
@@ -216,8 +210,6 @@ const BasicContainer = () => {
       const objectsResponse = await client.multiGetObjects(
         multiGetObjectsParams
       );
-
-      console.log("Add Previous Trasaction Query",objectsResponse); //FIXME: test only 
       return objectsResponse;
     } catch (error) {
       console.error("Error fetching multiple objects:", error);
@@ -329,7 +321,6 @@ const BasicContainer = () => {
           .filter((item: TaskSheet | null) => item !== null) as TaskSheet[];
 
         return usertaskSheets;
-        //console.log("taskSheets:", userTaskSheets); //FIXME: test use only
       }
     }
     return [];
@@ -348,7 +339,6 @@ const BasicContainer = () => {
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
-  //console.log("processedTaskSheets", processedTaskSheets); //FIXME: for test use only
 
   // Data for Published Tasks
   useEffect(() => {
@@ -1098,7 +1088,7 @@ const BasicContainer = () => {
     }
   };
 
-  // TODO: // FIXME:HERE!!
+  // filtered Display for Pending Review TaskShets
   useEffect(() => {
     const fetchFilteredTaskSheets = async () => {
         if (selectedTask?.task_sheets) {
@@ -1111,24 +1101,18 @@ const BasicContainer = () => {
                     },
                 });
 
-                console.log("response:::", response);
-
-                // 明確地聲明 responseObj 的類型
                 const responseObj: TaskSheetPendingReview[] = response.map((item: any) => JSON.parse(JSON.stringify(item)));
 
                 if (Array.isArray(responseObj)) {
                     const filtered: TaskSheetPendingReview[] = responseObj.filter(taskSheet =>
                         taskSheet.data.content.fields.status === 1
                     );
-
                     setFilteredTaskSheets(filtered);
-
                     console.log("Filtered tasksheets with status 1:", filtered);
                 } else {
                     console.error("Response is not an array or is empty");
                     setFilteredTaskSheets([]);
                 }
-
             } catch (error) {
                 console.error("Failed to fetch task sheets:", error);
                 setFilteredTaskSheets([]);
@@ -1141,7 +1125,7 @@ const BasicContainer = () => {
 
 
 
-  //認證通過並發送獎勵 | approve_and_send_reward<T> TODO: FIXME:
+  // approve_and_send_reward<T>
   const handleApprove = async (
     annotation: string,
     selectedTaskId: string,
@@ -1859,7 +1843,7 @@ const BasicContainer = () => {
                 Submissions for {selectedTask ? selectedTask.name : ""}
               </ModalHeader>
               <ModalBody>
-                {/* //TODO: 這裡要抓到selectedTask中的任務單們 */}
+                {/* // Display Pending Review Tasks */}
                 {filteredTaskSheets.map((taskSheet, index) => {
                   const explorerObjUrl = `${DEVNET_EXPLOR_OBJ + taskSheet}`;
 

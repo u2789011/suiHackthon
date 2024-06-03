@@ -289,7 +289,7 @@ const BasicContainer = () => {
   }
 
 
-  // Accept Task TODO: here FIXME:
+  // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account) {
       toast.error("Please connect your wallet");

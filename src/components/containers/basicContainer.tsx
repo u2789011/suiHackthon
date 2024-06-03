@@ -499,68 +499,47 @@ const BasicContainer = () => {
   const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
   const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
 
+
   // submit_task_sheet
-  const handleSendTaskSheet = async (
-    selectedTaskID: string,
-    description: string,
-  ) => {
-    if (!checkWalletConnection(account)) return;
-    /*
-     if (description === "") {
-       toast.error("Description cannot be empty");
-       return;
-     }*/
+  const getRelateTaskSheetAndCap = (selectedTaskID: string) => {
+    const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
+    const userTaskSheetArray = jsonObjUserTaskSheet.data;
+  
+    const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
+      (tasksheet: TaskSheetArr) => 
+        tasksheet.data.content.fields.main_task_id.includes(selectedTaskID)
+    );
 
-    // Get Movecall params
-    try {
-      if (!userTaskSheets) {
-        throw new Error("UserTaskSheet is undefined");
-      }
+    if (!relateTaskSheet) {
+      throw new Error("No matching TaskSheet found");
+    }
 
-      const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
-      const userTaskSheetArray = jsonObjUserTaskSheet.data;
+    const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
 
-      const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
-        (tasksheet: TaskSheetArr) => {
-          //console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
-          return tasksheet.data.content.fields.main_task_id.includes(
-            selectedTaskID,
-          );
-        },
+    const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
+    const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
+
+    const relatedTaskAdminCap: TaskAdminCap | undefined =
+      userTaskAdminCapArray.find((item: TaskAdminCapArr) =>
+        item.data.previousTransaction === relateTaskSheet.data.previousTransaction
       );
+    if (!relatedTaskAdminCap) {
+      throw new Error("No Matching TaskAdminCap found");
+    }
+    const relatedTaskAdminCapID = relatedTaskAdminCap.data.content.fields.id.id;
+  
+    return { relateTaskSheetId, relatedTaskAdminCapID };
+  };
 
-      if (!relateTaskSheet) {
-        throw new Error("No matching TaskSheet found");
-      }
-      const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
-      console.log("relateTaskSheetId", relateTaskSheetId); //FIXME:
-
-      // TaskAdminCap
-      const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
-      const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
-
-      const relatedTaskAdminCap: TaskAdminCap | undefined =
-        userTaskAdminCapArray.find((item: TaskAdminCapArr) => {
-          console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction);
-          return (
-            item.data.previousTransaction ===
-            relateTaskSheet.data.previousTransaction
-          );
-        });
-        console.log("relatedTaskAdminCap", relatedTaskAdminCap); //FIXME:
-
-      if (!relatedTaskAdminCap) {
-        throw new Error("No Matching TaskAdminCap found");
-      }
-      const relatedTaskAdminCapID =
-        relatedTaskAdminCap.data.content.fields.id.id;
-
-      // Movecall
+  const handleSendTaskSheet = async (selectedTaskID: string, description: string) => {
+    if (!checkWalletConnection(account)) return;
+    /*if (description === "") {
+      toast.error("Description cannot be empty");
+      return}*/
+  
+    try {
+      const { relateTaskSheetId, relatedTaskAdminCapID } = getRelateTaskSheetAndCap(selectedTaskID);
       const txb = new TransactionBlock();
-
-      console.log(description);
-
-      // Submit TaskSheet
       txb.moveCall({
         target: `${PACKAGE_ID}::public_task::submit_task_sheet`,
         arguments: [
@@ -571,119 +550,55 @@ const BasicContainer = () => {
       });
 
       txb.setSender(account.address);
-
       const dryrunRes = await client.dryRunTransactionBlock({
         transactionBlock: await txb.build({ client: client }),
       });
-      console.log(dryrunRes);
 
       if (dryrunRes.effects.status.status === "success") {
-        signAndExecuteTransactionBlock(
-          {
-            transactionBlock: txb,
-            options: {
-              showEffects: true,
-            },
-          },
+        await signAndExecuteTransactionBlock(
+          { transactionBlock: txb, options: { showEffects: true } },
           {
             onSuccess: async (res) => {
-              try {
-                const digest = await txb.getDigest({ client: client });
-                const explorerUrl = `${DEVNET_EXPLORE + digest}`;
-                showToast("Task Sheet Submitted", explorerUrl);
-                console.log(`Transaction Digest`, digest);
-              } catch (digestError) {
-                if (digestError instanceof Error) {
-                  toast.error(
-                    `Transaction sent, but failed to get digest: ${digestError.message}`,
-                  );
-                } else {
-                  toast.error(
-                    "Transaction sent, but failed to get digest due to an unknown error.",
-                  );
-                }
-              }
+              const digest = await txb.getDigest({ client: client });
+              const explorerUrl = `${DEVNET_EXPLORE + digest}`;
+              showToast("Task Sheet Submitted", explorerUrl);
               refetch();
               fetchAllTaskData();
               setTaskSheetDescription("");
             },
             onError: (err) => {
               toast.error("Tx Failed!");
-              console.log(err);
+              console.error(err);
             },
-          },
+          }
         );
       } else {
         toast.error("Something went wrong");
       }
     } catch (error) {
-      console.error("Error handling task sheet submit");
+      console.error("Error handling task sheet submit", error);
     }
   };
 
-  // update_task_sheet_content
-  const handleTaskSheetDetails = async (
-    selectedTaskID: string,
-    description: string,
-  ) => {
+  const handleTaskSheetDetails = async (selectedTaskID: string, description: string) => {
     if (!checkWalletConnection(account)) return;
-
+  
     if (description === "") {
       toast.error("Description cannot be empty");
       return;
     }
 
     try {
-      if (!userTaskSheets) {
-        throw new Error("UserTaskSheet is undefined");
-      }
-
-      const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
-      const userTaskSheetArray = jsonObjUserTaskSheet.data;
-
-      const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
-        (tasksheet: TaskSheetArr) => {
-          //console.log("Comparing:", tasksheet.data.content.fields.main_task_id, "with", selectedTaskID);
-          return tasksheet.data.content.fields.main_task_id.includes(
-            selectedTaskID,
-          );
-        },
-      );
-
-      if (!relateTaskSheet) {
-        throw new Error("No matching TaskSheet found");
-      }
-      const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
-
-      // TaskAdminCap
-      const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
-      const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
-
-      const relatedTaskAdminCap: TaskAdminCap | undefined =
-        userTaskAdminCapArray.find((item: TaskAdminCapArr) => {
-          //console.log("Comparing:", item.data.previousTransaction, "with", relateTaskSheet.data.previousTransaction)
-          return (
-            item.data.previousTransaction ===
-            relateTaskSheet.data.previousTransaction
-          );
-        });
-
-      if (!relatedTaskAdminCap) {
-        throw new Error("No Matching TaskAdminCap found");
-      }
-      const relatedTaskAdminCapID =
-        relatedTaskAdminCap.data.content.fields.id.id;
-
-      // Move Call Function
+      const { relateTaskSheetId, relatedTaskAdminCapID } = getRelateTaskSheetAndCap(selectedTaskID);
+  
       const txb = new TransactionBlock();
-
       txb.moveCall({
         target: `${PACKAGE_ID}::public_task::update_task_sheet_content`,
         arguments: [
           txb.pure(relateTaskSheetId),
           txb.pure(description),
           txb.pure(SUI_CLOCK_OBJECT_ID),
-          txb.pure(relatedTaskAdminCapID), // 使用匹配的 TaskAdminCap ID
+          txb.pure(relatedTaskAdminCapID),
         ],
       });
 
@@ -691,42 +606,31 @@ const BasicContainer = () => {
       const dryrunRes = await client.dryRunTransactionBlock({
         transactionBlock: await txb.build({ client: client }),
       });
-      console.log(dryrunRes);
 
       if (dryrunRes.effects.status.status === "success") {
-        signAndExecuteTransactionBlock(
-          {
-            transactionBlock: txb,
-            options: {
-              showEffects: true,
-            },
-          },
+        await signAndExecuteTransactionBlock(
+          { transactionBlock: txb, options: { showEffects: true } },
           {
             onSuccess: async (res) => {
               try {
                 const digest = await txb.getDigest({ client: client });
                 const explorerUrl = `${DEVNET_EXPLORE + digest}`;
                 showToast("Task Sheet Updated", explorerUrl);
-                console.log(`Transaction Digest`, digest);
+                refetch();
+                fetchAllTaskData();
               } catch (digestError) {
                 if (digestError instanceof Error) {
-                  toast.error(
-                    `Transaction sent, but failed to get digest: ${digestError.message}`,
-                  );
+                  toast.error(`Transaction sent, but failed to get digest: ${digestError.message}`);
                 } else {
-                  toast.error(
-                    "Transaction sent, but failed to get digest due to an unknown error.",
-                  );
+                  toast.error("Transaction sent, but failed to get digest due to an unknown error.");
                 }
               }
-              refetch();
-              fetchAllTaskData();
             },
             onError: (err) => {
               toast.error("Tx Failed!");
-              console.log(err);
+              console.error(err);
             },
-          },
+          }
         );
       } else {
         toast.error("Something went wrong");

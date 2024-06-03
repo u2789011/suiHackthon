@@ -146,7 +146,7 @@ This object is minted and transferred to the completer's address when the task i
 **Bugs**
 - Fix Complete Tasks Listing
 - ~~Fix Approve Tasksheets Fuctions~~ (Done By d0x0b, 20240602)
-- Fix Reject Tasksheets Fuctions
+- ~~Fix Reject Tasksheets Fuctions~~ (Done By d0x0b, 20240604)
 - ~~Fix Submit Task Function~~ (Done By d0x0b, 20240531)
 - ~~Fix Edit Description Function~~ (Done By d0x0b, 20240531)
 

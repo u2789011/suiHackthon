@@ -956,14 +956,13 @@ const BasicContainer = () => {
   };
 
 
-
   // approve_and_send_reward<T>
   const handleApprove = async (
     annotation: string,
     selectedTaskId: string,
     selectedTaskSheets: string[]
   ) => {
-    if (!checkWalletConnection(account)) return;
+     if (!checkWalletConnection(account)) return;
 
      try {
       if(!userModCaps) {
@@ -1003,9 +1002,11 @@ const BasicContainer = () => {
       const relatedModCapId = relatedModCap.data.objectId;
       const rewardType = selectedTask.reward_type;
       const selectedTaskSheet = selectedTaskSheets[0].toString()
+      /*
       console.log("Related ModCapId: ", relatedModCapId);
       console.log('selectedTaskId:', selectedTaskId, typeof selectedTaskId);
       console.log('selectedTaskSheet:', selectedTaskSheet, typeof selectedTaskSheets);
+      */
 
       const txb = new TransactionBlock();
 
@@ -1013,7 +1014,7 @@ const BasicContainer = () => {
         target: `${PACKAGE_ID}::public_task::approve_and_send_reward`,
         arguments: [
           txb.pure(selectedTaskId),
-          txb.pure(selectedTaskSheets[0]), // 需要寫一個 for 迴圈 txb.movecall 傳入迭代
+          txb.pure(selectedTaskSheet), // 需要寫一個 for 迴圈 txb.movecall 傳入迭代
           txb.pure(annotation),
           txb.pure(SUI_CLOCK_OBJECT_ID),
           txb.pure(relatedModCapId) // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
@@ -1040,7 +1041,6 @@ const BasicContainer = () => {
                 try {
                   const digest = await txb.getDigest({ client: client });
                   const explorerUrl = `${DEVNET_EXPLORE + digest}`; 
-                  // TODO: here is the usage
                   showToast("Task Sheet Approved", explorerUrl);
                   console.log(`Transaction Digest`, digest);
                 } catch (digestError) {
@@ -1077,69 +1077,114 @@ const BasicContainer = () => {
 
 
   //TODO: FIXME: 認證不通過退回任務單 | reject_and_return_task_sheet 
-  const handleReject = (annotation: string, selectedTaskId: string) => {
-    /*  if (!checkWalletConnection(account)) return;
-        const txb = new TransactionBlock();
-        console.log(selectedTask);
-        txb.moveCall({
-          target: `${PACKAGE_ID}::public_task::reject_and_return_task_sheet`,
-          arguments: [
-            txb.object(
-              selectedTaskId
-            ),
-            txb.pure(SUI_CLOCK_OBJECT_ID),
-          ],
-          typeArguments: ["0x2::sui::SUI"],
-        });
+  const handleReject = async (
+    annotation: string,
+    selectedTaskId: string,
+    selectedTaskSheets: string[]
+  ) => {
+    if (!checkWalletConnection(account)) return;
 
-        txb.setSender(account.address);
-        const dryrunRes = await client.dryRunTransactionBlock({
-          transactionBlock: await txb.build({ client: client }),
-        });
-        console.log(dryrunRes);
+    try {
+      if(!userModCaps) {
+        throw new Error("UserModCaps is undefined");
+      }
 
-        if (dryrunRes.effects.status.status === "success") {
-          signAndExecuteTransactionBlock(
-            {
-              transactionBlock: txb,
-              options: {
-                showEffects: true,
-              },
+      const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
+      const userModCapsArray = jsonObjUserModCaps.data;
+      //console.log("publishedTasks:::",allTasks)
+      
+      // find Related Task
+      const selectedTask = allTasks.find(task => task.id === selectedTaskId);
+      if (!selectedTask) {
+        throw new Error("Selected task not found");
+      }
+
+      const res = await client.queryTransactionBlocks({ filter: { ChangedObject: selectedTaskId } });
+      const taskLastDataDigest = res.data[res.data.length - 1].digest;
+
+      let relatedModCap: any;
+      for (const modCap of userModCapsArray) {
+        const ModCapLatestDigest = (await client.queryTransactionBlocks({
+          filter: { ChangedObject: modCap.data.objectId }
+        })).data.slice(-1)[0].digest;
+
+        if (ModCapLatestDigest === taskLastDataDigest) {
+          relatedModCap = modCap;
+          break;
+        }
+      }
+
+      if (!relatedModCap) {
+        toast.error("You are not assigned as a Task Moderator for this task")
+        throw new Error("Related modCap not found");
+      }
+
+      const relatedModCapId = relatedModCap.data.objectId;
+      const selectedTaskSheet = selectedTaskSheets[0].toString()
+
+      const txb = new TransactionBlock();
+
+      txb.moveCall({
+        target: `${PACKAGE_ID}::public_task::reject_and_return_task_sheet`,
+        arguments: [
+          txb.pure(selectedTaskSheet),
+          txb.pure(annotation),
+          txb.pure(SUI_CLOCK_OBJECT_ID),
+          txb.pure(relatedModCapId)
+        ],
+      });
+
+      txb.setSender(account.address);
+      const dryrunRes = await client.dryRunTransactionBlock({
+        transactionBlock: await txb.build({ client: client }),
+      });
+      console.log(dryrunRes);
+
+      if (dryrunRes.effects.status.status === "success") {
+        signAndExecuteTransactionBlock(
+          {
+            transactionBlock: txb,
+            options: {
+              showEffects: true,
             },
-            {
-              onSuccess: async (res) => {
-                try {
-                  const digest = await txb.getDigest({ client: client });
-                  showToast("Task Sheet Rejected", explorerUrl);
-                  console.log(`Transaction Digest`, digest);
-                } catch (digestError) {
-                  if (digestError instanceof Error) {
-                    toast.error(
-                      `Transaction sent, but failed to get digest: ${digestError.message}`
-                    );
-                  } else {
-                    toast.error(
-                      "Transaction sent, but failed to get digest due to an unknown error."
-                    );
-                  }
+          },
+          {
+            onSuccess: async (res) => {
+              try {
+                const digest = await txb.getDigest({ client: client });
+                const explorerUrl = `${DEVNET_EXPLORE + digest}`;
+                showToast("Task Sheet Rejected", explorerUrl);
+                console.log(`Transaction Digest`, digest);
+              } catch (digestError) {
+                if (digestError instanceof Error) {
+                  toast.error(
+                    `Transaction sent, but failed to get digest: ${digestError.message}`
+                  );
+                } else {
+                  toast.error(
+                    "Transaction sent, but failed to get digest due to an unknown error."
+                  );
                 }
-                refetch();
-                fetchData();
-              },
-              onError: (err) => {
-                toast.error("Tx Failed!");
-                console.log(err);
-              },
-            }
-          );
-        } else {
-          toast.error("Something went wrong");
-        }*/
+              }
+              refetch();
+            },
+            onError: (err) => {
+              toast.error("Tx Failed!");
+              console.log(err);
+            },
+          }
+        );
+      } else {
+        toast.error("Something went wrong");
+      }
     console.log(selectedTaskId, selected, annotation);
-    toast.warning(`Task Sheet ${selected} Denied`);
-    toast.warning(`Note: ${annotation}`);
+    //toast.warning(`Task Sheet ${selected} Denied`);
+    //toast.warning(`Note: ${annotation}`);
     setSelected([]);
-  };
+  } catch(error) {
+    console.error("Error handling task sheet details", error);
+  }
+}
 
   useEffect(() => {
     fetchAllTaskData();
@@ -1771,7 +1816,8 @@ const BasicContainer = () => {
                   onClick={() =>
                     handleReject(
                       annotation,
-                      selectedTask ? selectedTask.id : ""
+                      selectedTask ? selectedTask.id : "",
+                      selected
                     )
                   }
                 >

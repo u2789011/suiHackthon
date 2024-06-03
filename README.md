@@ -90,7 +90,7 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 
 ![image](https://github.com/u2789011/suiHackthon/assets/153002627/d0b1fe03-2b0f-420a-b40d-9e6fb41e5376)
 
-### 5. Task Executor Receives Reward [Reject Function is Still Under Construction]
+### 5. Task Executor Receives Reward [The multi-selection feature is still under development]
 - When the task sheet is approved by the MOD, the smart contract will automatically distribute the agreed-upon reward amount from the reward pool to the task executor.
 - The TaskSheet will be permanently frozen on the blockchain using the freeze object function to preserve the record.
 - At this point, a POC (Proof of Completion) will be minted and transferred to the task completer, thus concluding the public task process.
@@ -146,9 +146,10 @@ This object is minted and transferred to the completer's address when the task i
 **Bugs**
 - Fix Complete Tasks Listing
 - ~~Fix Approve Tasksheets Fuctions~~ (Done By d0x0b, 20240602)
-- Fix Reject Tasksheets Fuctions
+- ~~Fix Reject Tasksheets Fuctions~~ (Done By d0x0b, 20240604)
 - ~~Fix Submit Task Function~~ (Done By d0x0b, 20240531)
 - ~~Fix Edit Description Function~~ (Done By d0x0b, 20240531)
+- Fix multi-selection Tasks on Tasksheets Review Panel
 
 **Features**
 - Add a switch for task status.

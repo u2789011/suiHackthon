@@ -10,6 +10,7 @@ import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
 import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
+import { checkWalletConnection } from '../../lib/transactionUtils';
 import {
   Card,
   CardHeader,
@@ -379,10 +380,7 @@ const BasicContainer = () => {
 
   // Publish Public Tasks 
   const handlePublishTaskChain = async () => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
+    if (!checkWalletConnection(account)) return;
 
     const txb = new TransactionBlock();
 
@@ -513,6 +511,7 @@ const BasicContainer = () => {
 
     console.log("New task published:", newTask);
   };
+
   //打開回報任務完成Modal
   const handleCompleteTask = (task: Task) => {
     setSelectedTask(task);
@@ -528,16 +527,12 @@ const BasicContainer = () => {
     selectedTaskID: string,
     description: string
   ) => {
-    console.log(`Send Task Sheet ${selectedTaskID}`);
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
-
+    if (!checkWalletConnection(account)) return;
+    /*
      if (description === "") {
        toast.error("Description cannot be empty");
        return;
-     }
+     }*/
   
     // Get Movecall params
     try {
@@ -653,10 +648,7 @@ const BasicContainer = () => {
     selectedTaskID: string,
     description: string,
   ) => {
-    if (!account) {
-      toast.error("Please connect your wallet");
-      return;
-    }
+    if (!checkWalletConnection(account)) return;
 
     if (description === "") {
       toast.error("Description cannot be empty");
@@ -775,10 +767,8 @@ const BasicContainer = () => {
 
   //增加獎池資金 | add_task_fund<T>;
   const handleAddTaskFund = (selectedTaskID: string, fund: number) => {
-    /* if (!account) {
-          toast.error("Please connect your wallet");
-          return;
-        }
+    /* if (!checkWalletConnection(account)) return;
+
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -843,10 +833,7 @@ const BasicContainer = () => {
   };
   //取出獎池資金 | retrieve_task_fund<T>
   const handleTakeTaskFund = (selectedTaskID: string, fund: number) => {
-    /*   if (!account) {
-          toast.error("Please connect your wallet");
-          return;
-        }
+    /*  if (!checkWalletConnection(account)) return;
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -914,10 +901,7 @@ const BasicContainer = () => {
     selectedTaskID: string,
     description: string
   ) => {
-    /* if (!account) {
-          toast.error("Please connect your wallet");
-          return;
-        }
+    /* if (!checkWalletConnection(account)) return;
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({
@@ -1041,10 +1025,7 @@ const BasicContainer = () => {
     selectedTaskId: string,
     selectedTaskSheets: string[]
   ) => {
-      if (!account) {
-        toast.error("Please connect your wallet");
-        return;
-      }
+    if (!checkWalletConnection(account)) return;
 
      try {
       if(!userModCaps) {
@@ -1159,10 +1140,7 @@ const BasicContainer = () => {
 
   //TODO: FIXME: 認證不通過退回任務單 | reject_and_return_task_sheet 
   const handleReject = (annotation: string, selectedTaskId: string) => {
-    /* if (!account) {
-          toast.error("Please connect your wallet");
-          return;
-        }
+    /*  if (!checkWalletConnection(account)) return;
         const txb = new TransactionBlock();
         console.log(selectedTask);
         txb.moveCall({

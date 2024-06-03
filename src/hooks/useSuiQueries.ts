@@ -33,7 +33,7 @@ export const useSuiQueries = () => {
     });
 
     // Get All TaskAdminCaps from User Wallet
-    const { data: userTaskAdminCaps, refetch: refetchUserTaskAdminCaps } = useSuiClientQuery('getOwnedObjects', {
+    const { data: userTaskAdminCaps, refetch: refetchUse } = useSuiClientQuery('getOwnedObjects', {
         owner: walletAddress ?? '',
         filter: {
             StructType: `${PACKAGE_ID}::public_task::TaskAdminCap`,

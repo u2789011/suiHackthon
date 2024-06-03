@@ -85,7 +85,6 @@ const BasicContainer = () => {
     allCoins,
     userTaskSheets,
     refetchUserTaskSheets,
-    refetchUserTaskAdminCaps,
     userTaskAdminCaps,
     userModCaps,
   } = useSuiQueries();
@@ -157,7 +156,6 @@ const BasicContainer = () => {
         console.warn("Task sheet data or fields is undefined:", taskSheet);
       }
     });
-    console.log('Matched Tasks:', matchedTasks); //FIXME: test only
     setAcceptedTasks(matchedTasks);
   };
 
@@ -278,7 +276,6 @@ const BasicContainer = () => {
             }
           })
           .filter((item: TaskSheet | null) => item !== null) as TaskSheet[];
-          console.log("usertaskSheets::::::", usertaskSheets)
           return usertaskSheets;
         }
       }
@@ -288,12 +285,11 @@ const BasicContainer = () => {
   async function loadAcceptedTasks() {
     if (userTaskSheets) {
       const userTaskSheetsData = await fetchAcceptedTask(userTaskSheets);
-      console.log('Loaded userTaskSheetsData:', userTaskSheetsData);
       handleMatchAndSetAcceptedTasks(userTaskSheetsData, allTasks);
     }
   }
 
-  // Accept Task FIXME: add set selected task to null
+  // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account) {
       toast.error("Please connect your wallet");
@@ -301,7 +297,6 @@ const BasicContainer = () => {
     }
 
     const txb = new TransactionBlock();
-    //console.log(selectedTask);
     txb.moveCall({
       target: `${PACKAGE_ID}::public_task::mint_task_sheet`,
       arguments: [txb.object(selectedTask.id), txb.pure(SUI_CLOCK_OBJECT_ID)],
@@ -329,12 +324,10 @@ const BasicContainer = () => {
               const explorerUrl = `${DEVNET_EXPLORE + digest}`;
               showToast("Task Accepted", explorerUrl);
               console.log(`Transaction Digest`, digest);
-              //FIXME:
               setAcceptedTasks((prevTasks) => {
                 const updatedTasks = [...prevTasks, selectedTask];
-                console.log('Updated acceptedTasks:', updatedTasks);
                 return updatedTasks;
-              }); //FIXME:
+              });
             } catch (digestError) {
               if (digestError instanceof Error) {
                 toast.error(
@@ -349,7 +342,6 @@ const BasicContainer = () => {
             refetch();
             fetchAllTaskData();
             refetchUserTaskSheets();
-            refetchUserTaskAdminCaps();
           },
           onError: (err) => {
             toast.error("Tx Failed!");
@@ -510,12 +502,10 @@ const BasicContainer = () => {
 
   // Get Relate TaskSheetAndCap
   const getRelateTaskSheetAndCap = async (selectedTaskID: string) => {
-    console.log("Starting getRelateTaskSheetAndCap function");
-    console.log("Selected Task ID:", selectedTaskID);
 
     const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
     const userTaskSheetArray = jsonObjUserTaskSheet.data;
-    console.log("Parsed user task sheets:", userTaskSheetArray);
+
 
     const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
       (tasksheet: TaskSheetArr) => 
@@ -528,8 +518,6 @@ const BasicContainer = () => {
     }
 
     const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
-    console.log("Found related TaskSheet:", relateTaskSheet);
-    console.log("Related TaskSheet ID:", relateTaskSheetId);
 
     // Fetch the first transaction digest for the TaskSheet
     const taskSheetTransactions = await client.queryTransactionBlocks({
@@ -542,11 +530,9 @@ const BasicContainer = () => {
     }
 
     const initialTaskSheetDigest = taskSheetTransactions.data[taskSheetTransactions.data.length - 1].digest;
-    console.log("Initial TaskSheet Transaction Digest:", initialTaskSheetDigest);
 
     const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
     const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
-    console.log("Parsed user task admin caps:", userTaskAdminCapArray);
 
     let relatedTaskAdminCap: TaskAdminCap | undefined;
 
@@ -556,12 +542,10 @@ const BasicContainer = () => {
       });
 
       if (adminCapTransactions.data.length === 0) {
-        console.log("No transactions found for TaskAdminCap ID:", adminCap.data.objectId);
         continue;
       }
 
       const initialAdminCapDigest = adminCapTransactions.data[adminCapTransactions.data.length - 1].digest;
-      console.log("Initial TaskAdminCap Transaction Digest:", initialAdminCapDigest);
 
       if (initialAdminCapDigest === initialTaskSheetDigest) {
         relatedTaskAdminCap = adminCap;
@@ -575,8 +559,6 @@ const BasicContainer = () => {
     }
 
     const relatedTaskAdminCapID = relatedTaskAdminCap.data.content.fields.id.id;
-    console.log("Found related TaskAdminCap:", relatedTaskAdminCap);
-    console.log("Related TaskAdminCap ID:", relatedTaskAdminCapID);
 
     return { relateTaskSheetId, relatedTaskAdminCapID };
   };
@@ -587,10 +569,8 @@ const BasicContainer = () => {
     /*if (description === "") {
       toast.error("Description cannot be empty");
       return}*/
-    console.log("Submit Task Sheet selectedTaskID", selectedTaskID);
   
     try {
-      console.log("This is OutPut", getRelateTaskSheetAndCap(selectedTaskID)); //FIXME: test only
       const { relateTaskSheetId, relatedTaskAdminCapID } = await getRelateTaskSheetAndCap(selectedTaskID);
       const txb = new TransactionBlock();
       txb.moveCall({
@@ -970,11 +950,7 @@ const BasicContainer = () => {
 
       console.log("Related ModCapId: ", relatedModCapId);
       console.log("selectedTaskId:", selectedTaskId, typeof selectedTaskId);
-      console.log(
-        "selectedTaskSheet:",
-        selectedTaskSheet,
-        typeof selectedTaskSheets,
-      );
+      console.log("selectedTaskSheet:", selectedTaskSheet, typeof selectedTaskSheets);
 
       const txb = new TransactionBlock();
 
@@ -1058,7 +1034,6 @@ const BasicContainer = () => {
 
       const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
       const userModCapsArray = jsonObjUserModCaps.data;
-      //console.log("publishedTasks:::",allTasks)
 
       // find Related Task
       const selectedTask = allTasks.find((task) => task.id === selectedTaskId);
@@ -1163,7 +1138,7 @@ const BasicContainer = () => {
 
   // Data for Accepted Tasks
   useEffect(() => {
-    console.log('userTaskSheets or allTasks changed, loading accepted tasks...'); //FIXME: test only
+    console.log('userTaskSheets or allTasks changed, loading accepted tasks...');
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
@@ -1209,7 +1184,6 @@ const BasicContainer = () => {
 
             setFilteredTaskSheets(filtered);
 
-            console.log("Filtered tasksheets with status 1:", filtered);
           } else {
             console.error("Response is not an array or is empty");
             setFilteredTaskSheets([]);

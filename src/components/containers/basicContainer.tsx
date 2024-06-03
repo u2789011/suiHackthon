@@ -288,31 +288,8 @@ const BasicContainer = () => {
     }
   }
 
-  useEffect(() => {
-    fetchAllTaskData();
-  }, []);
+  
 
-  // Data for Accepted Tasks
-  useEffect(() => {
-    loadAcceptedTasks();
-  }, [userTaskSheets, allTasks]);
-
-  // Data for Accepted Tasks
-  useEffect(() => {
-    if (processedTaskSheets.length > 0) {
-      handleMatchAndSetAcceptedTasks(processedTaskSheets, allTasks);
-    }
-  }, [processedTaskSheets, allTasks]);
-
-  // Data for Published Tasks
-  useEffect(() => {
-    if (allTasks.length > 0) {
-      const filteredTasks = allTasks.filter(
-        (task) => task.creator === walletAddress || task.moderator === walletAddress
-      );
-      setPublishedTasks(filteredTasks);
-    }
-  }, [allTasks, walletAddress]);
 
 
   // Accept Task
@@ -981,42 +958,6 @@ const BasicContainer = () => {
     }
   };
 
-  // filtered Display for Pending Review TaskShets
-  useEffect(() => {
-    const fetchFilteredTaskSheets = async () => {
-        if (selectedTask?.task_sheets) {
-            try {
-                const uniqueTaskSheets = Array.from(new Set(selectedTask.task_sheets));
-                const response: any = await client.multiGetObjects({
-                    ids: uniqueTaskSheets,
-                    options: {
-                        showContent: true,
-                    },
-                });
-                const responseObj: TaskSheetPendingReview[] = response;
-
-                if (Array.isArray(responseObj)) {
-                    const filtered: TaskSheetPendingReview[] = responseObj.filter(taskSheet =>
-                        taskSheet.data.content.fields.status === 1
-                    );
-
-                    setFilteredTaskSheets(filtered);
-
-                    console.log("Filtered tasksheets with status 1:", filtered);
-                } else {
-                    console.error("Response is not an array or is empty");
-                    setFilteredTaskSheets([]);
-                }
-            } catch (error) {
-                console.error("Failed to fetch task sheets:", error);
-                setFilteredTaskSheets([]);
-            }
-        }
-    };
-
-    fetchFilteredTaskSheets();
-}, [selectedTask]);
-
 
 
   // approve_and_send_reward<T>
@@ -1202,6 +1143,68 @@ const BasicContainer = () => {
     toast.warning(`Note: ${annotation}`);
     setSelected([]);
   };
+
+  useEffect(() => {
+    fetchAllTaskData();
+  }, []);
+
+  // Data for Accepted Tasks
+  useEffect(() => {
+    loadAcceptedTasks();
+  }, [userTaskSheets, allTasks]);
+
+  // Data for Accepted Tasks
+  useEffect(() => {
+    if (processedTaskSheets.length > 0) {
+      handleMatchAndSetAcceptedTasks(processedTaskSheets, allTasks);
+    }
+  }, [processedTaskSheets, allTasks]);
+
+  // Data for Published Tasks
+  useEffect(() => {
+    if (allTasks.length > 0) {
+      const filteredTasks = allTasks.filter(
+        (task) => task.creator === walletAddress || task.moderator === walletAddress
+      );
+      setPublishedTasks(filteredTasks);
+    }
+  }, [allTasks, walletAddress]);
+
+  // filtered Display for Pending Review TaskShets
+  useEffect(() => {
+    const fetchFilteredTaskSheets = async () => {
+        if (selectedTask?.task_sheets) {
+            try {
+                const uniqueTaskSheets = Array.from(new Set(selectedTask.task_sheets));
+                const response: any = await client.multiGetObjects({
+                    ids: uniqueTaskSheets,
+                    options: {
+                        showContent: true,
+                    },
+                });
+                const responseObj: TaskSheetPendingReview[] = response;
+
+                if (Array.isArray(responseObj)) {
+                    const filtered: TaskSheetPendingReview[] = responseObj.filter(taskSheet =>
+                        taskSheet.data.content.fields.status === 1
+                    );
+
+                    setFilteredTaskSheets(filtered);
+
+                    console.log("Filtered tasksheets with status 1:", filtered);
+                } else {
+                    console.error("Response is not an array or is empty");
+                    setFilteredTaskSheets([]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch task sheets:", error);
+                setFilteredTaskSheets([]);
+            }
+        }
+      };
+
+      fetchFilteredTaskSheets();
+  }, [selectedTask]);
 
   return (
     <>

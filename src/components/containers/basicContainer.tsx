@@ -500,7 +500,7 @@ const BasicContainer = () => {
   const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
 
 
-  // submit_task_sheet
+  // Get Relate TaskSheetAndCap
   const getRelateTaskSheetAndCap = (selectedTaskID: string) => {
     const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
     const userTaskSheetArray = jsonObjUserTaskSheet.data;
@@ -531,6 +531,7 @@ const BasicContainer = () => {
     return { relateTaskSheetId, relatedTaskAdminCapID };
   };
 
+   // submit_task_shee
   const handleSendTaskSheet = async (selectedTaskID: string, description: string) => {
     if (!checkWalletConnection(account)) return;
     /*if (description === "") {
@@ -575,6 +576,7 @@ const BasicContainer = () => {
       } else {
         toast.error("Something went wrong");
       }
+      setSelectedTask(null);
     } catch (error) {
       console.error("Error handling task sheet submit", error);
     }
@@ -635,7 +637,6 @@ const BasicContainer = () => {
       } else {
         toast.error("Something went wrong");
       }
-
       console.log("Task Sheet Details", selectedTaskID, description);
     } catch (error) {
       console.error("Error handling task sheet details", error);
@@ -881,23 +882,23 @@ const BasicContainer = () => {
       //console.log("publishedTasks:::",allTasks)
 
       // find Related Task
-      const selectedTask = allTasks.find((task) => task.id === selectedTaskId);
-      if (!selectedTask) {
-        throw new Error("Selected task not found");
-      }
+      const selectedTaskForReject = allTasks.find((task) => task.id === selectedTaskId);
+        if (!selectedTaskForReject) {
+          throw new Error("Selected task not found");
+        }
 
-      const res = await client.queryTransactionBlocks({
-        filter: { ChangedObject: selectedTaskId },
-      });
-      const taskLastDataDigest = res.data[res.data.length - 1].digest;
+        const res = await client.queryTransactionBlocks({
+          filter: { ChangedObject: selectedTaskId },
+        });
+        const taskLastDataDigest = res.data[res.data.length - 1].digest;
 
-      let relatedModCap: any;
-      for (const modCap of userModCapsArray) {
-        const ModCapLatestDigest = (
-          await client.queryTransactionBlocks({
-            filter: { ChangedObject: modCap.data.objectId },
-          })
-        ).data.slice(-1)[0].digest;
+        let relatedModCap: any;
+        for (const modCap of userModCapsArray) {
+          const ModCapLatestDigest = (
+            await client.queryTransactionBlocks({
+              filter: { ChangedObject: modCap.data.objectId },
+            })
+          ).data.slice(-1)[0].digest;
 
         if (ModCapLatestDigest === taskLastDataDigest) {
           relatedModCap = modCap;
@@ -911,7 +912,7 @@ const BasicContainer = () => {
       }
 
       const relatedModCapId = relatedModCap.data.objectId;
-      const rewardType = selectedTask.reward_type;
+      const rewardType = selectedTaskForReject.reward_type;
       const selectedTaskSheet = selectedTaskSheets[0].toString();
 
       console.log("Related ModCapId: ", relatedModCapId);

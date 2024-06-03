@@ -179,7 +179,7 @@ const BasicContainer = () => {
     }
   }
 
-  // Get objects data for eash intm in `publishedTaskIdsArr`
+  // Get objects data for eash item in `publishedTaskIdsArr`
   async function fetchAllTaskList() {
     try {
       const publishedTaskIdsArr = await fetchTaskList();
@@ -287,9 +287,6 @@ const BasicContainer = () => {
       setProcessedTaskSheets(userTaskSheetsData);
     }
   }
-
-  
-
 
 
   // Accept Task

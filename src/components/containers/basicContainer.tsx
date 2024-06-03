@@ -9,6 +9,7 @@ import { AppContext } from "@/context/AppContext";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
 import { toast } from "react-toastify";
+import { showToast } from "../ui/linkToast";
 import {
   Card,
   CardHeader,
@@ -37,6 +38,7 @@ import {
 import { log } from "console";
 import "tailwindcss/tailwind.css";
 import { json } from "stream/consumers";
+import { useSuiQueries } from '../../hooks/useSuiQueries';
 
 const BasicContainer = () => {
   const {
@@ -75,52 +77,16 @@ const BasicContainer = () => {
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
   const DEVNET_EXPLOR_OBJ = "https://suiscan.xyz/devnet/object/";
-
   const { walletAddress, suiName } = useContext(AppContext);
-  const { data: suiBalance, refetch } = useSuiClientQuery("getBalance", {
-    owner: walletAddress ?? "",
-  });
-  const { data: allCoins } = useSuiClientQuery("getAllCoins", {
-    owner: walletAddress ?? "",
-  });
-
-  // Get TaskSheets Owned By User
-  const { data: userTaskSheets, refetch: refetchUserTaskSheets } = useSuiClientQuery("getOwnedObjects", {
-    owner: walletAddress ?? "",
-    filter: {
-      StructType: `${PACKAGE_ID}::public_task::TaskSheet`,
-    },
-    options: {
-      showType: true,
-      showContent: true,
-      showPreviousTransaction: true,
-    },
-  });
-
-  const { data: userTaskAdminCaps } = useSuiClientQuery("getOwnedObjects", {
-    owner: walletAddress ?? "",
-    filter: {
-      StructType: `${PACKAGE_ID}::public_task::TaskAdminCap`,
-    },
-    options: {
-      showType: true,
-      showContent: true,
-      showPreviousTransaction: true,
-    },
-  });
-
-  const { data: userModCaps } = useSuiClientQuery("getOwnedObjects", {
-    owner: walletAddress ?? "",
-    filter: {
-      StructType: `${PACKAGE_ID}::public_task::ModCap`,
-    },
-    options:{
-      showType: true,
-      showContent: true,
-      showPreviousTransaction: true,
-    },
-  });
-
+  const {
+    suiBalance,
+    refetch,
+    allCoins,
+    userTaskSheets,
+    refetchUserTaskSheets,
+    userTaskAdminCaps,
+    userModCaps,
+  } = useSuiQueries();
   const jsonStrUserModCaps = JSON.stringify(userModCaps);
   const client = useSuiClient();
   const [account] = useAccounts();
@@ -278,9 +244,7 @@ const BasicContainer = () => {
       const transformedData = transformData(apiData);
       setAllTasks(transformedData);
     }
-  }
-
-  console.log("all tasks are:::", allTasks);
+  };
 
   async function fetchAcceptedTask(userTaskSheets: any): Promise<TaskSheet[]> {
     if (userTaskSheets && userTaskSheets.data) {
@@ -384,24 +348,7 @@ const BasicContainer = () => {
             try {
               const digest = await txb.getDigest({ client: client });
               const explorerUrl = `${DEVNET_EXPLORE + digest}`;
-              toast.success(
-                <span>
-                  Transaction Sent
-                  <div>
-                    <a
-                      href={explorerUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: "lightblue",
-                        textDecoration: "underline",
-                      }}
-                    >
-                      View on Blockchain
-                    </a>
-                  </div>
-                </span>
-              );
+              showToast("Task Accepted", explorerUrl);
               console.log(`Transaction Digest`, digest);
               setAcceptedTasks(prevTasks => [...prevTasks, selectedTask]);
             } catch (digestError) {
@@ -498,21 +445,7 @@ const BasicContainer = () => {
 
             const digest = await txb.getDigest({ client: client });
             const explorerUrl = `${DEVNET_EXPLORE + digest}`;
-            toast.success(
-              <span>
-                Transaction Sent
-                <div>
-                  <a
-                    href={explorerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "lightblue", textDecoration: "underline" }}
-                  >
-                    View on Blockchian
-                  </a>
-                </div>
-              </span>
-            );
+            showToast("Task Published", explorerUrl);
             console.log(`Transaction Digest`, digest);
 
             const newTaskObject = {
@@ -683,21 +616,7 @@ const BasicContainer = () => {
               try {
                 const digest = await txb.getDigest({ client: client });
                 const explorerUrl = `${DEVNET_EXPLORE + digest}`;
-                toast.success(
-                  <span>
-                    Transaction Sent
-                    <div>
-                      <a
-                        href={explorerUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "lightblue", textDecoration: "underline" }}
-                      >
-                        View on Blockchain
-                      </a>
-                    </div>
-                  </span>
-                );
+                showToast("Task Sheet Submitted", explorerUrl);
                 console.log(`Transaction Digest`, digest);
               } catch (digestError) {
                 if (digestError instanceof Error) {
@@ -814,21 +733,7 @@ const BasicContainer = () => {
               try {
                 const digest = await txb.getDigest({ client: client });
                 const explorerUrl = `${DEVNET_EXPLORE + digest}`;
-                toast.success(
-                  <span>
-                    Transaction Sent
-                    <div>
-                      <a
-                        href={explorerUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "lightblue", textDecoration: "underline" }}
-                      >
-                        View on Blockchian
-                      </a>
-                    </div>
-                  </span>
-                );
+                showToast("Task Sheet Updated", explorerUrl);
                 console.log(`Transaction Digest`, digest);
               } catch (digestError) {
                 if (digestError instanceof Error) {
@@ -906,7 +811,7 @@ const BasicContainer = () => {
               onSuccess: async (res) => {
                 try {
                   const digest = await txb.getDigest({ client: client });
-                  toast.success(`Transaction Sent, ${digest}`);
+                  showToast("Task Fund Added", explorerUrl);
                   console.log(`Transaction Digest`, digest);
                 } catch (digestError) {
                   if (digestError instanceof Error) {
@@ -974,7 +879,7 @@ const BasicContainer = () => {
               onSuccess: async (res) => {
                 try {
                   const digest = await txb.getDigest({ client: client });
-                  toast.success(`Transaction Sent, ${digest}`);
+                  showToast("Task Fund Retrieved", explorerUrl);
                   console.log(`Transaction Digest`, digest);
                 } catch (digestError) {
                   if (digestError instanceof Error) {
@@ -1045,7 +950,7 @@ const BasicContainer = () => {
               onSuccess: async (res) => {
                 try {
                   const digest = await txb.getDigest({ client: client });
-                  toast.success(`Transaction Sent, ${digest}`);
+                  showToast("Task Description Updated", explorerUrl);
                   console.log(`Transaction Digest`, digest);
                 } catch (digestError) {
                   if (digestError instanceof Error) {
@@ -1215,22 +1120,9 @@ const BasicContainer = () => {
               onSuccess: async (res) => {
                 try {
                   const digest = await txb.getDigest({ client: client });
-                  const explorerUrl = `${DEVNET_EXPLORE + digest}`;
-                  toast.success(
-                    <span>
-                      Task Sheet Approved
-                      <div>
-                        <a
-                          href={explorerUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ color: "lightblue", textDecoration: "underline" }}
-                        >
-                          View on Blockchian
-                        </a>
-                      </div>
-                    </span>
-                  );
+                  const explorerUrl = `${DEVNET_EXPLORE + digest}`; 
+                  // TODO: here is the usage
+                  showToast("Task Sheet Approved", explorerUrl);
                   console.log(`Transaction Digest`, digest);
                 } catch (digestError) {
                   if (digestError instanceof Error) {
@@ -1265,7 +1157,7 @@ const BasicContainer = () => {
 }
 
 
-  //認證不通過退回任務單 | reject_and_return_task_sheet
+  //TODO: FIXME: 認證不通過退回任務單 | reject_and_return_task_sheet 
   const handleReject = (annotation: string, selectedTaskId: string) => {
     /* if (!account) {
           toast.error("Please connect your wallet");
@@ -1302,7 +1194,7 @@ const BasicContainer = () => {
               onSuccess: async (res) => {
                 try {
                   const digest = await txb.getDigest({ client: client });
-                  toast.success(`Transaction Sent, ${digest}`);
+                  showToast("Task Sheet Rejected", explorerUrl);
                   console.log(`Transaction Digest`, digest);
                 } catch (digestError) {
                   if (digestError instanceof Error) {

@@ -65,17 +65,13 @@ const BasicContainer = () => {
 
   // version 20240527
   const PACKAGE_ID =
-    //"0x2e9fe44a82ef679c0d2328ce71b31ad5be9669f649b154441fe01f096344c000";
-    //"0xafb7c825ba78477cb42702a896eb1c8f758e5f4d9ff972f0f868b782f2623728";
-    //"0xd84bf8f814a797c2e04a31dba8d4ba276489dc835e6b3ee725059a756b0cfe14";
-    //"0xecf2634415b80825ed7c8eb0665d72634a724c20fdfecc2829d342cc919a4bc3";
-    "0x98586ca18166609eb5445ed73643b5bae6cbdada8c5cbcd7e093ff4146db6bfa";
+    //"0x98586ca18166609eb5445ed73643b5bae6cbdada8c5cbcd7e093ff4146db6bfa";
+    //"0x6534800dd5386645739dc8ab4b0d4513d97be060e51c79d5f12f7674251e0e07";
+    "0xd1d1f80291ce6017118d0ce521e19640b1118d592b740a32490ed8f4701adced";
   const TASK_MANAGER_ID =
-    //"0x2dc234a74eaf194314ec3641583bed3e61738048327d4c029ae0ca9b9920d779";
-    //"0x3344e431011bb803c69db2d5291f8b820434b0ce03c0d092edfc54f0ae2e0e7b";
-    //"0x8a1f4de7e060da0fd3e14839c7c9e8250895061c1f39f0bacf90c9b7744a78a2";
     //"0xbd611efa720db9f59e49f0619b4bd03edfb6ad157cd85520f8caf341b98315c0";
-    "0x26c2373d9d4912fbc79235cb917714c7bcefd883d9af6bc488ba1cfa8af27ac9";
+    //"0xb3fc7d4e44ff88254069e2fe8401fee9b1c00cc66662ec204f935a8951b1d729";
+    "0x7d4056af19b0ba1b6ea42e935b4301d310041e75109f262bfeef6f3a7a8e6ac9";
 
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
@@ -91,6 +87,8 @@ const BasicContainer = () => {
     userModCaps,
   } = useSuiQueries();
   const jsonStrUserModCaps = JSON.stringify(userModCaps);
+  const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
+  const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
   const client = useSuiClient();
   const [account] = useAccounts();
   const { mutate: signAndExecuteTransactionBlock } =
@@ -291,7 +289,7 @@ const BasicContainer = () => {
     }
   }
 
-  // Accept Task
+  // Accept Task //FIXME: Here
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account) {
       toast.error("Please connect your wallet");
@@ -342,8 +340,7 @@ const BasicContainer = () => {
               }
             }
             refetch();
-            fetchAllTaskData();
-            refetchUserTaskSheets();
+            //console.log(refetchUserTaskSheets());
           },
           onError: (err) => {
             toast.error("Tx Failed!");
@@ -498,10 +495,6 @@ const BasicContainer = () => {
     console.log("Send Task Sheet", task);
   };
 
-  const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
-  const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
-
-
   // Get Relate TaskSheetAndCap
   const getRelateTaskSheetAndCap = async (selectedTaskID: string) => {
 
@@ -521,51 +514,10 @@ const BasicContainer = () => {
 
     const relateTaskSheetId = relateTaskSheet.data.content.fields.id.id;
 
-    // Fetch the first transaction digest for the TaskSheet
-    const taskSheetTransactions = await client.queryTransactionBlocks({
-      filter: { ChangedObject: relateTaskSheetId },
-    });
-
-    if (taskSheetTransactions.data.length === 0) {
-      console.error("No transactions found for TaskSheet ID:", relateTaskSheetId);
-      throw new Error("No transactions found for TaskSheet");
-    }
-
-    const initialTaskSheetDigest = taskSheetTransactions.data[taskSheetTransactions.data.length - 1].digest;
-
-    const jsonObjUserTaskAdminCap = JSON.parse(jsonStrUserTaskAdminCaps);
-    const userTaskAdminCapArray = jsonObjUserTaskAdminCap.data;
-
-    let relatedTaskAdminCap: TaskAdminCap | undefined;
-
-    for (const adminCap of userTaskAdminCapArray) {
-      const adminCapTransactions = await client.queryTransactionBlocks({
-        filter: { ChangedObject: adminCap.data.objectId },
-      });
-
-      if (adminCapTransactions.data.length === 0) {
-        continue;
-      }
-
-      const initialAdminCapDigest = adminCapTransactions.data[adminCapTransactions.data.length - 1].digest;
-
-      if (initialAdminCapDigest === initialTaskSheetDigest) {
-        relatedTaskAdminCap = adminCap;
-        break;
-      }
-    }
-
-    if (!relatedTaskAdminCap) {
-      console.error("No matching TaskAdminCap found for initialTaskSheetDigest:", initialTaskSheetDigest);
-      throw new Error("No Matching TaskAdminCap found");
-    }
-
-    const relatedTaskAdminCapID = relatedTaskAdminCap.data.content.fields.id.id;
-
-    return { relateTaskSheetId, relatedTaskAdminCapID };
+    return { relateTaskSheetId };
   };
 
-   // submit_task_sheet
+   // Edit and submit_task_sheet
   const handleSendTaskSheet = async (selectedTaskID: string, description: string) => {
     if (!checkWalletConnection(account)) return;
     /*if (description === "") {
@@ -573,14 +525,15 @@ const BasicContainer = () => {
       return}*/
   
     try {
-      const { relateTaskSheetId, relatedTaskAdminCapID } = await getRelateTaskSheetAndCap(selectedTaskID);
+      const { relateTaskSheetId } = await getRelateTaskSheetAndCap(selectedTaskID);
+      
       const txb = new TransactionBlock();
       txb.moveCall({
-        target: `${PACKAGE_ID}::public_task::submit_task_sheet`,
+        target: `${PACKAGE_ID}::public_task::edit_and_submit_task_sheet`,
         arguments: [
           txb.pure(relateTaskSheetId),
+          txb.pure(description),
           txb.pure(SUI_CLOCK_OBJECT_ID),
-          txb.pure(relatedTaskAdminCapID),
         ],
       });
 
@@ -597,7 +550,7 @@ const BasicContainer = () => {
               const digest = await txb.getDigest({ client: client });
               const explorerUrl = `${DEVNET_EXPLORE + digest}`;
               showToast("Task Sheet Submitted", explorerUrl);
-              refetch(); //TODO:
+              refetch();
               refetchUserTaskSheets();
               fetchAllTaskData();
               setTaskSheetDescription("");
@@ -626,7 +579,7 @@ const BasicContainer = () => {
     }
 
     try {
-      const { relateTaskSheetId, relatedTaskAdminCapID } = await getRelateTaskSheetAndCap(selectedTaskID);
+      const { relateTaskSheetId } = await getRelateTaskSheetAndCap(selectedTaskID);
   
       const txb = new TransactionBlock();
       txb.moveCall({
@@ -635,7 +588,7 @@ const BasicContainer = () => {
           txb.pure(relateTaskSheetId),
           txb.pure(description),
           txb.pure(SUI_CLOCK_OBJECT_ID),
-          txb.pure(relatedTaskAdminCapID),
+          //txb.pure(relatedTaskAdminCapID),
         ],
       });
 

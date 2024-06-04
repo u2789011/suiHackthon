@@ -16,6 +16,7 @@ module main_task::public_task {
     const ETaskIsInactive: u64 = 1; 
     const EInvalidTaskSheetStatus: u64 = 2;
     const EInvalidModerator: u64 = 3;
+    const EInvalidSubmitter: u64 =4;
 
     /*---Task Events---*/
 
@@ -98,10 +99,11 @@ module main_task::public_task {
     }
 
     // Task AdminCap
-
+    /*
     public struct TaskAdminCap has key, store {
         id: UID,
     }
+    */
 
     // Public Task One Time Witness
 
@@ -498,7 +500,7 @@ module main_task::public_task {
             update_time: clock::timestamp_ms(date)
         };
 
-        let task_admin_cap = TaskAdminCap { id: object::new(ctx) };
+        //let task_admin_cap = TaskAdminCap { id: object::new(ctx) };
         let task_sheet_id = &task_sheet.id;
 
         attach_task_id(main_task, &task_sheet);
@@ -514,7 +516,7 @@ module main_task::public_task {
         transfer::public_transfer(task_sheet, creator);
 
         // transfer task admincap to tasker
-        transfer::public_transfer(task_admin_cap, creator);
+        //transfer::public_transfer(task_admin_cap, creator);
 
     }
 
@@ -524,7 +526,7 @@ module main_task::public_task {
         task_sheet: &mut TaskSheet,
         content: String,
         update_time: &Clock,
-        _: &TaskAdminCap
+        //_: &TaskAdminCap
         ) {
             let update_time = clock::timestamp_ms(update_time);
             task_sheet.content = option::some(content);
@@ -537,8 +539,13 @@ module main_task::public_task {
     public entry fun submit_task_sheet (
         mut task_sheet: TaskSheet,
         date: &Clock,
-        _: &TaskAdminCap
-    ) {
+        ctx: &mut TxContext
+        //_: &TaskAdminCap
+    ) { 
+        if (ctx.sender() != task_sheet.creator) {
+            abort EInvalidSubmitter
+        };
+
         task_sheet.update_time = clock::timestamp_ms(date);
         task_sheet.status = 1u8;
 
@@ -560,12 +567,17 @@ module main_task::public_task {
     }
 
     // Edit Task Record Before Submit TaskSheet to Mod
-
+    /*
     public entry fun edit_and_submit_task_sheet (
         mut task_sheet: TaskSheet,
         date: &Clock,
-        _: &TaskAdminCap
-    ) {
+        ctx: &mut TxContext
+        //_: &TaskAdminCap
+    ) { 
+        if (ctx.sender() != task_sheet.creator) {
+            abort EInvalindSubmitter
+        };
+        
         task_sheet.update_time = clock::timestamp_ms(date);
         task_sheet.status = 1u8;
 
@@ -582,6 +594,47 @@ module main_task::public_task {
             timestamp: clock::timestamp_ms(date)
         });
 
+        transfer::public_transfer(task_sheet, receipient);
+
+    }
+    */
+
+    // New verison -- Edit Task Record Before Submit TaskSheet to Mod
+    public entry fun edit_and_submit_task_sheet (
+        mut task_sheet: TaskSheet,
+        content: String,
+        date: &Clock,
+        ctx: &mut TxContext
+        // _: &TaskAdminCap
+    ) { 
+        // Check if the sender is the creator of the task sheet
+        if (ctx.sender() != task_sheet.creator) {
+            abort EInvalidSubmitter
+        };
+
+        // Update task sheet content
+        let update_time = clock::timestamp_ms(date);
+        task_sheet.content = option::some(content);
+        task_sheet.update_time = update_time;
+
+        // Update task sheet status
+        task_sheet.status = 1u8;
+
+        let task_id = task_sheet.main_task_id;
+        let receipient = task_sheet.moderator;
+        let tasker = task_sheet.creator;
+        let task_sheet_id = object::uid_to_inner(&task_sheet.id);
+
+        // Emit event
+        emit(TaskSheetSubmittedEvent {
+            task_id,
+            task_sheet_id,
+            tasker,
+            receipient,
+            timestamp: clock::timestamp_ms(date)
+        });
+
+        // Transfer task sheet to the recipient
         transfer::public_transfer(task_sheet, receipient);
 
     }

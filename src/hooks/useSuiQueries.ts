@@ -32,21 +32,8 @@ export const useSuiQueries = () => {
         },
     });
 
-    // Get All TaskAdminCaps from User Wallet
-    const { data: userTaskAdminCaps, refetch: refetchUse } = useSuiClientQuery('getOwnedObjects', {
-        owner: walletAddress ?? '',
-        filter: {
-            StructType: `${PACKAGE_ID}::public_task::TaskAdminCap`,
-        },
-        options: {
-            showType: true,
-            showContent: true,
-            showPreviousTransaction: true,
-        },
-    });
-
     // Get All ModCaps from Uder Wallet
-    const { data: userModCaps } = useSuiClientQuery('getOwnedObjects', {
+    const { data: userModCaps, refetch: refetchUserModCaps } = useSuiClientQuery('getOwnedObjects', {
         owner: walletAddress ?? '',
         filter: {
             StructType: `${PACKAGE_ID}::public_task::ModCap`,
@@ -64,7 +51,7 @@ export const useSuiQueries = () => {
         allCoins,
         userTaskSheets,
         refetchUserTaskSheets,
-        userTaskAdminCaps,
         userModCaps,
+        refetchUserModCaps
     };
 };

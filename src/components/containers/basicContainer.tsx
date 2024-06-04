@@ -252,6 +252,7 @@ const BasicContainer = () => {
 
   async function fetchAcceptedTask(userTaskSheets: any): Promise<TaskSheet[]> {
     if (userTaskSheets && userTaskSheets.data) {
+      refetchUserTaskSheets();
       const jsonString = JSON.stringify(userTaskSheets, null, 2);
       const jsonObject = JSON.parse(jsonString);
 
@@ -1250,7 +1251,7 @@ const BasicContainer = () => {
                             onClick={() => handleAcceptTask(task)}
                             radius="full"
                             size="md"
-                            className=" text-white shadow-lg mt-10"
+                            className="text-white shadow-lg mt-6 w-[288px]"
                           >
                             Accept Task
                           </Button>
@@ -1344,6 +1345,7 @@ const BasicContainer = () => {
                             onPress={() => handleCompleteTask(task)}
                             radius="full"
                             size="md"
+                            className="text-white shadow-lg mt-6 w-[288px]"
                           >
                             Submit Task
                           </Button>
@@ -1437,6 +1439,7 @@ const BasicContainer = () => {
                             onPress={() => handleModifyTask(task)}
                             radius="full"
                             size="md"
+                            className="text-white shadow-lg mt-6 w-[288px]"
                           >
                             Manage Your Task
                           </Button>
@@ -1444,6 +1447,7 @@ const BasicContainer = () => {
                             onPress={() => handleSubmittedTask(task)}
                             radius="full"
                             size="md"
+                            className="text-white shadow-lg w-[288px]"
                           >
                             View Submitted Tasks
                           </Button>

@@ -83,12 +83,11 @@ const BasicContainer = () => {
     allCoins,
     userTaskSheets,
     refetchUserTaskSheets,
-    userTaskAdminCaps,
     userModCaps,
+    refetchUserModCaps
   } = useSuiQueries();
   const jsonStrUserModCaps = JSON.stringify(userModCaps);
   const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
-  const jsonStrUserTaskAdminCaps = JSON.stringify(userTaskAdminCaps, null, 2);
   const client = useSuiClient();
   const [account] = useAccounts();
   const { mutate: signAndExecuteTransactionBlock } =
@@ -340,7 +339,8 @@ const BasicContainer = () => {
               }
             }
             refetch();
-            //console.log(refetchUserTaskSheets());
+            refetchUserTaskSheets();
+            console.log(refetchUserTaskSheets());
           },
           onError: (err) => {
             toast.error("Tx Failed!");
@@ -498,10 +498,12 @@ const BasicContainer = () => {
   // Get Relate TaskSheetAndCap
   const getRelateTaskSheetAndCap = async (selectedTaskID: string) => {
 
+    refetchUserTaskSheets();
+    //const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
     const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
     const userTaskSheetArray = jsonObjUserTaskSheet.data;
 
-
+  
     const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
       (tasksheet: TaskSheetArr) => 
         tasksheet.data.content.fields.main_task_id.includes(selectedTaskID)
@@ -864,7 +866,8 @@ const BasicContainer = () => {
       if (!userModCaps) {
         throw new Error("UserModCaps is undefined");
       }
-
+      
+      refetchUserModCaps();
       const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
       const userModCapsArray = jsonObjUserModCaps.data;
       //console.log("publishedTasks:::",allTasks)
@@ -986,7 +989,7 @@ const BasicContainer = () => {
       if (!userModCaps) {
         throw new Error("UserModCaps is undefined");
       }
-
+      refetchUserModCaps();
       const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
       const userModCapsArray = jsonObjUserModCaps.data;
 

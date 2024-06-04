@@ -989,7 +989,7 @@ const BasicContainer = () => {
       if (!userModCaps) {
         throw new Error("UserModCaps is undefined");
       }
-
+      refetchUserModCaps();
       const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
       const userModCapsArray = jsonObjUserModCaps.data;
 

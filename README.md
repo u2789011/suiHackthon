@@ -68,7 +68,6 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 
 ### 2. Accept Task
 - When users see a task they want to execute, they can click Accept Task under the All Task tab to mint a Task Sheet associated with the main task.
-- A TaskAdminCap that controls the modification and submission permissions of the Task Sheet will also be minted in the same transaction.
 - In the future, this Task Sheet will be used as a record of the task results.
 <br>
 
@@ -84,8 +83,8 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 
 ### 4. MOD Reviews Task Sheet
 - Once the task sheet is submitted, it will be transferred to the MOD's address. The MOD can find the entrance to review the task sheet under the Published by me tab by clicking View Submitted Tasks.
-- [dApp Under Construction] In the window, the MOD can see all the task sheets related to the task, provide comments, and approve them (currently, the task sheet content can only be viewed on the blockchain explorer).
-- [dApp Under Construction] If the MOD chooses not to approve the task sheet, it will be returned to the executor's wallet, where the user can complete the task and resubmit it.
+- In the window, the MOD can see all the task sheets related to the task, provide comments, and approve them (currently, the task sheet content can only be viewed on the blockchain explorer).
+- If the MOD chooses not to approve the task sheet, it will be returned to the executor's wallet, where the user can complete the task and resubmit it.
 <br>
 
 ![image](https://github.com/u2789011/suiHackthon/assets/153002627/d0b1fe03-2b0f-420a-b40d-9e6fb41e5376)

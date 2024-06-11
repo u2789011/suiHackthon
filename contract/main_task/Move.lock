@@ -2,7 +2,7 @@
 
 [move]
 version = 2
-manifest_digest = "BB4C1DBD012283B2660FDA97156F7169083B40D2EC8ED86750223B2CDEAC500B"
+manifest_digest = "960B5BF32DD92A205785E074C7DD7DF6135A6BC5BA3F8A57E0D5815CC3935DF3"
 deps_digest = "F8BBB0CCB2491CA29A3DF03D6F92277A4F3574266507ACD77214D37ECA3F3082"
 dependencies = [
   { name = "Sui" },
@@ -31,4 +31,10 @@ flavor = "sui"
 chain-id = "ddb98719"
 original-published-id = "0x442c18c27862e428edf50700541153f1ff430d240ff3e51df7952377198975e7"
 latest-published-id = "0x442c18c27862e428edf50700541153f1ff430d240ff3e51df7952377198975e7"
+published-version = "1"
+
+[env.ankr-testnet]
+chain-id = "4c78adac"
+original-published-id = "0xc8e76738b2a255fe5a093a39f1eaa3b3ab869efcd62e4705c8790ceb7a532f02"
+latest-published-id = "0xc8e76738b2a255fe5a093a39f1eaa3b3ab869efcd62e4705c8790ceb7a532f02"
 published-version = "1"

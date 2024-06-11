@@ -9,10 +9,10 @@ interface UserState {
 }
 
 const useCoreUserStore = create<UserState>()((set) => ({
-  rpcUrl: "https://suiscan.xyz/api/sui/devnet/",
+  rpcUrl: "https://rpc-testnet.suiscan.xyz/",
   setRpcUrl: (newUrl) => set({ rpcUrl: newUrl }),
 
-  network: "devnet",
+  network: "testnet",
   setNetwork: (newNetwork) => set({ network: newNetwork }),
 }));
 

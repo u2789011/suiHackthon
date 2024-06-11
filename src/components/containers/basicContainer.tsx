@@ -1236,7 +1236,7 @@ const BasicContainer = () => {
                             </p>
                             <Link
                               isExternal
-                              href={`https://suiscan.xyz/devnet/object/${task.id}`}
+                              href={`https://suiscan.xyz/testnet/object/${task.id}`} //FIXME: testnet/devnet url
                               showAnchorIcon
                             >
                               View on Blockchain

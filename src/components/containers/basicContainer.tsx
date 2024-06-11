@@ -1202,7 +1202,7 @@ const BasicContainer = () => {
                             hideScrollBar
                             className="max-h-[280px] overflow-y-auto"
                           >
-                            <h3 className="text-lg fint-semibold">
+                            <h3 className="text-lg font-semibold">
                               {task.name}
                             </h3>
                             <p>
@@ -1297,9 +1297,9 @@ const BasicContainer = () => {
                             hideScrollBar
                             className="max-h-[280px] overflow-y-auto"
                           >
-                            <p>
+                            <h3 className="text-lg font-semibold">
                               <strong>Task Name:</strong> {task.name}
-                            </p>
+                            </h3>
                             <p>
                               <strong>Description:</strong>{" "}
                               {task.description[0].description}
@@ -1391,7 +1391,7 @@ const BasicContainer = () => {
                             hideScrollBar
                             className="max-h-[280px] overflow-y-auto"
                           >
-                            <h3 className="text-lg fint-semibold">
+                            <h3 className="text-lg font-semibold">
                               {task.name}
                             </h3>
                             <p>

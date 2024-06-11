@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import SuiWalletProvider from "@/context/WalletContext";
 import { type AppType } from "next/dist/shared/lib/utils";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { ZkSendWallet, registerZkSendWallet } from "@mysten/zksend";
+import { registerStashedWallet } from "@mysten/zksend";
 import { useState, useEffect } from "react";
 import { Inter } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,7 +21,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 
   useEffect(() => {
     setIsClient(true);
-    registerZkSendWallet("Sui Dapp Scaffold", {});
+    registerStashedWallet("Fren Suipport", {});
   }, []);
 
   return (

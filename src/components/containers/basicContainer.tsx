@@ -68,12 +68,14 @@ const BasicContainer = () => {
     //"0x98586ca18166609eb5445ed73643b5bae6cbdada8c5cbcd7e093ff4146db6bfa";
     //"0x6534800dd5386645739dc8ab4b0d4513d97be060e51c79d5f12f7674251e0e07";
     //"0xd1d1f80291ce6017118d0ce521e19640b1118d592b740a32490ed8f4701adced";
-    "0xf4fb9b3ec99244bd263463817ea07b8d81a9e3edbbe9e09c7a335c566396aa3a";
+    //"0xf4fb9b3ec99244bd263463817ea07b8d81a9e3edbbe9e09c7a335c566396aa3a";
+    "0x442c18c27862e428edf50700541153f1ff430d240ff3e51df7952377198975e7";
   const TASK_MANAGER_ID =
     //"0xbd611efa720db9f59e49f0619b4bd03edfb6ad157cd85520f8caf341b98315c0";
     //"0xb3fc7d4e44ff88254069e2fe8401fee9b1c00cc66662ec204f935a8951b1d729";
     //"0x7d4056af19b0ba1b6ea42e935b4301d310041e75109f262bfeef6f3a7a8e6ac9";
-    "0xd3433849493761a5a18730a97d93a60d5556f91f8e458cdad66d64473921ad09";
+    //"0xd3433849493761a5a18730a97d93a60d5556f91f8e458cdad66d64473921ad09";
+    "0xd879ec6a7d5388d7ebffaea174827837ec1833f39137be2decad50dcc66139f0";
 
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
@@ -450,7 +452,7 @@ const BasicContainer = () => {
               previousTransaction: "",
             };
 
-            setPublishedTasks((prevTasks) => [...prevTasks, newTaskObject]);
+            setPublishedTasks((prevTasks: any) => [...prevTasks, newTaskObject]);
 
             setNewTask({
               reward_type: "",
@@ -853,7 +855,7 @@ const BasicContainer = () => {
     if (e.target.checked) {
       setSelected([...selected, e.target.value]);
     } else {
-      setSelected(selected.filter((item) => item !== e.target.value));
+      setSelected(selected.filter((item: any) => item !== e.target.value));
     }
   };
 
@@ -876,7 +878,7 @@ const BasicContainer = () => {
       //console.log("publishedTasks:::",allTasks)
 
       // find Related Task
-      const selectedTaskForReject = allTasks.find((task) => task.id === selectedTaskId);
+      const selectedTaskForReject = allTasks.find((task: { id: string; }) => task.id === selectedTaskId);
         if (!selectedTaskForReject) {
           throw new Error("Selected task not found");
         }

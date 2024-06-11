@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { AppContext } from "@/context/AppContext";
 import { useSuiClientQuery } from "@mysten/dapp-kit";
 
-const PACKAGE_ID = "0xf4fb9b3ec99244bd263463817ea07b8d81a9e3edbbe9e09c7a335c566396aa3a";
+const PACKAGE_ID = "0x442c18c27862e428edf50700541153f1ff430d240ff3e51df7952377198975e7";
 
 export const useSuiQueries = () => {
 

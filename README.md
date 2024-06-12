@@ -30,7 +30,7 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 <br/>
 
 ---
-## Public Tasks User Guide (Currently on Sui Devnet)
+## Public Tasks User Guide (Currently on Sui Testnet)
 
 ### 0. Overview
 #### This is the homepage for public tasks. Our public task model is designed with the following features:
@@ -105,6 +105,7 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 
 ## Main Sui Object
 > Devnet Package: `0xd84bf8f814a797c2e04a31dba8d4ba276489dc835e6b3ee725059a756b0cfe14`
+> Testnet Package: `0xc8e76738b2a255fe5a093a39f1eaa3b3ab869efcd62e4705c8790ceb7a532f02`
 
 **0. Task Manager**
 The object is created by invoking the init function when the contract is deployed, and it acts as a container to record the IDs of all tasks.

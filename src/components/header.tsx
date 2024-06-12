@@ -21,7 +21,7 @@ const Header = () => {
   });
   const userBalance = useMemo(() => {
     if (suiBalance?.totalBalance) {
-      return Math.floor(Number(suiBalance?.totalBalance) / 10 ** 9);
+      return Number(suiBalance?.totalBalance) / 10 ** 9;
     } else {
       return 0;
     }

@@ -65,19 +65,15 @@ const BasicContainer = () => {
 
   // version 20240527
   const PACKAGE_ID =
-    //"0x98586ca18166609eb5445ed73643b5bae6cbdada8c5cbcd7e093ff4146db6bfa";
-    //"0x6534800dd5386645739dc8ab4b0d4513d97be060e51c79d5f12f7674251e0e07";
-    //"0xd1d1f80291ce6017118d0ce521e19640b1118d592b740a32490ed8f4701adced";
-    "0xf4fb9b3ec99244bd263463817ea07b8d81a9e3edbbe9e09c7a335c566396aa3a";
+    //"0x442c18c27862e428edf50700541153f1ff430d240ff3e51df7952377198975e7"; // Devnet
+    "0xc8e76738b2a255fe5a093a39f1eaa3b3ab869efcd62e4705c8790ceb7a532f02"; // Testnet
   const TASK_MANAGER_ID =
-    //"0xbd611efa720db9f59e49f0619b4bd03edfb6ad157cd85520f8caf341b98315c0";
-    //"0xb3fc7d4e44ff88254069e2fe8401fee9b1c00cc66662ec204f935a8951b1d729";
-    //"0x7d4056af19b0ba1b6ea42e935b4301d310041e75109f262bfeef6f3a7a8e6ac9";
-    "0xd3433849493761a5a18730a97d93a60d5556f91f8e458cdad66d64473921ad09";
+    //"0xd879ec6a7d5388d7ebffaea174827837ec1833f39137be2decad50dcc66139f0"; // Devnet
+    "0x72870ade30d601c9367d22813940d5b584205b360307a4a65d268dbf12e31bbb"; // Testnet
 
   const FLOAT_SCALING = 1000000000;
-  const DEVNET_EXPLORE = "https://suiscan.xyz/devnet/tx/";
-  const DEVNET_EXPLOR_OBJ = "https://suiscan.xyz/devnet/object/";
+  const DEVNET_EXPLORE = "https://suiscan.xyz/testnet/tx/";
+  const DEVNET_EXPLOR_OBJ = "https://suiscan.xyz/testnet/object/";
   const { walletAddress, suiName } = useContext(AppContext);
   const {
     suiBalance,
@@ -1240,7 +1236,7 @@ const BasicContainer = () => {
                             </p>
                             <Link
                               isExternal
-                              href={`https://suiscan.xyz/devnet/object/${task.id}`}
+                              href={`https://suiscan.xyz/testnet/object/${task.id}`} //TODO: testnet URL here
                               showAnchorIcon
                             >
                               View on Blockchain

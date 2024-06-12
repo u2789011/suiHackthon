@@ -11,6 +11,7 @@ import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
 import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
 import { checkWalletConnection } from "../../lib/transactionUtils";
+import SuifrensCard from "../ui/suifrensCard"
 import {
   Card,
   CardHeader,
@@ -128,9 +129,8 @@ const BasicContainer = () => {
   const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>([]);
   // select task (for Modal use)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [filteredTaskSheets, setFilteredTaskSheets] = useState<
-    TaskSheetPendingReview[]
-  >([]);
+  const [filteredTaskSheets, setFilteredTaskSheets] = useState<TaskSheetPendingReview[]>([]);
+  const [suiFrenSvg, setSuiFrenSvg] = useState<string | null>(null); //TODO: New SuiFren svg
 
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
@@ -1089,6 +1089,26 @@ const BasicContainer = () => {
     }
   };
 
+  // TODO: here suifrens svg hook
+  useEffect(() => {
+    const fetchSuiFrenSvg = async () => {
+      try {
+        const response = await fetch("http://localhost:3001/suifrens/0x6974a0a6ea32ac8e36dfd26f467f83e2434a7ff1022fc616d494bc7f39616fb5/svg");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const svgText = await response.text();
+        setSuiFrenSvg(svgText);
+        console.log(svgText); //FIXME: test use only
+      } catch (error) {
+        console.error("Error fetching SuiFren SVG:", error);
+      }
+    };
+
+    fetchSuiFrenSvg();
+  }, []);
+
+
   useEffect(() => {
     fetchAllTaskData();
   }, []);
@@ -1158,6 +1178,8 @@ const BasicContainer = () => {
     <>
       {/*<Divider className="my-3"></Divider>*/}
       <div className="mx-auto pt-[150px] p-4 md:pt-32 lg:pt-40">
+        {/* 渲染 SuiFren 圖像 //TODO: here render suifren*/}
+        {<SuifrensCard suiFrenSvg={suiFrenSvg} />}
         <Button
           onPress={onOpenModal1}
           onClick={() => setSelectedTask(null)}

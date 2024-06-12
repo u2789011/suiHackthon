@@ -50,10 +50,11 @@ input[type="number"] {
 }
 
 /*Background Image*/
+
 body {
-  background-image: url('/frens/VoidFrenSupport.svg');
+  background-image: url('/frens/nofrenportdim.svg');
   background-size: cover;
-  background-position: center; 
+  background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
 }

@@ -83,7 +83,9 @@ const BasicContainer = () => {
     userTaskSheets,
     refetchUserTaskSheets,
     userModCaps,
-    refetchUserModCaps
+    refetchUserModCaps,
+    userSuifrens,
+    refetchUserSuifrens
   } = useSuiQueries();
   const jsonStrUserModCaps = JSON.stringify(userModCaps);
   const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
@@ -181,6 +183,7 @@ const BasicContainer = () => {
   // Get objects data for eash item in `publishedTaskIdsArr`
   async function fetchAllTaskList() {
     try {
+      console.log("userSuifrens:", userSuifrens);
       const publishedTaskIdsArr = await fetchTaskList();
 
       const multiGetObjectsParams = {
@@ -1093,13 +1096,16 @@ const BasicContainer = () => {
   useEffect(() => {
     const fetchSuiFrenSvg = async () => {
       try {
-        const response = await fetch("http://localhost:3001/suifrens/0x6974a0a6ea32ac8e36dfd26f467f83e2434a7ff1022fc616d494bc7f39616fb5/svg");
+        //TODO: pass a constant while testing
+        // const suifrenId = userSuifrens;
+        const suifrenId = `0x6974a0a6ea32ac8e36dfd26f467f83e2434a7ff1022fc616d494bc7f39616fb5`;
+        const response = await fetch(`http://localhost:3001/suifrens/${suifrenId}/svg`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const svgText = await response.text();
         setSuiFrenSvg(svgText);
-        console.log(svgText); //FIXME: test use only
+        //console.log(svgText); //FIXME: test use only
       } catch (error) {
         console.error("Error fetching SuiFren SVG:", error);
       }
@@ -1115,7 +1121,7 @@ const BasicContainer = () => {
 
   // Data for Accepted Tasks
   useEffect(() => {
-    console.log('userTaskSheets or allTasks changed, loading accepted tasks...');
+    //console.log('userTaskSheets or allTasks changed, loading accepted tasks...');
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 

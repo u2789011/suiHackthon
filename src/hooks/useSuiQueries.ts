@@ -1,10 +1,13 @@
 import { useContext } from "react";
 import { AppContext } from "@/context/AppContext";
 import { useSuiClientQuery } from "@mysten/dapp-kit";
+import { Wallet } from "lucide-react";
 
 const PACKAGE_ID = 
     // "0x442c18c27862e428edf50700541153f1ff430d240ff3e51df7952377198975e7"; // devnet
     "0xc8e76738b2a255fe5a093a39f1eaa3b3ab869efcd62e4705c8790ceb7a532f02"; //testnet
+
+const SUIFRENS_PACKAGE_ID = "0x80d7de9c4a56194087e0ba0bf59492aa8e6a5ee881606226930827085ddf2332";
 
 export const useSuiQueries = () => {
 
@@ -47,6 +50,21 @@ export const useSuiQueries = () => {
         },
     });
 
+    // Get All SuiFren NFT object id from user wallet
+    const { data: userSuifrens, refetch: refetchUserSuifrens } = useSuiClientQuery('getOwnedObjects', {
+        owner: walletAddress ?? '',
+        filter: {
+            MoveModule: {
+                module: `${SUIFRENS_PACKAGE_ID}`,
+                package: `capy`,
+            }
+        },
+        options:{
+            showDisplay: true,
+            showContent: true
+        }
+    });
+
     return {
         suiBalance,
         refetch,
@@ -54,6 +72,8 @@ export const useSuiQueries = () => {
         userTaskSheets,
         refetchUserTaskSheets,
         userModCaps,
-        refetchUserModCaps
+        refetchUserModCaps,
+        userSuifrens,
+        refetchUserSuifrens
     };
 };

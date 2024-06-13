@@ -1,5 +1,3 @@
-import { Card, CardBody, CardFooter, ScrollShadow, Button } from '@nextui-org/react';
-
 interface SuifrenCardProps {
   suiFrenSvg: string | null;
 }
@@ -7,9 +5,8 @@ interface SuifrenCardProps {
 const SuifrensCard: React.FC<SuifrenCardProps> = ({ suiFrenSvg }) => {
     const defaultSvgPath = "/frens/voidfren.svg";
     return (
-        <Card className="h-auto w-[140px] shadow-lg rounded-2xl overflow-hidden">
-            <CardBody className="relative p-0">
-                {suiFrenSvg ? (
+        <div className='sui-fren-container'>
+            {suiFrenSvg ? (
                 <div
                 className="sui-fren-image"
                 dangerouslySetInnerHTML={{ __html: suiFrenSvg }}
@@ -21,8 +18,7 @@ const SuifrensCard: React.FC<SuifrenCardProps> = ({ suiFrenSvg }) => {
                     className='sui-fren-image'
                 />
             )}
-            </CardBody>
-        </Card>
+        </div>
     );
 };
 

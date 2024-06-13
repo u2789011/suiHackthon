@@ -50,7 +50,7 @@ export const useSuiQueries = () => {
         },
     });
 
-    // Get All SuiFren NFT object id from user wallet
+    // Get All SuiFren NFT object id from user wallet //FIXME: return undefined
     const { data: userSuifrens, refetch: refetchUserSuifrens } = useSuiClientQuery('getOwnedObjects', {
         owner: walletAddress ?? '',
         filter: {

@@ -50,11 +50,22 @@ input[type="number"] {
 }
 
 /*Background Image*/
-
 body {
   background-image: url('/frens/nofrenportdim.svg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  position: relative;
+}
+
+/* sui-fren-container */
+.sui-fren-container {
+  position: fixed;
+  top: 18%;
+  left: 95%;
+  transform: translate(-55%, -40%);
+  width: 10vw;
+  height: auto;
+  overflow: visible;
 }

@@ -8,6 +8,7 @@ import {
 import { AppContext } from "@/context/AppContext";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
+import { SUIFREN_DISPLAY_API } from "../../constants/networkList"
 import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
 import { checkWalletConnection } from "../../lib/transactionUtils";
@@ -1092,14 +1093,14 @@ const BasicContainer = () => {
     }
   };
 
-  // TODO: here suifrens svg hook
+  // TODO: here --suifrens svg hook
   useEffect(() => {
     const fetchSuiFrenSvg = async () => {
       try {
         //TODO: pass a constant while testing
         // const suifrenId = userSuifrens;
         const suifrenId = `0x6974a0a6ea32ac8e36dfd26f467f83e2434a7ff1022fc616d494bc7f39616fb5`;
-        const response = await fetch(`http://localhost:3001/suifrens/${suifrenId}/svg`);
+        const response = await fetch(`http://${SUIFREN_DISPLAY_API}/suifrens/${suifrenId}/svg`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -1185,7 +1186,9 @@ const BasicContainer = () => {
       {/*<Divider className="my-3"></Divider>*/}
       <div className="mx-auto pt-[150px] p-4 md:pt-32 lg:pt-40">
         {/* 渲染 SuiFren 圖像 //TODO: here render suifren*/}
-        {<SuifrensCard suiFrenSvg={suiFrenSvg} />}
+        <div className='sui-fren-container'>
+          <SuifrensCard suiFrenSvg={suiFrenSvg} />
+        </div>
         <Button
           onPress={onOpenModal1}
           onClick={() => setSelectedTask(null)}

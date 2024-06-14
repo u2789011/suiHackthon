@@ -1126,10 +1126,6 @@ const BasicContainer = () => {
         const kioskId = kioskIds[0];
         const { itemIds } = await kioskClient.getKiosk({
           id: kioskId,
-          options: {
-            withKioskFields:true,
-            withObjects:true
-          }
         });
         
         /// pass a constant while testing

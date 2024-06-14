@@ -931,12 +931,12 @@ const BasicContainer = () => {
         target: `${PACKAGE_ID}::public_task::approve_and_send_reward`,
         arguments: [
           txb.pure(selectedTaskId),
-          txb.pure(selectedTaskSheet), // 需要寫一個 for 迴圈 txb.movecall 傳入迭代
+          txb.pure(selectedTaskSheet),
           txb.pure(annotation),
           txb.pure(SUI_CLOCK_OBJECT_ID),
-          txb.pure(relatedModCapId), // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
+          txb.pure(relatedModCapId),
         ],
-        typeArguments: [rewardType], //從 alltask 中找 selectedTaskId 符合的 item 回傳 item<Task>.type
+        typeArguments: [rewardType],
       });
 
       txb.setSender(account.address);

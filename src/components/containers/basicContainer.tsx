@@ -884,6 +884,7 @@ const BasicContainer = () => {
         if (!selectedTaskForReject) {
           throw new Error("Selected task not found");
         }
+        console.log("Selected task for rejection:", selectedTaskForReject); // 打印 selectedTaskForReject
 
         const res = await client.queryTransactionBlocks({
           filter: { ChangedObject: selectedTaskId },
@@ -898,9 +899,12 @@ const BasicContainer = () => {
           const modCapRes = (
             await client.queryTransactionBlocks({
               filter: { ChangedObject: modCap.data.objectId },
+              order: 'ascending',
+              limit: 1,
             })
           );
-          const ModCapLatestDigest = modCapRes.data.slice(-1)[0].digest;
+
+        const ModCapLatestDigest = modCapRes.data[0].digest;
 
         if (ModCapLatestDigest === taskLastDataDigest) {
           relatedModCap = modCap;
@@ -988,7 +992,7 @@ const BasicContainer = () => {
     }
   };
 
-  // 認證不通過退回任務單 | reject_and_return_task_sheet
+  // reject_and_return_task_sheet
   const handleReject = async (
     annotation: string,
     selectedTaskId: string,
@@ -1012,16 +1016,22 @@ const BasicContainer = () => {
 
       const res = await client.queryTransactionBlocks({
         filter: { ChangedObject: selectedTaskId },
+        order: 'ascending',
+        limit: 1,
       });
-      const taskLastDataDigest = res.data[res.data.length - 1].digest;
+
+      const taskLastDataDigest = res.data[0].digest;
 
       let relatedModCap: any;
-      for (const modCap of userModCapsArray) {
-        const ModCapLatestDigest = (
-          await client.queryTransactionBlocks({
-            filter: { ChangedObject: modCap.data.objectId },
-          })
-        ).data.slice(-1)[0].digest;
+        for (const modCap of userModCapsArray) {
+          const modCapRes = (
+            await client.queryTransactionBlocks({
+              filter: { ChangedObject: modCap.data.objectId },
+              order: 'ascending',
+              limit: 1,
+            })
+          );
+        const ModCapLatestDigest = modCapRes.data[0].digest;
 
         if (ModCapLatestDigest === taskLastDataDigest) {
           relatedModCap = modCap;

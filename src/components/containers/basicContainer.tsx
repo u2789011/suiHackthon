@@ -267,11 +267,11 @@ const BasicContainer = () => {
               item.data &&
               item.data.content &&
               item.data.content.fields &&
-              item.data.digest // 確保存在 digest 屬性
+              item.data.digest
             ) {
               return {
                 data: {
-                  digest: item.data.digest, // 提取 digest 屬性
+                  digest: item.data.digest,
                   fields: item.data.content.fields,
                 },
               };
@@ -294,7 +294,7 @@ const BasicContainer = () => {
     }
   }
 
-  // Accept Task //FIXME: Here
+  // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account) {
       toast.error("Please connect your wallet");

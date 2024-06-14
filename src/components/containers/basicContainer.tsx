@@ -1099,7 +1099,7 @@ const BasicContainer = () => {
       try {
         //TODO: pass a constant while testing
         // const suifrenId = userSuifrens;
-        const suifrenId = `0x6974a0a6ea32ac8e36dfd26f467f83e2434a7ff1022fc616d494bc7f39616fb5`;
+        const suifrenId = `0xfb572d4b05aa5de7d9d3a1352f72d0957aa3cb4c2f2ac8a548af98c105ddad3a`;
         const response = await fetch(`http://${SUIFREN_DISPLAY_API}/suifrens/${suifrenId}/svg`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

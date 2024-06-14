@@ -6,11 +6,14 @@ import {
   useSuiClientQuery,
 } from "@mysten/dapp-kit";
 import { AppContext } from "@/context/AppContext";
+import { KioskClient, Network } from '@mysten/kiosk';
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
+import { SUIFREN_DISPLAY_API } from "../../constants/networkList"
 import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
 import { checkWalletConnection } from "../../lib/transactionUtils";
+import SuifrensCard from "../ui/suifrensCard"
 import {
   Card,
   CardHeader,
@@ -40,6 +43,7 @@ import { log } from "console";
 import "tailwindcss/tailwind.css";
 import { json } from "stream/consumers";
 import { useSuiQueries } from "../../hooks/useSuiQueries";
+//import { Network as IconNetwork } from "lucide-react";
 
 const BasicContainer = () => {
   const {
@@ -63,7 +67,6 @@ const BasicContainer = () => {
     onOpenChange: onOpenChangeModal4,
   } = useDisclosure();
 
-  // version 20240527
   const PACKAGE_ID =
     //"0x442c18c27862e428edf50700541153f1ff430d240ff3e51df7952377198975e7"; // Devnet
     "0xc8e76738b2a255fe5a093a39f1eaa3b3ab869efcd62e4705c8790ceb7a532f02"; // Testnet
@@ -82,11 +85,15 @@ const BasicContainer = () => {
     userTaskSheets,
     refetchUserTaskSheets,
     userModCaps,
-    refetchUserModCaps
+    refetchUserModCaps,
   } = useSuiQueries();
   const jsonStrUserModCaps = JSON.stringify(userModCaps);
   const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
   const client = useSuiClient();
+  const kioskClient = new KioskClient({
+    client,
+    network: Network.TESTNET,
+  });
   const [account] = useAccounts();
   const { mutate: signAndExecuteTransactionBlock } =
     useSignAndExecuteTransactionBlock();
@@ -128,9 +135,9 @@ const BasicContainer = () => {
   const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>([]);
   // select task (for Modal use)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [filteredTaskSheets, setFilteredTaskSheets] = useState<
-    TaskSheetPendingReview[]
-  >([]);
+  const [filteredTaskSheets, setFilteredTaskSheets] = useState<TaskSheetPendingReview[]>([]);
+  const [suiFrenSvg, setSuiFrenSvg] = useState<string | null>(null); //TODO: New SuiFren svg
+  const [isError, setIsError] = useState<boolean>(false);
 
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
@@ -518,7 +525,7 @@ const BasicContainer = () => {
     return { relateTaskSheetId };
   };
 
-   // Edit and submit_task_sheet
+  // Edit and submit_task_sheet
   const handleSendTaskSheet = async (selectedTaskID: string, description: string) => {
     if (!checkWalletConnection(account)) return;
     /*if (description === "") {
@@ -544,7 +551,7 @@ const BasicContainer = () => {
       });
 
       if (dryrunRes.effects.status.status === "success") {
-        await signAndExecuteTransactionBlock(
+        signAndExecuteTransactionBlock(
           { transactionBlock: txb, options: { showEffects: true } },
           {
             onSuccess: async (res) => {
@@ -553,7 +560,7 @@ const BasicContainer = () => {
               showToast("Task Sheet Submitted", explorerUrl);
               refetch();
               refetchUserTaskSheets();
-              fetchAllTaskData();
+              //fetchAllTaskData();
               setTaskSheetDescription("");
             },
             onError: (err) => {
@@ -571,6 +578,7 @@ const BasicContainer = () => {
     }
   };
 
+  // Edit Tasksheet Content
   const handleTaskSheetDetails = async (selectedTaskID: string, description: string) => {
     if (!checkWalletConnection(account)) return;
   
@@ -599,7 +607,7 @@ const BasicContainer = () => {
       });
 
       if (dryrunRes.effects.status.status === "success") {
-        await signAndExecuteTransactionBlock(
+        signAndExecuteTransactionBlock(
           { transactionBlock: txb, options: { showEffects: true } },
           {
             onSuccess: async (res) => {
@@ -1089,13 +1097,54 @@ const BasicContainer = () => {
     }
   };
 
+  const defaultSvgPath = "/frens/voidfren.svg";
+
+  // suifrens svg hook
+  useEffect(() => {
+    const fetchSuiFrenSvg = async () => {
+      
+      if (!walletAddress) {
+        setIsError(true);
+        return;
+      }
+
+      try {
+        const address = walletAddress;
+        const { kioskIds } = await kioskClient.getOwnedKiosks({ address });
+        const kioskId = kioskIds[0];
+        const { itemIds } = await kioskClient.getKiosk({
+          id: kioskId,
+          options: {
+            withKioskFields:true,
+            withObjects:true
+          }
+        });
+        
+        /// pass a constant while testing
+        //const suifrenId = `0xfb572d4b05aa5de7d9d3a1352f72d0957aa3cb4c2f2ac8a548af98c105ddad3a`;
+        const response = await fetch(`http://${SUIFREN_DISPLAY_API}/suifrens/${itemIds[0]}/svg`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const svgText = await response.text();
+        setSuiFrenSvg(svgText);
+        setIsError(false); // Reset error state on successful fetch
+      } catch (error) {
+        console.error("Error fetching SuiFren SVG:", error);
+        setIsError(true);
+      }
+    };
+
+    fetchSuiFrenSvg();
+  }, [kioskClient, walletAddress, SUIFREN_DISPLAY_API]);
+
   useEffect(() => {
     fetchAllTaskData();
   }, []);
 
   // Data for Accepted Tasks
   useEffect(() => {
-    console.log('userTaskSheets or allTasks changed, loading accepted tasks...');
+    //console.log('userTaskSheets or allTasks changed, loading accepted tasks...');
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
@@ -1158,6 +1207,10 @@ const BasicContainer = () => {
     <>
       {/*<Divider className="my-3"></Divider>*/}
       <div className="mx-auto pt-[150px] p-4 md:pt-32 lg:pt-40">
+        {/* here render suifren*/}
+        <div className='sui-fren-container'>
+          <SuifrensCard suiFrenSvg={suiFrenSvg} isError={isError} />
+        </div>
         <Button
           onPress={onOpenModal1}
           onClick={() => setSelectedTask(null)}

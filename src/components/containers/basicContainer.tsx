@@ -267,11 +267,11 @@ const BasicContainer = () => {
               item.data &&
               item.data.content &&
               item.data.content.fields &&
-              item.data.digest // 確保存在 digest 屬性
+              item.data.digest
             ) {
               return {
                 data: {
-                  digest: item.data.digest, // 提取 digest 屬性
+                  digest: item.data.digest,
                   fields: item.data.content.fields,
                 },
               };
@@ -294,7 +294,7 @@ const BasicContainer = () => {
     }
   }
 
-  // Accept Task //FIXME: Here
+  // Accept Task
   const handleAcceptTask = async (selectedTask: Task) => {
     if (!account) {
       toast.error("Please connect your wallet");
@@ -877,26 +877,34 @@ const BasicContainer = () => {
       refetchUserModCaps();
       const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
       const userModCapsArray = jsonObjUserModCaps.data;
-      //console.log("publishedTasks:::",allTasks)
+      console.log("UserModCaps array:", userModCapsArray); // 打印 userModCapsArray
 
       // find Related Task
       const selectedTaskForReject = allTasks.find((task) => task.id === selectedTaskId);
         if (!selectedTaskForReject) {
           throw new Error("Selected task not found");
         }
+        console.log("Selected task for rejection:", selectedTaskForReject); // 打印 selectedTaskForReject
 
         const res = await client.queryTransactionBlocks({
           filter: { ChangedObject: selectedTaskId },
+          order: 'ascending',
+          limit: 1,
         });
-        const taskLastDataDigest = res.data[res.data.length - 1].digest;
+
+        const taskLastDataDigest = res.data[0].digest;
 
         let relatedModCap: any;
         for (const modCap of userModCapsArray) {
-          const ModCapLatestDigest = (
+          const modCapRes = (
             await client.queryTransactionBlocks({
               filter: { ChangedObject: modCap.data.objectId },
+              order: 'ascending',
+              limit: 1,
             })
-          ).data.slice(-1)[0].digest;
+          );
+
+        const ModCapLatestDigest = modCapRes.data[0].digest;
 
         if (ModCapLatestDigest === taskLastDataDigest) {
           relatedModCap = modCap;
@@ -923,12 +931,12 @@ const BasicContainer = () => {
         target: `${PACKAGE_ID}::public_task::approve_and_send_reward`,
         arguments: [
           txb.pure(selectedTaskId),
-          txb.pure(selectedTaskSheet), // 需要寫一個 for 迴圈 txb.movecall 傳入迭代
+          txb.pure(selectedTaskSheet),
           txb.pure(annotation),
           txb.pure(SUI_CLOCK_OBJECT_ID),
-          txb.pure(relatedModCapId), // 需要從錢包中取得與 selectedTaskId 有相同 PreviousTransaction 的 admincap
+          txb.pure(relatedModCapId),
         ],
-        typeArguments: [rewardType], //從 alltask 中找 selectedTaskId 符合的 item 回傳 item<Task>.type
+        typeArguments: [rewardType],
       });
 
       txb.setSender(account.address);
@@ -984,7 +992,7 @@ const BasicContainer = () => {
     }
   };
 
-  // 認證不通過退回任務單 | reject_and_return_task_sheet
+  // reject_and_return_task_sheet
   const handleReject = async (
     annotation: string,
     selectedTaskId: string,
@@ -1008,16 +1016,22 @@ const BasicContainer = () => {
 
       const res = await client.queryTransactionBlocks({
         filter: { ChangedObject: selectedTaskId },
+        order: 'ascending',
+        limit: 1,
       });
-      const taskLastDataDigest = res.data[res.data.length - 1].digest;
+
+      const taskLastDataDigest = res.data[0].digest;
 
       let relatedModCap: any;
-      for (const modCap of userModCapsArray) {
-        const ModCapLatestDigest = (
-          await client.queryTransactionBlocks({
-            filter: { ChangedObject: modCap.data.objectId },
-          })
-        ).data.slice(-1)[0].digest;
+        for (const modCap of userModCapsArray) {
+          const modCapRes = (
+            await client.queryTransactionBlocks({
+              filter: { ChangedObject: modCap.data.objectId },
+              order: 'ascending',
+              limit: 1,
+            })
+          );
+        const ModCapLatestDigest = modCapRes.data[0].digest;
 
         if (ModCapLatestDigest === taskLastDataDigest) {
           relatedModCap = modCap;
@@ -1097,8 +1111,6 @@ const BasicContainer = () => {
     }
   };
 
-  const defaultSvgPath = "/frens/voidfren.svg";
-
   // suifrens svg hook
   useEffect(() => {
     const fetchSuiFrenSvg = async () => {
@@ -1114,15 +1126,11 @@ const BasicContainer = () => {
         const kioskId = kioskIds[0];
         const { itemIds } = await kioskClient.getKiosk({
           id: kioskId,
-          options: {
-            withKioskFields:true,
-            withObjects:true
-          }
         });
         
         /// pass a constant while testing
         //const suifrenId = `0xfb572d4b05aa5de7d9d3a1352f72d0957aa3cb4c2f2ac8a548af98c105ddad3a`;
-        const response = await fetch(`http://${SUIFREN_DISPLAY_API}/suifrens/${itemIds[0]}/svg`);
+        const response = await fetch(`https://${SUIFREN_DISPLAY_API}/suifrens/${itemIds[0]}/svg`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

@@ -12,6 +12,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mysten/dapp-kit": "^0.12.12",
+    "@mysten/kiosk": "^0.8.10",
     "@mysten/wallet-standard": "^0.12.6",
     "@mysten/zksend": "^0.9.6",
     "@nextui-org/react": "^2.3.6",

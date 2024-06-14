@@ -1,25 +1,22 @@
+import React from 'react';
+
 interface SuifrenCardProps {
   suiFrenSvg: string | null;
+  isError: boolean;
 }
 
-const SuifrensCard: React.FC<SuifrenCardProps> = ({ suiFrenSvg }) => {
-    const defaultSvgPath = "/frens/voidfren.svg";
-    return (
-        <div className='sui-fren-container'>
-            {suiFrenSvg ? (
-                <div
-                className="sui-fren-image"
-                dangerouslySetInnerHTML={{ __html: suiFrenSvg }}
-                />
-            ) : (
-                <img
-                    src={defaultSvgPath}
-                    alt='Void Fren'
-                    className='sui-fren-image'
-                />
-            )}
-        </div>
-    );
+const SuifrenCard: React.FC<SuifrenCardProps> = ({ suiFrenSvg, isError }) => {
+  const defaultSvgPath = "/frens/voidfren.svg";
+
+  return (
+    <div className='sui-fren-container'>
+      {isError ? (
+        <img src={defaultSvgPath} alt="Default SVG" />
+      ) : (
+        <div dangerouslySetInnerHTML={{ __html: suiFrenSvg || "" }} />
+      )}
+    </div>
+  );
 };
 
-export default SuifrensCard;
+export default SuifrenCard;

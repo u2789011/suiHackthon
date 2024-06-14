@@ -1111,8 +1111,6 @@ const BasicContainer = () => {
     }
   };
 
-  const defaultSvgPath = "/frens/voidfren.svg";
-
   // suifrens svg hook
   useEffect(() => {
     const fetchSuiFrenSvg = async () => {

@@ -1130,7 +1130,7 @@ const BasicContainer = () => {
         
         /// pass a constant while testing
         //const suifrenId = `0xfb572d4b05aa5de7d9d3a1352f72d0957aa3cb4c2f2ac8a548af98c105ddad3a`;
-        const response = await fetch(`http://${SUIFREN_DISPLAY_API}/suifrens/${itemIds[0]}/svg`);
+        const response = await fetch(`https://${SUIFREN_DISPLAY_API}/suifrens/${itemIds[0]}/svg`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

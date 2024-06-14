@@ -877,7 +877,7 @@ const BasicContainer = () => {
       refetchUserModCaps();
       const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
       const userModCapsArray = jsonObjUserModCaps.data;
-      //console.log("publishedTasks:::",allTasks)
+      console.log("UserModCaps array:", userModCapsArray); // 打印 userModCapsArray
 
       // find Related Task
       const selectedTaskForReject = allTasks.find((task) => task.id === selectedTaskId);
@@ -887,16 +887,20 @@ const BasicContainer = () => {
 
         const res = await client.queryTransactionBlocks({
           filter: { ChangedObject: selectedTaskId },
+          order: 'ascending',
+          limit: 1,
         });
-        const taskLastDataDigest = res.data[res.data.length - 1].digest;
+
+        const taskLastDataDigest = res.data[0].digest;
 
         let relatedModCap: any;
         for (const modCap of userModCapsArray) {
-          const ModCapLatestDigest = (
+          const modCapRes = (
             await client.queryTransactionBlocks({
               filter: { ChangedObject: modCap.data.objectId },
             })
-          ).data.slice(-1)[0].digest;
+          );
+          const ModCapLatestDigest = modCapRes.data.slice(-1)[0].digest;
 
         if (ModCapLatestDigest === taskLastDataDigest) {
           relatedModCap = modCap;

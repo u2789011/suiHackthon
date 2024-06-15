@@ -137,7 +137,7 @@ This object is minted and transferred to the completer's address when the task i
 
 ## Project - TODOS
 ### 0. General Functions
-- Integrate SuiFren NFT Display
+- ~~Integrate SuiFren NFT Display~~ (Done By d0x0b, 20240615)
 - Add Mailbox component to manage tasksheets
 - Publish a Suifrens accessories collection
   - to grant different privileges and roles within the Fren Suipport world

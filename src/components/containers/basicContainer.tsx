@@ -136,7 +136,7 @@ const BasicContainer = () => {
   // select task (for Modal use)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [filteredTaskSheets, setFilteredTaskSheets] = useState<TaskSheetPendingReview[]>([]);
-  const [suiFrenSvg, setSuiFrenSvg] = useState<string | null>(null); //TODO: New SuiFren svg
+  const [suiFrenSvg, setSuiFrenSvg] = useState<string | null>(null);
   const [isError, setIsError] = useState<boolean>(false);
 
   // Set Accepted Tasks Data From Task Sheets Owned by User

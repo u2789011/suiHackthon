@@ -66,7 +66,7 @@ const HomePage = () => {
                   About Us
                 </h3>
                 <p className="text-lg mb-4 font-sans text-center">
-                  We are a team from the Blockchain Research Society at National
+                  We are a team from the Blockchain Research club at National
                   Chung Hsing University, <br />
                   dedicated to improving the Web3 ecosystem.
                 </p>
@@ -210,10 +210,10 @@ const HomePage = () => {
                 </h3>
                 <div className="relative mb-6 mt-6">
                   <div className="h-2 bg-gray-300 rounded-full">
-                    <div className="h-2 bg-gradient-to-tr from-pink-500 to-yellow-500 rounded-full w-1/2"></div>
+                    <div className="h-2 bg-gradient-to-tr from-pink-500 to-yellow-500 rounded-full w-1/4"></div>
                   </div>
                   <p className="absolute top-0 right-0 mt-2 text-sm font-serif">
-                    50%
+                    25%
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-4 justify-center">

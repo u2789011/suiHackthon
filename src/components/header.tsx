@@ -11,6 +11,7 @@ import { AppContext } from "@/context/AppContext";
 import { Link as LinkIcon } from "lucide-react";
 import { useSuiClientQuery } from "@mysten/dapp-kit";
 import "tailwindcss/tailwind.css";
+import Stashdrop from "./ui/stashdrop";
 // import SlideInMenu from "./slideInMenu";
 // import RpcSetting from "./rpcSetting";
 
@@ -48,6 +49,7 @@ const Header = () => {
         </Link>
         <div className="flex-grow"></div>
         <div className="flex items-center gap-4 ml-auto mt-4 sm:mt-0">
+        <Stashdrop /> {/*TODO: here*/}
           <BasicDataField
             label="Sui Balance"
             value={userBalance ?? "0.0000"}

@@ -11,7 +11,9 @@ const Stashdrop: React.FC = () => {
                     </a>
                 </TooltipTrigger>
                 <TooltipContent className="border border-white/50 rounded">
-                    Need Some Initial Gas Boost? Get Airdrop by STASHDROP
+                    Subscribe to STASHDROP
+                    to get Sui (for gas) and
+                    other coin airdrops! 😊
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>

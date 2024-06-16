@@ -6,14 +6,14 @@ import {
   useSuiClientQuery,
 } from "@mysten/dapp-kit";
 import { AppContext } from "@/context/AppContext";
-import { KioskClient, Network } from '@mysten/kiosk';
+import { KioskClient, Network } from "@mysten/kiosk";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
-import { SUIFREN_DISPLAY_API } from "../../constants/networkList"
+import { SUIFREN_DISPLAY_API } from "../../constants/networkList";
 import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
 import { checkWalletConnection } from "../../lib/transactionUtils";
-import SuifrensCard from "../ui/suifrensCard"
+import SuifrensCard from "../ui/suifrensCard";
 import {
   Card,
   CardHeader,
@@ -130,19 +130,23 @@ const BasicContainer = () => {
   const [taskDescription, setTaskDescription] = useState("");
   const [taskSheetDescription, setTaskSheetDescription] = useState("");
   const [taskFund, setTaskFund] = useState(0);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
   const [annotation, setAnnotation] = useState("");
-  const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>([]);
+  const [processedTaskSheets, setProcessedTaskSheets] = useState<TaskSheet[]>(
+    []
+  );
   // select task (for Modal use)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [filteredTaskSheets, setFilteredTaskSheets] = useState<TaskSheetPendingReview[]>([]);
+  const [filteredTaskSheets, setFilteredTaskSheets] = useState<
+    TaskSheetPendingReview[]
+  >([]);
   const [suiFrenSvg, setSuiFrenSvg] = useState<string | null>(null);
   const [isError, setIsError] = useState<boolean>(false);
 
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
     userTaskSheets: TaskSheet[],
-    allTasks: Task[],
+    allTasks: Task[]
   ) => {
     console.log("allTasks", allTasks);
     const matchedTasks: Task[] = [];
@@ -199,7 +203,7 @@ const BasicContainer = () => {
       };
 
       const objectsResponse = await client.multiGetObjects(
-        multiGetObjectsParams,
+        multiGetObjectsParams
       );
       return objectsResponse;
     } catch (error) {
@@ -281,9 +285,9 @@ const BasicContainer = () => {
             }
           })
           .filter((item: TaskSheet | null) => item !== null) as TaskSheet[];
-          return usertaskSheets;
-        }
+        return usertaskSheets;
       }
+    }
     return [];
   }
 
@@ -336,11 +340,11 @@ const BasicContainer = () => {
             } catch (digestError) {
               if (digestError instanceof Error) {
                 toast.error(
-                  `Transaction sent, but failed to get digest: ${digestError.message}`,
+                  `Transaction sent, but failed to get digest: ${digestError.message}`
                 );
               } else {
                 toast.error(
-                  "Transaction sent, but failed to get digest due to an unknown error.",
+                  "Transaction sent, but failed to get digest due to an unknown error."
                 );
               }
             }
@@ -352,7 +356,7 @@ const BasicContainer = () => {
             toast.error("Tx Failed!");
             console.log(err);
           },
-        },
+        }
       );
     } else {
       toast.error("Something went wrong");
@@ -472,11 +476,11 @@ const BasicContainer = () => {
           } catch (digestError) {
             if (digestError instanceof Error) {
               toast.error(
-                `Transaction sent, but failed to get digest: ${digestError.message}`,
+                `Transaction sent, but failed to get digest: ${digestError.message}`
               );
             } else {
               toast.error(
-                "Transaction sent, but failed to get digest due to an unknown error.",
+                "Transaction sent, but failed to get digest due to an unknown error."
               );
             }
           }
@@ -488,7 +492,7 @@ const BasicContainer = () => {
           toast.error("Transaction Failed!");
           console.log(err);
         },
-      },
+      }
     );
 
     console.log("New task published:", newTask);
@@ -503,20 +507,21 @@ const BasicContainer = () => {
 
   // Get Relate TaskSheetAndCap
   const getRelateTaskSheetAndCap = async (selectedTaskID: string) => {
-
     refetchUserTaskSheets();
     //const jsonStrUserTaskSheets = JSON.stringify(userTaskSheets, null, 2);
     const jsonObjUserTaskSheet = JSON.parse(jsonStrUserTaskSheets);
     const userTaskSheetArray = jsonObjUserTaskSheet.data;
 
-  
     const relateTaskSheet: TaskSheet | undefined = userTaskSheetArray.find(
-      (tasksheet: TaskSheetArr) => 
+      (tasksheet: TaskSheetArr) =>
         tasksheet.data.content.fields.main_task_id.includes(selectedTaskID)
     );
 
     if (!relateTaskSheet) {
-      console.error("No matching TaskSheet found for selectedTaskID:", selectedTaskID);
+      console.error(
+        "No matching TaskSheet found for selectedTaskID:",
+        selectedTaskID
+      );
       throw new Error("No matching TaskSheet found");
     }
 
@@ -526,15 +531,19 @@ const BasicContainer = () => {
   };
 
   // Edit and submit_task_sheet
-  const handleSendTaskSheet = async (selectedTaskID: string, description: string) => {
+  const handleSendTaskSheet = async (
+    selectedTaskID: string,
+    description: string
+  ) => {
     if (!checkWalletConnection(account)) return;
     /*if (description === "") {
       toast.error("Description cannot be empty");
       return}*/
-  
+
     try {
-      const { relateTaskSheetId } = await getRelateTaskSheetAndCap(selectedTaskID);
-      
+      const { relateTaskSheetId } =
+        await getRelateTaskSheetAndCap(selectedTaskID);
+
       const txb = new TransactionBlock();
       txb.moveCall({
         target: `${PACKAGE_ID}::public_task::edit_and_submit_task_sheet`,
@@ -579,17 +588,21 @@ const BasicContainer = () => {
   };
 
   // Edit Tasksheet Content
-  const handleTaskSheetDetails = async (selectedTaskID: string, description: string) => {
+  const handleTaskSheetDetails = async (
+    selectedTaskID: string,
+    description: string
+  ) => {
     if (!checkWalletConnection(account)) return;
-  
+
     if (description === "") {
       toast.error("Description cannot be empty");
       return;
     }
 
     try {
-      const { relateTaskSheetId } = await getRelateTaskSheetAndCap(selectedTaskID);
-  
+      const { relateTaskSheetId } =
+        await getRelateTaskSheetAndCap(selectedTaskID);
+
       const txb = new TransactionBlock();
       txb.moveCall({
         target: `${PACKAGE_ID}::public_task::update_task_sheet_content`,
@@ -619,9 +632,13 @@ const BasicContainer = () => {
                 fetchAllTaskData();
               } catch (digestError) {
                 if (digestError instanceof Error) {
-                  toast.error(`Transaction sent, but failed to get digest: ${digestError.message}`);
+                  toast.error(
+                    `Transaction sent, but failed to get digest: ${digestError.message}`
+                  );
                 } else {
-                  toast.error("Transaction sent, but failed to get digest due to an unknown error.");
+                  toast.error(
+                    "Transaction sent, but failed to get digest due to an unknown error."
+                  );
                 }
               }
             },
@@ -781,7 +798,7 @@ const BasicContainer = () => {
   //更新任務描述 | update_task_description<T>
   const handleTaskDescription = (
     selectedTaskID: string,
-    description: string,
+    description: string
   ) => {
     /* if (!checkWalletConnection(account)) return;
         const txb = new TransactionBlock();
@@ -853,11 +870,12 @@ const BasicContainer = () => {
   };
 
   //紀錄選取了哪些任務單
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setSelected([...selected, e.target.value]);
+  const handleChange = (value: string) => {
+    if (selected === value) {
+      setSelected(null); // Unselect the checkbox if it's already selected
     } else {
-      setSelected(selected.filter((item) => item !== e.target.value));
+      setSelected(value);
+      console.log("Selected Task Sheet", value);
     }
   };
 
@@ -865,7 +883,7 @@ const BasicContainer = () => {
   const handleApprove = async (
     annotation: string,
     selectedTaskId: string,
-    selectedTaskSheets: string[],
+    selectedTaskSheets: string | null
   ) => {
     if (!checkWalletConnection(account)) return;
 
@@ -873,36 +891,36 @@ const BasicContainer = () => {
       if (!userModCaps) {
         throw new Error("UserModCaps is undefined");
       }
-      
+
       refetchUserModCaps();
       const jsonObjUserModCaps = JSON.parse(jsonStrUserModCaps);
       const userModCapsArray = jsonObjUserModCaps.data;
       console.log("UserModCaps array:", userModCapsArray); // 打印 userModCapsArray
 
       // find Related Task
-      const selectedTaskForReject = allTasks.find((task) => task.id === selectedTaskId);
-        if (!selectedTaskForReject) {
-          throw new Error("Selected task not found");
-        }
-        console.log("Selected task for rejection:", selectedTaskForReject); // 打印 selectedTaskForReject
+      const selectedTaskForReject = allTasks.find(
+        (task) => task.id === selectedTaskId
+      );
+      if (!selectedTaskForReject) {
+        throw new Error("Selected task not found");
+      }
+      console.log("Selected task for rejection:", selectedTaskForReject); // 打印 selectedTaskForReject
 
-        const res = await client.queryTransactionBlocks({
-          filter: { ChangedObject: selectedTaskId },
-          order: 'ascending',
+      const res = await client.queryTransactionBlocks({
+        filter: { ChangedObject: selectedTaskId },
+        order: "ascending",
+        limit: 1,
+      });
+
+      const taskLastDataDigest = res.data[0].digest;
+
+      let relatedModCap: any;
+      for (const modCap of userModCapsArray) {
+        const modCapRes = await client.queryTransactionBlocks({
+          filter: { ChangedObject: modCap.data.objectId },
+          order: "ascending",
           limit: 1,
         });
-
-        const taskLastDataDigest = res.data[0].digest;
-
-        let relatedModCap: any;
-        for (const modCap of userModCapsArray) {
-          const modCapRes = (
-            await client.queryTransactionBlocks({
-              filter: { ChangedObject: modCap.data.objectId },
-              order: 'ascending',
-              limit: 1,
-            })
-          );
 
         const ModCapLatestDigest = modCapRes.data[0].digest;
 
@@ -919,11 +937,15 @@ const BasicContainer = () => {
 
       const relatedModCapId = relatedModCap.data.objectId;
       const rewardType = selectedTaskForReject.reward_type;
-      const selectedTaskSheet = selectedTaskSheets[0].toString();
+      const selectedTaskSheet = selectedTaskSheets?.toString();
 
       console.log("Related ModCapId: ", relatedModCapId);
       console.log("selectedTaskId:", selectedTaskId, typeof selectedTaskId);
-      console.log("selectedTaskSheet:", selectedTaskSheet, typeof selectedTaskSheets);
+      console.log(
+        "selectedTaskSheet:",
+        selectedTaskSheet,
+        typeof selectedTaskSheets
+      );
 
       const txb = new TransactionBlock();
 
@@ -963,11 +985,11 @@ const BasicContainer = () => {
               } catch (digestError) {
                 if (digestError instanceof Error) {
                   toast.error(
-                    `Transaction sent, but failed to get digest: ${digestError.message}`,
+                    `Transaction sent, but failed to get digest: ${digestError.message}`
                   );
                 } else {
                   toast.error(
-                    "Transaction sent, but failed to get digest due to an unknown error.",
+                    "Transaction sent, but failed to get digest due to an unknown error."
                   );
                 }
               }
@@ -976,17 +998,21 @@ const BasicContainer = () => {
             onError: (err) => {
               toast.error("Tx Failed!");
               console.log(err);
+              setSelected(null);
             },
-          },
+          }
         );
       } else {
+        setSelected(null);
         toast.error("Something went wrong");
       }
       console.log(selectedTaskId, selected, annotation);
       //toast.success(`Task Sheet ${selected} is Approved`);
       //toast.success(`Note: ${annotation}`);
-      setSelected([]);
-      setAcceptedTasks(prevTasks => prevTasks.filter(task => task.id !== selectedTaskId));
+      setSelected(null);
+      setAcceptedTasks((prevTasks) =>
+        prevTasks.filter((task) => task.id !== selectedTaskId)
+      );
     } catch (error) {
       console.error("Error handling task sheet details", error);
     }
@@ -996,7 +1022,7 @@ const BasicContainer = () => {
   const handleReject = async (
     annotation: string,
     selectedTaskId: string,
-    selectedTaskSheets: string[],
+    selectedTaskSheets: string | null
   ) => {
     if (!checkWalletConnection(account)) return;
 
@@ -1016,21 +1042,19 @@ const BasicContainer = () => {
 
       const res = await client.queryTransactionBlocks({
         filter: { ChangedObject: selectedTaskId },
-        order: 'ascending',
+        order: "ascending",
         limit: 1,
       });
 
       const taskLastDataDigest = res.data[0].digest;
 
       let relatedModCap: any;
-        for (const modCap of userModCapsArray) {
-          const modCapRes = (
-            await client.queryTransactionBlocks({
-              filter: { ChangedObject: modCap.data.objectId },
-              order: 'ascending',
-              limit: 1,
-            })
-          );
+      for (const modCap of userModCapsArray) {
+        const modCapRes = await client.queryTransactionBlocks({
+          filter: { ChangedObject: modCap.data.objectId },
+          order: "ascending",
+          limit: 1,
+        });
         const ModCapLatestDigest = modCapRes.data[0].digest;
 
         if (ModCapLatestDigest === taskLastDataDigest) {
@@ -1045,7 +1069,7 @@ const BasicContainer = () => {
       }
 
       const relatedModCapId = relatedModCap.data.objectId;
-      const selectedTaskSheet = selectedTaskSheets[0].toString();
+      const selectedTaskSheet = selectedTaskSheets?.toString();
 
       const txb = new TransactionBlock();
 
@@ -1083,11 +1107,11 @@ const BasicContainer = () => {
               } catch (digestError) {
                 if (digestError instanceof Error) {
                   toast.error(
-                    `Transaction sent, but failed to get digest: ${digestError.message}`,
+                    `Transaction sent, but failed to get digest: ${digestError.message}`
                   );
                 } else {
                   toast.error(
-                    "Transaction sent, but failed to get digest due to an unknown error.",
+                    "Transaction sent, but failed to get digest due to an unknown error."
                   );
                 }
               }
@@ -1097,7 +1121,7 @@ const BasicContainer = () => {
               toast.error("Tx Failed!");
               console.log(err);
             },
-          },
+          }
         );
       } else {
         toast.error("Something went wrong");
@@ -1105,7 +1129,7 @@ const BasicContainer = () => {
       console.log(selectedTaskId, selected, annotation);
       //toast.warning(`Task Sheet ${selected} Denied`);
       //toast.warning(`Note: ${annotation}`);
-      setSelected([]);
+      setSelected(null);
     } catch (error) {
       console.error("Error handling task sheet details", error);
     }
@@ -1114,7 +1138,6 @@ const BasicContainer = () => {
   // suifrens svg hook
   useEffect(() => {
     const fetchSuiFrenSvg = async () => {
-      
       if (!walletAddress) {
         setIsError(true);
         return;
@@ -1127,10 +1150,12 @@ const BasicContainer = () => {
         const { itemIds } = await kioskClient.getKiosk({
           id: kioskId,
         });
-        
+
         /// pass a constant while testing
         //const suifrenId = `0xfb572d4b05aa5de7d9d3a1352f72d0957aa3cb4c2f2ac8a548af98c105ddad3a`;
-        const response = await fetch(`https://${SUIFREN_DISPLAY_API}/suifrens/${itemIds[0]}/svg`);
+        const response = await fetch(
+          `https://${SUIFREN_DISPLAY_API}/suifrens/${itemIds[0]}/svg`
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -1156,7 +1181,6 @@ const BasicContainer = () => {
     loadAcceptedTasks();
   }, [userTaskSheets, allTasks]);
 
-  
   // Data for Accepted Tasks
   useEffect(() => {
     if (processedTaskSheets.length > 0) {
@@ -1169,7 +1193,7 @@ const BasicContainer = () => {
     if (allTasks.length > 0) {
       const filteredTasks = allTasks.filter(
         (task) =>
-          task.creator === walletAddress || task.moderator === walletAddress,
+          task.creator === walletAddress || task.moderator === walletAddress
       );
       setPublishedTasks(filteredTasks);
     }
@@ -1181,7 +1205,7 @@ const BasicContainer = () => {
       if (selectedTask?.task_sheets) {
         try {
           const uniqueTaskSheets = Array.from(
-            new Set(selectedTask.task_sheets),
+            new Set(selectedTask.task_sheets)
           );
           const response: any = await client.multiGetObjects({
             ids: uniqueTaskSheets,
@@ -1193,11 +1217,10 @@ const BasicContainer = () => {
 
           if (Array.isArray(responseObj)) {
             const filtered: TaskSheetPendingReview[] = responseObj.filter(
-              (taskSheet) => taskSheet.data.content.fields.status === 1,
+              (taskSheet) => taskSheet.data.content.fields.status === 1
             );
 
             setFilteredTaskSheets(filtered);
-
           } else {
             console.error("Response is not an array or is empty");
             setFilteredTaskSheets([]);
@@ -1214,9 +1237,9 @@ const BasicContainer = () => {
   return (
     <>
       {/*<Divider className="my-3"></Divider>*/}
-      <div className="mx-auto pt-[150px] p-4 md:pt-32 lg:pt-40">
+      <div className="mx-auto pt-[180px] p-4 md:pt-32 lg:pt-40">
         {/* here render suifren*/}
-        <div className='sui-fren-container'>
+        <div className="sui-fren-container">
           <SuifrensCard suiFrenSvg={suiFrenSvg} isError={isError} />
         </div>
         <Button
@@ -1269,7 +1292,7 @@ const BasicContainer = () => {
                             <p>
                               <strong>Published:</strong>{" "}
                               {new Date(
-                                parseInt(task.publish_date),
+                                parseInt(task.publish_date)
                               ).toLocaleString()}
                             </p>
                             <p>
@@ -1364,7 +1387,7 @@ const BasicContainer = () => {
                             <p>
                               <strong>Published:</strong>{" "}
                               {new Date(
-                                parseInt(task.publish_date),
+                                parseInt(task.publish_date)
                               ).toLocaleString()}
                             </p>
                             <p>
@@ -1458,7 +1481,7 @@ const BasicContainer = () => {
                             <p>
                               <strong>Published:</strong>{" "}
                               {new Date(
-                                parseInt(task.publish_date),
+                                parseInt(task.publish_date)
                               ).toLocaleString()}
                             </p>
                             <p>
@@ -1492,14 +1515,14 @@ const BasicContainer = () => {
                               View on Blockchain
                             </Link>
                           </ScrollShadow>
-                          <Button
+                          {/* <Button
                             onPress={() => handleModifyTask(task)}
                             radius="full"
                             size="md"
                             className="text-white shadow-lg mt-6 w-[288px]"
                           >
                             Manage Your Task
-                          </Button>
+                          </Button> */}
                           <Button
                             onPress={() => handleSubmittedTask(task)}
                             radius="full"
@@ -1760,7 +1783,16 @@ const BasicContainer = () => {
                       <Checkbox
                         key={index}
                         value={taskSheet.data.content.fields.id.id}
-                        onChange={handleChange}
+                        onChange={() =>
+                          handleChange(taskSheet.data.content.fields.id.id)
+                        }
+                        checked={
+                          selected === taskSheet.data.content.fields.id.id
+                        }
+                        isDisabled={
+                          selected !== null &&
+                          selected !== taskSheet.data.content.fields.id.id
+                        }
                       >
                         {truncateAddress(taskSheet.data.content.fields.id.id)}{" "}
                         {"| "}
@@ -1800,7 +1832,7 @@ const BasicContainer = () => {
                     handleReject(
                       annotation,
                       selectedTask ? selectedTask.id : "",
-                      selected,
+                      selected
                     )
                   }
                 >
@@ -1813,7 +1845,7 @@ const BasicContainer = () => {
                     handleApprove(
                       annotation,
                       selectedTask ? selectedTask.id : "",
-                      selected,
+                      selected
                     )
                   }
                 >
@@ -1855,7 +1887,7 @@ const BasicContainer = () => {
                   onClick={() => {
                     handleTaskDescription(
                       selectedTask ? selectedTask.id : "",
-                      taskDescription,
+                      taskDescription
                     );
                   }}
                   color="primary"
@@ -1877,7 +1909,7 @@ const BasicContainer = () => {
                   onClick={() =>
                     handleTakeTaskFund(
                       selectedTask ? selectedTask.id : "",
-                      taskFund,
+                      taskFund
                     )
                   }
                   onPress={onClose}
@@ -1899,7 +1931,7 @@ const BasicContainer = () => {
                   onClick={() => {
                     handleAddTaskFund(
                       selectedTask ? selectedTask.id : "",
-                      taskFund,
+                      taskFund
                     );
                   }}
                   onPress={onClose}
@@ -1938,7 +1970,7 @@ const BasicContainer = () => {
                   onClick={() =>
                     handleTaskSheetDetails(
                       selectedTask ? selectedTask.id : "",
-                      taskSheetDescription,
+                      taskSheetDescription
                     )
                   }
                   /*onPress={onClose}*/
@@ -1951,7 +1983,7 @@ const BasicContainer = () => {
                   onClick={() =>
                     handleSendTaskSheet(
                       selectedTask ? selectedTask.id : "",
-                      taskSheetDescription,
+                      taskSheetDescription
                     )
                   }
                   onPress={onClose}

@@ -16,7 +16,6 @@ import { checkWalletConnection } from "../../lib/transactionUtils";
 import SuifrensCard from "../ui/suifrensCard";
 import {
   Card,
-  CardHeader,
   CardBody,
   CardFooter,
   Image,
@@ -34,10 +33,10 @@ import {
   Divider,
   ScrollShadow,
   Link,
-  CheckboxGroup,
   Checkbox,
   Textarea,
-  user,
+  Accordion,
+  AccordionItem,
 } from "@nextui-org/react";
 import { log } from "console";
 import "tailwindcss/tailwind.css";
@@ -866,6 +865,7 @@ const BasicContainer = () => {
   const handleSubmittedTask = (task: Task) => {
     setSelectedTask(task);
     console.log("Submitted Task", task);
+    setSelected(null);
     onOpenModal2();
   };
 
@@ -998,7 +998,6 @@ const BasicContainer = () => {
             onError: (err) => {
               toast.error("Tx Failed!");
               console.log(err);
-              setSelected(null);
             },
           }
         );
@@ -1014,6 +1013,7 @@ const BasicContainer = () => {
         prevTasks.filter((task) => task.id !== selectedTaskId)
       );
     } catch (error) {
+      setSelected(null);
       console.error("Error handling task sheet details", error);
     }
   };
@@ -1116,14 +1116,17 @@ const BasicContainer = () => {
                 }
               }
               refetchUserTaskSheets();
+              setSelected(null);
             },
             onError: (err) => {
               toast.error("Tx Failed!");
               console.log(err);
+              setSelected(null);
             },
           }
         );
       } else {
+        setSelected(null);
         toast.error("Something went wrong");
       }
       console.log(selectedTaskId, selected, annotation);
@@ -1131,6 +1134,7 @@ const BasicContainer = () => {
       //toast.warning(`Note: ${annotation}`);
       setSelected(null);
     } catch (error) {
+      setSelected(null);
       console.error("Error handling task sheet details", error);
     }
   };
@@ -1237,285 +1241,291 @@ const BasicContainer = () => {
   return (
     <>
       {/*<Divider className="my-3"></Divider>*/}
-      <div className="mx-auto pt-[180px] p-4 md:pt-32 lg:pt-40">
-        {/* here render suifren*/}
-        <div className="sui-fren-container">
+      <div className="justify-center container flex flex-col sm:flex-col md:flex-row lg:flex-row">
+        <div className="mx-auto pt-[180px] p-4 md:pt-32 lg:pt-40">
           <SuifrensCard suiFrenSvg={suiFrenSvg} isError={isError} />
         </div>
-        <Button
-          onPress={onOpenModal1}
-          onClick={() => setSelectedTask(null)}
-          size="lg"
-          className="font-serif uppercase"
-          color="secondary"
-        >
-          Publish Task
-        </Button>
-      </div>
-      <div className="flex justify-center font-sans">
-        <div className="flex w-full flex-col">
-          <Tabs
-            aria-label="Options"
-            variant="bordered"
-            className="min-h-1 mx-auto"
-          >
-            <Tab key="allTasks" title="All Tasks">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
-                {allTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    isFooterBlurred
-                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
-                  >
-                    <CardBody className="relative p-3">
-                      <Image
-                        removeWrapper
-                        alt="Task"
-                        src={task.image_url}
-                        className="z-0 w-full h-50 object-cover rounded-lg"
-                      />
-                    </CardBody>
-                    <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
-                      <div className="flex flex-grow gap-2 items-center">
-                        <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow
-                            hideScrollBar
-                            className="max-h-[280px] overflow-y-auto"
-                          >
-                            <h3 className="text-lg fint-semibold">
-                              {task.name}
-                            </h3>
-                            <p>
-                              <strong>Description:</strong>{" "}
-                              {task.description[0].description}
-                            </p>
-                            <p>
-                              <strong>Published:</strong>{" "}
-                              {new Date(
-                                parseInt(task.publish_date)
-                              ).toLocaleString()}
-                            </p>
-                            <p>
-                              <strong>Creator:</strong>{" "}
-                              {truncateAddress(task.creator)}
-                            </p>
-                            <p>
-                              <strong>MOD:</strong>{" "}
-                              {truncateAddress(task.moderator)}
-                            </p>
-                            <p>
-                              <strong>Area:</strong> {task.area}
-                            </p>
-                            <p>
-                              <strong>Status:</strong>{" "}
-                              {task.is_active ? "Active" : "Inactive"}
-                            </p>
-                            <p>
-                              <strong>Reward Pool:</strong>{" "}
-                              {parseFloat(task.fund) / FLOAT_SCALING}
-                            </p>
-                            <p>
-                              <strong>Reward:</strong>{" "}
-                              {task.reward_amount / FLOAT_SCALING}
-                            </p>
-                            <Link
-                              isExternal
-                              href={`https://suiscan.xyz/testnet/object/${task.id}`} //TODO: testnet URL here
-                              showAnchorIcon
-                            >
-                              View on Blockchain
-                            </Link>
-                          </ScrollShadow>
-                          <Button
-                            isDisabled={!task.is_active}
-                            onClick={() => handleAcceptTask(task)}
-                            radius="full"
-                            size="md"
-                            className="text-white shadow-lg mt-6 w-[288px]"
-                          >
-                            Accept Task
-                          </Button>
-                        </div>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </Tab>
-            <Tab key="acceptedTasks" title="On Going Tasks">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
-                {!acceptedTasks.length && (
-                  <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
-                    <Image
-                      alt="voidfren"
-                      src="/frens/voidfren.svg"
-                      className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
-                    />
-                    <p className="text-white/80 text-center">
-                      No accepted tasks
-                    </p>
+        <div>
+          {" "}
+          <div className="mx-auto p-4 md:pt-32 lg:pt-40">
+            {/* here render suifren*/}
+
+            <div className="flex justify-center">
+              <Button
+                onPress={onOpenModal1}
+                onClick={() => setSelectedTask(null)}
+                size="lg"
+                className="font-serif uppercase"
+                color="secondary"
+              >
+                Publish Task
+              </Button>
+            </div>
+          </div>
+          <div className="flex justify-center font-sans">
+            <div className="flex w-full flex-col">
+              <Tabs
+                aria-label="Options"
+                variant="bordered"
+                className="min-h-1 mx-auto"
+              >
+                <Tab key="allTasks" title="All Tasks">
+                  <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+                    {allTasks.map((task) => (
+                      <Card
+                        key={task.id}
+                        isFooterBlurred
+                        className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
+                      >
+                        <CardBody className="relative p-3">
+                          <Image
+                            removeWrapper
+                            alt="Task"
+                            src={task.image_url}
+                            className="z-0 w-full h-50 object-cover rounded-lg"
+                          />
+                        </CardBody>
+                        <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
+                          <div className="flex flex-grow gap-2 items-center">
+                            <div className="flex flex-col gap-2 text-white/80">
+                              <ScrollShadow
+                                hideScrollBar
+                                className="max-h-[280px] overflow-y-auto"
+                              >
+                                <h3 className="text-lg fint-semibold">
+                                  {task.name}
+                                </h3>
+                                <p>
+                                  <strong>Description:</strong>{" "}
+                                  {task.description[0].description}
+                                </p>
+                                <p>
+                                  <strong>Published:</strong>{" "}
+                                  {new Date(
+                                    parseInt(task.publish_date)
+                                  ).toLocaleString()}
+                                </p>
+                                <p>
+                                  <strong>Creator:</strong>{" "}
+                                  {truncateAddress(task.creator)}
+                                </p>
+                                <p>
+                                  <strong>MOD:</strong>{" "}
+                                  {truncateAddress(task.moderator)}
+                                </p>
+                                <p>
+                                  <strong>Area:</strong> {task.area}
+                                </p>
+                                <p>
+                                  <strong>Status:</strong>{" "}
+                                  {task.is_active ? "Active" : "Inactive"}
+                                </p>
+                                <p>
+                                  <strong>Reward Pool:</strong>{" "}
+                                  {parseFloat(task.fund) / FLOAT_SCALING}
+                                </p>
+                                <p>
+                                  <strong>Reward:</strong>{" "}
+                                  {task.reward_amount / FLOAT_SCALING}
+                                </p>
+                                <Link
+                                  isExternal
+                                  href={`https://suiscan.xyz/testnet/object/${task.id}`} //TODO: testnet URL here
+                                  showAnchorIcon
+                                >
+                                  View on Blockchain
+                                </Link>
+                              </ScrollShadow>
+                              <Button
+                                isDisabled={!task.is_active}
+                                onClick={() => handleAcceptTask(task)}
+                                radius="full"
+                                size="md"
+                                className="text-white shadow-lg mt-6 w-[288px]"
+                              >
+                                Accept Task
+                              </Button>
+                            </div>
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    ))}
                   </div>
-                )}
-                {acceptedTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    isFooterBlurred
-                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
-                  >
-                    <CardBody className="relative p-3">
-                      <Image
-                        removeWrapper
-                        alt="Task"
-                        src={task.image_url}
-                        className="z-0 w-full h-50 object-cover rounded-lg"
-                      />
-                    </CardBody>
-                    <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
-                      <div className="flex flex-grow gap-2 items-center">
-                        <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow
-                            hideScrollBar
-                            className="max-h-[280px] overflow-y-auto"
-                          >
-                            <p>
-                              <strong>Task Name:</strong> {task.name}
-                            </p>
-                            <p>
-                              <strong>Description:</strong>{" "}
-                              {task.description[0].description}
-                            </p>
-                            <p>
-                              <strong>Published:</strong>{" "}
-                              {new Date(
-                                parseInt(task.publish_date)
-                              ).toLocaleString()}
-                            </p>
-                            <p>
-                              <strong>Creator:</strong>{" "}
-                              {truncateAddress(task.creator)}
-                            </p>
-                            <p>
-                              <strong>Moderator:</strong>{" "}
-                              {truncateAddress(task.moderator)}
-                            </p>
-                            <p>
-                              <strong>Area:</strong> {task.area}
-                            </p>
-                            <p>
-                              <strong>Status:</strong>{" "}
-                              {task.is_active ? "Active" : "Inactive"}
-                            </p>
-                            <p>
-                              <strong>Fund:</strong>{" "}
-                              {parseFloat(task.fund) / FLOAT_SCALING}
-                            </p>
-                            <p>
-                              <strong>Reward Amount:</strong>{" "}
-                              {task.reward_amount / FLOAT_SCALING}
-                            </p>
-                            <Link
-                              isExternal
-                              href={`https://suiscan.xyz/devnet/object/${task.id}`}
-                              showAnchorIcon
-                            >
-                              View on Blockchain
-                            </Link>
-                          </ScrollShadow>
-                          <Button
-                            onPress={() => handleCompleteTask(task)}
-                            radius="full"
-                            size="md"
-                            className="text-white shadow-lg mt-6 w-[288px]"
-                          >
-                            Submit Task
-                          </Button>
-                        </div>
+                </Tab>
+                <Tab key="acceptedTasks" title="On Going Tasks">
+                  <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+                    {!acceptedTasks.length && (
+                      <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
+                        <Image
+                          alt="voidfren"
+                          src="/frens/voidfren.svg"
+                          className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
+                        />
+                        <p className="text-white/80 text-center">
+                          No accepted tasks
+                        </p>
                       </div>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </Tab>
-            <Tab key="publishedTasks" title="Published by Me">
-              <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
-                {!publishedTasks.length && (
-                  <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
-                    <Image
-                      alt="voidfren"
-                      src="/frens/voidfren.svg"
-                      className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
-                    />
-                    <p className="text-white/80 text-center">
-                      No published tasks
-                    </p>
+                    )}
+                    {acceptedTasks.map((task) => (
+                      <Card
+                        key={task.id}
+                        isFooterBlurred
+                        className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
+                      >
+                        <CardBody className="relative p-3">
+                          <Image
+                            removeWrapper
+                            alt="Task"
+                            src={task.image_url}
+                            className="z-0 w-full h-50 object-cover rounded-lg"
+                          />
+                        </CardBody>
+                        <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
+                          <div className="flex flex-grow gap-2 items-center">
+                            <div className="flex flex-col gap-2 text-white/80">
+                              <ScrollShadow
+                                hideScrollBar
+                                className="max-h-[280px] overflow-y-auto"
+                              >
+                                <p>
+                                  <strong>Task Name:</strong> {task.name}
+                                </p>
+                                <p>
+                                  <strong>Description:</strong>{" "}
+                                  {task.description[0].description}
+                                </p>
+                                <p>
+                                  <strong>Published:</strong>{" "}
+                                  {new Date(
+                                    parseInt(task.publish_date)
+                                  ).toLocaleString()}
+                                </p>
+                                <p>
+                                  <strong>Creator:</strong>{" "}
+                                  {truncateAddress(task.creator)}
+                                </p>
+                                <p>
+                                  <strong>Moderator:</strong>{" "}
+                                  {truncateAddress(task.moderator)}
+                                </p>
+                                <p>
+                                  <strong>Area:</strong> {task.area}
+                                </p>
+                                <p>
+                                  <strong>Status:</strong>{" "}
+                                  {task.is_active ? "Active" : "Inactive"}
+                                </p>
+                                <p>
+                                  <strong>Fund:</strong>{" "}
+                                  {parseFloat(task.fund) / FLOAT_SCALING}
+                                </p>
+                                <p>
+                                  <strong>Reward Amount:</strong>{" "}
+                                  {task.reward_amount / FLOAT_SCALING}
+                                </p>
+                                <Link
+                                  isExternal
+                                  href={`https://suiscan.xyz/devnet/object/${task.id}`}
+                                  showAnchorIcon
+                                >
+                                  View on Blockchain
+                                </Link>
+                              </ScrollShadow>
+                              <Button
+                                onPress={() => handleCompleteTask(task)}
+                                radius="full"
+                                size="md"
+                                className="text-white shadow-lg mt-6 w-[288px]"
+                              >
+                                Submit Task
+                              </Button>
+                            </div>
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    ))}
                   </div>
-                )}
-                {publishedTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    isFooterBlurred
-                    className="h-[700px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
-                  >
-                    <CardBody className="relative p-3">
-                      <Image
-                        removeWrapper
-                        alt="Task"
-                        src={task.image_url}
-                        className="z-0 w-full h-50 object-cover rounded-lg"
-                      />
-                    </CardBody>
-                    <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
-                      <div className="flex flex-grow gap-2 items-center">
-                        <div className="flex flex-col gap-2 text-white/80">
-                          <ScrollShadow
-                            hideScrollBar
-                            className="max-h-[280px] overflow-y-auto"
-                          >
-                            <h3 className="text-lg fint-semibold">
-                              {task.name}
-                            </h3>
-                            <p>
-                              <strong>Description:</strong>{" "}
-                              {task.description[0].description}
-                            </p>
-                            <p>
-                              <strong>Published:</strong>{" "}
-                              {new Date(
-                                parseInt(task.publish_date)
-                              ).toLocaleString()}
-                            </p>
-                            <p>
-                              <strong>Creator:</strong>{" "}
-                              {truncateAddress(task.creator)}
-                            </p>
-                            <p>
-                              <strong>MOD:</strong>{" "}
-                              {truncateAddress(task.moderator)}
-                            </p>
-                            <p>
-                              <strong>Area:</strong> {task.area}
-                            </p>
-                            <p>
-                              <strong>Status:</strong>{" "}
-                              {task.is_active ? "Active" : "Inactive"}
-                            </p>
-                            <p>
-                              <strong>Reward Pool:</strong>{" "}
-                              {parseFloat(task.fund) / FLOAT_SCALING}
-                            </p>
-                            <p>
-                              <strong>Reward:</strong>{" "}
-                              {task.reward_amount / FLOAT_SCALING}
-                            </p>
-                            <Link
-                              isExternal
-                              href={`https://suiscan.xyz/devnet/object/${task.id}`}
-                              showAnchorIcon
-                            >
-                              View on Blockchain
-                            </Link>
-                          </ScrollShadow>
-                          {/* <Button
+                </Tab>
+                <Tab key="publishedTasks" title="Published by Me">
+                  <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+                    {!publishedTasks.length && (
+                      <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
+                        <Image
+                          alt="voidfren"
+                          src="/frens/voidfren.svg"
+                          className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
+                        />
+                        <p className="text-white/80 text-center">
+                          No published tasks
+                        </p>
+                      </div>
+                    )}
+                    {publishedTasks.map((task) => (
+                      <Card
+                        key={task.id}
+                        isFooterBlurred
+                        className="h-[700px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
+                      >
+                        <CardBody className="relative p-3">
+                          <Image
+                            removeWrapper
+                            alt="Task"
+                            src={task.image_url}
+                            className="z-0 w-full h-50 object-cover rounded-lg"
+                          />
+                        </CardBody>
+                        <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
+                          <div className="flex flex-grow gap-2 items-center">
+                            <div className="flex flex-col gap-2 text-white/80">
+                              <ScrollShadow
+                                hideScrollBar
+                                className="max-h-[280px] overflow-y-auto"
+                              >
+                                <h3 className="text-lg fint-semibold">
+                                  {task.name}
+                                </h3>
+                                <p>
+                                  <strong>Description:</strong>{" "}
+                                  {task.description[0].description}
+                                </p>
+                                <p>
+                                  <strong>Published:</strong>{" "}
+                                  {new Date(
+                                    parseInt(task.publish_date)
+                                  ).toLocaleString()}
+                                </p>
+                                <p>
+                                  <strong>Creator:</strong>{" "}
+                                  {truncateAddress(task.creator)}
+                                </p>
+                                <p>
+                                  <strong>MOD:</strong>{" "}
+                                  {truncateAddress(task.moderator)}
+                                </p>
+                                <p>
+                                  <strong>Area:</strong> {task.area}
+                                </p>
+                                <p>
+                                  <strong>Status:</strong>{" "}
+                                  {task.is_active ? "Active" : "Inactive"}
+                                </p>
+                                <p>
+                                  <strong>Reward Pool:</strong>{" "}
+                                  {parseFloat(task.fund) / FLOAT_SCALING}
+                                </p>
+                                <p>
+                                  <strong>Reward:</strong>{" "}
+                                  {task.reward_amount / FLOAT_SCALING}
+                                </p>
+                                <Link
+                                  isExternal
+                                  href={`https://suiscan.xyz/devnet/object/${task.id}`}
+                                  showAnchorIcon
+                                >
+                                  View on Blockchain
+                                </Link>
+                              </ScrollShadow>
+                              {/* <Button
                             onPress={() => handleModifyTask(task)}
                             radius="full"
                             size="md"
@@ -1523,22 +1533,22 @@ const BasicContainer = () => {
                           >
                             Manage Your Task
                           </Button> */}
-                          <Button
-                            onPress={() => handleSubmittedTask(task)}
-                            radius="full"
-                            size="md"
-                            className="text-white shadow-lg w-[288px]"
-                          >
-                            View Submitted Tasks
-                          </Button>
-                        </div>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </Tab>
-            {/*<Tab key="completedTasks" title="Completed Tasks">
+                              <Button
+                                onPress={() => handleSubmittedTask(task)}
+                                radius="full"
+                                size="md"
+                                className="text-white shadow-lg w-[288px]"
+                              >
+                                View Submitted Tasks
+                              </Button>
+                            </div>
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                </Tab>
+                {/*<Tab key="completedTasks" title="Completed Tasks">
               <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-8 mb-10">
                 {!completedTasks.length && (
                   <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
@@ -1624,9 +1634,12 @@ const BasicContainer = () => {
                 ))}
               </div>
               </Tab>*/}
-          </Tabs>
+              </Tabs>
+            </div>
+          </div>
         </div>
       </div>
+
       {/* Modal for publishing task */}
       <Modal
         isOpen={isOpenModal1}

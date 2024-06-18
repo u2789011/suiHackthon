@@ -1454,7 +1454,7 @@ const BasicContainer = () => {
                   <Card
                     key={task.id}
                     isFooterBlurred
-                    className="h-[700px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
+                    className="h-[660px] w-[320px] shadow-lg rounded-lg overflow-hidden mx-auto"
                   >
                     <CardBody className="relative p-3">
                       <Image
@@ -1527,7 +1527,7 @@ const BasicContainer = () => {
                             onPress={() => handleSubmittedTask(task)}
                             radius="full"
                             size="md"
-                            className="text-white shadow-lg w-[288px]"
+                            className="text-white shadow-lg mt-6 w-[288px]"
                           >
                             View Submitted Tasks
                           </Button>

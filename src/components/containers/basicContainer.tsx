@@ -1355,13 +1355,13 @@ const BasicContainer = () => {
                 <Tab key="acceptedTasks" title="On Going Tasks">
                   <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
                     {!acceptedTasks.length && (
-                      <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
+                      <div className="flex justify-center items-center h-[660px] w-[1200px]">
                         <Image
                           alt="voidfren"
                           src="/frens/voidfren.svg"
                           className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
                         />
-                        <p className="text-white/80 text-center">
+                        <p className="text-white/80 text-center font-serif text-2xl">
                           No accepted tasks
                         </p>
                       </div>
@@ -1382,7 +1382,7 @@ const BasicContainer = () => {
                         </CardBody>
                         <CardFooter className="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent text-white">
                           <div className="flex flex-grow gap-2 items-center">
-                            <div className="flex flex-col gap-2 text-white/80">
+                            <div className="flex flex-col gap-2 text-white/80 ">
                               <ScrollShadow
                                 hideScrollBar
                                 className="max-h-[280px] overflow-y-auto"
@@ -1449,13 +1449,13 @@ const BasicContainer = () => {
                 <Tab key="publishedTasks" title="Published by Me">
                   <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
                     {!publishedTasks.length && (
-                      <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
+                      <div className="flex justify-center items-center h-[660px] w-[1200px]">
                         <Image
                           alt="voidfren"
                           src="/frens/voidfren.svg"
                           className="mb-20 w-[150px] h-[150px] object-cover rounded-lg"
                         />
-                        <p className="text-white/80 text-center">
+                        <p className="text-white/80 text-center font-serif text-2xl">
                           No published tasks
                         </p>
                       </div>

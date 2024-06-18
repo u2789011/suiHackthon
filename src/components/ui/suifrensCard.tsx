@@ -8,6 +8,7 @@ import {
   AccordionItem,
   Link,
   LinkIcon,
+  Button,
 } from "@nextui-org/react";
 
 interface SuifrenCardProps {
@@ -29,14 +30,16 @@ const SuifrenCard: React.FC<SuifrenCardProps> = ({ suiFrenSvg, isError }) => {
             className="mb-4 mx-auto rounded-full w-32 h-32"
           />
           <h3 className="font-sans">No SuiFren Yet</h3>
-          <Link
-            href="https://suifrens-testnet-az1ho1jq2-mysten-labs.vercel.app/mint"
-            isExternal
-            showAnchorIcon
-            className="font-sans"
-          >
-            Go Get A SuiFren
-          </Link>
+          <Button size="sm">
+            <Link
+              href="https://suifrens-testnet-az1ho1jq2-mysten-labs.vercel.app/mint"
+              isExternal
+              showAnchorIcon
+              className="font-sans"
+            >
+              Go Get A SuiFren
+            </Link>
+          </Button>
         </>
       ) : (
         <div className="">

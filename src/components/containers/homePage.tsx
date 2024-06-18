@@ -57,6 +57,10 @@ const HomePage = () => {
             >
               Start Now
             </Button>
+            <div className="scroll-down mt-10 font-sans">
+              <span>Scroll down for more info</span>
+              <div className="arrow"></div>
+            </div>
           </header>
 
           <main>
@@ -216,10 +220,11 @@ const HomePage = () => {
                     25%
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-4 justify-center">
+                <div className="flex flex-wrap justify-center">
                   <Card
                     className="p-4 shadow-md w-full sm:w-1/4"
                     isHoverable={true}
+                    isBlurred
                   >
                     <h4 className="text-xl font-semibold mb-2  text-center font-serif">
                       Public Task
@@ -233,6 +238,7 @@ const HomePage = () => {
                   <Card
                     className="p-4 shadow-md w-full sm:w-1/4"
                     isHoverable={true}
+                    isBlurred
                   >
                     <h4 className="text-xl font-semibold mb-2 text-center font-serif">
                       Fund Raising
@@ -246,6 +252,7 @@ const HomePage = () => {
                   <Card
                     className="p-4 shadow-md w-full sm:w-1/4"
                     isHoverable={true}
+                    isBlurred
                   >
                     <h4 className="text-xl font-semibold mb-2 text-center font-serif">
                       Personal Task
@@ -259,6 +266,7 @@ const HomePage = () => {
                   <Card
                     className="p-4 shadow-md w-full sm:w-1/4"
                     isHoverable={true}
+                    isBlurred
                   >
                     <h4 className="text-xl font-semibold mb-2 text-center font-serif">
                       Vendors
@@ -287,6 +295,20 @@ const HomePage = () => {
                   feedback mechanisms and honorary accessory rewards for
                   contributors.
                 </p>
+                <Image
+                  src="../images/Trade Off Upcoming Features (2).jpg"
+                  alt="Upcoming Features"
+                  className="mb-3"
+                />
+                <Image
+                  src="../images/Trade Off Upcoming Features (3).jpg"
+                  alt="Upcoming Features"
+                  className="mb-3"
+                />
+                <Image
+                  src="../images/Trade Off Upcoming Features.jpg"
+                  alt="Upcoming Features"
+                />
               </Card>
             </section>
           </main>

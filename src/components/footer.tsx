@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import "tailwindcss/tailwind.css";
+import { Divider } from "@nextui-org/react";
 const Footer = () => {
   return (
     <div

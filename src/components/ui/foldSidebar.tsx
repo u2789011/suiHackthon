@@ -20,20 +20,23 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
   const defaultSvgPath = "/frens/voidfren.svg";
 
   return (
-    <div className="flex">
+    <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+        className={`fixed top-1/2 transform -translate-y-1/2 bg-orange-400 bg-opacity-95 text-white text-center px-2 py-1 rounded-r-xl transition-transform duration-360 ease-in-out ${
+          isOpen ? 'left-64' : 'left-0'
+        }`}
+        style={{ zIndex: 1001 }}
       >
-        {isOpen ? 'Close Sidebar' : 'Open Sidebar'}
+        {isOpen ? 'X' : '>'}
       </button>
       <div
-        className={`fixed inset-y-0 left-0 transform ${
+        className={`fixed left-0 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } transition-transform duration-300 ease-in-out w-64 bg-gray-800 text-white p-4 shadow-lg`}
-        style={{ minHeight: '660px' }}
+        } transition-transform duration-360 ease-in-out w-70 backdrop-blur-lg text-white p-4 shadow-lg rounded-r-4xl`}
+        style={{ minHeight: '480px', maxHeight: '90vh', top: '50%', transform: `translateY(-50%) ${isOpen ? 'translateX(0)' : 'translateX(-100%)'}`, zIndex: 1000 }}
       >
-        <div className="sui-fren-container">
+        <div className="sui-fren-container overflow-auto">
           {isError ? (
             <>
               <Avatar
@@ -63,14 +66,10 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
                   title="MY SUIFREN"
                   className="font-serif"
                 >
-                  <Card isBlurred>
-                    <CardBody>
-                      <div
-                        className="sui-fren-image"
-                        dangerouslySetInnerHTML={{ __html: suiFrenSvg || "" }}
-                      />
-                    </CardBody>
-                  </Card>
+                  <div
+                    className="sui-fren-image"
+                    dangerouslySetInnerHTML={{ __html: suiFrenSvg || "" }}
+                  />
                 </AccordionItem>
                 <AccordionItem
                   key="2"
@@ -80,7 +79,7 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
                 >
                   <Card isBlurred>
                     <CardHeader>
-                      <h4 className="text-2xl font-semibold text-center font-serif uppercase">
+                      <h4 className="text-lg font-semibold text-center font-serif uppercase">
                         Coming Soon...
                       </h4>
                     </CardHeader>
@@ -89,7 +88,7 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
                         src={defaultSvgPath}
                         alt="Void Fren"
                         size="lg"
-                        className="mb-4 mx-auto rounded-full w-32 h-32"
+                        className="mx-auto rounded-full w-32 h-32"
                       />
                     </CardBody>
                   </Card>
@@ -102,7 +101,7 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
                 >
                   <Card isBlurred>
                     <CardHeader>
-                      <h4 className="text-2xl font-semibold text-center font-serif uppercase">
+                      <h4 className="text-lg font-semibold text-center font-serif uppercase">
                         Coming Soon...
                       </h4>
                     </CardHeader>

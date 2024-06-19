@@ -1241,17 +1241,12 @@ const BasicContainer = () => {
   }, [selectedTask, selected]);
   return (
     <>
-      {/*<Divider className="my-3"></Divider>*/}
-      {/*FIXME:here*/}
-      <div className="justify-center container flex flex-col sm:flex-col md:flex-row lg:flex-row">
-        <div className="mx-auto pt-[180px] p-4 md:pt-32 lg:pt-40">
-          <SuifrenCard2 suiFrenSvg={suiFrenSvg} isError={isError} />
-        </div>
+    <div className="relative">
+      <SuifrenCard2 suiFrenSvg={suiFrenSvg} isError={isError} />
+      <div className="justify-center container flex flex-col sm:flex-col md:flex-row lg:flex-row mt-40 md:mt-0">
         <div>
           {" "}
           <div className="mx-auto p-4 md:pt-32 lg:pt-40">
-            {/* here render suifren*/}
-
             <div className="flex justify-center">
               <Button
                 onPress={onOpenModal1}
@@ -2011,6 +2006,7 @@ const BasicContainer = () => {
           )}
         </ModalContent>
       </Modal>
+    </div>
     </>
   );
 };

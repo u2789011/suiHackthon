@@ -23,8 +23,8 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
     <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed top-1/2 transform -translate-y-1/2 bg-orange-400 bg-opacity-95 text-white text-center px-2 py-1 rounded-r-xl transition-transform duration-360 ease-in-out ${
-          isOpen ? 'left-70' : 'left-0'
+        className={`fixed top-1/2 transform -translate-y-1/2 bg-orange-400 bg-opacity-95 text-white text-center px-2 py-1 rounded-r-xl border-2 border-black transition-transform duration-360 ease-in-out ${
+          isOpen ? 'left-[17rem]' : 'left-0'
         }`}
         style={{ zIndex: 1001 }}
       >
@@ -43,10 +43,10 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
                 src={defaultSvgPath}
                 alt="Void Fren"
                 size="lg"
-                className="mb-4 mx-auto rounded-full w-32 h-32"
+                className="mb-4 rounded-full w-32 h-32"
               />
               <h3 className="font-sans text-center">No SuiFren Yet</h3>
-              <Button size="sm" className="mx-auto">
+              <Button size="sm" className="mt-4">
                 <Link
                   href="https://suifrens-testnet-az1ho1jq2-mysten-labs.vercel.app/mint"
                   isExternal

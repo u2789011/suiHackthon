@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
 import { checkWalletConnection } from "../../lib/transactionUtils";
 import SuifrensCard from "../ui/suifrensCard";
+import SuifrenCard2 from "../ui/foldSidebar";
 import {
   Card,
   CardBody,
@@ -1241,9 +1242,10 @@ const BasicContainer = () => {
   return (
     <>
       {/*<Divider className="my-3"></Divider>*/}
+      {/*FIXME:here*/}
       <div className="justify-center container flex flex-col sm:flex-col md:flex-row lg:flex-row">
         <div className="mx-auto pt-[180px] p-4 md:pt-32 lg:pt-40">
-          <SuifrensCard suiFrenSvg={suiFrenSvg} isError={isError} />
+          <SuifrenCard2 suiFrenSvg={suiFrenSvg} isError={isError} />
         </div>
         <div>
           {" "}

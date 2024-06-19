@@ -73,7 +73,7 @@ const SuifrenCard: React.FC<SuifrenCardProps> = ({ suiFrenSvg, isError }) => {
               <Card isBlurred>
                 <CardHeader>
                   <h4 className="text-2xl font-semibold text-center font-serif uppercase">
-                    Comming Soon...
+                    Coming Soon...
                   </h4>
                 </CardHeader>
                 <CardBody>
@@ -95,7 +95,7 @@ const SuifrenCard: React.FC<SuifrenCardProps> = ({ suiFrenSvg, isError }) => {
               <Card isBlurred>
                 <CardHeader>
                   <h4 className="text-2xl font-semibold text-center font-serif uppercase">
-                    Comming Soon...
+                    Coming Soon...
                   </h4>
                 </CardHeader>
                 <CardBody>

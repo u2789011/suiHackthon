@@ -23,18 +23,19 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
     <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed top-1/2 transform -translate-y-1/2 bg-orange-400 bg-opacity-95 text-white text-center px-2 py-1 rounded-r-xl border-2 border-black transition-transform duration-360 ease-in-out ${
+        className={`fixed top-1/2 transform -translate-y-1/2 bg-orange-500 bg-opacity-90 text-black text-center px-2 py-1 rounded-r-xl border-3 border-black transition-transform duration-360 ease-in-out font-bold ${
           isOpen ? 'left-[17rem]' : 'left-0'
         }`}
         style={{ zIndex: 1001 }}
+        aria-label="Toggle Sidebar"
       >
         {isOpen ? 'X' : '>'}
       </button>
       <div
         className={`fixed left-0 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } transition-transform duration-360 ease-in-out w-72 backdrop-blur-lg text-white p-4 shadow-lg rounded-r-4xl`}
-        style={{ minHeight: '480px', maxHeight: '90vh', top: '50%', transform: `translateY(-50%) ${isOpen ? 'translateX(0)' : 'translateX(-100%)'}`, zIndex: 1000 }}
+        } transition-transform duration-360 ease-in-out w-72 backdrop-blur-lg text-white p-4 shadow-lg rounded-r-2xl`}
+        style={{ maxHeight: '90vh', top: '50%', transform: `translateY(-50%) ${isOpen ? 'translateX(0)' : 'translateX(-100%)'}`, zIndex: 1000 }}
       >
         <div className="sui-fren-container overflow-auto w-full">
           {isError ? (
@@ -77,21 +78,15 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
                   title="SUIFREN ACCESSORIES"
                   className="font-serif"
                 >
-                  <Card isBlurred>
-                    <CardHeader>
-                      <h4 className="text-lg font-semibold text-center font-serif uppercase">
+                  <h4 className="text-lg font-semibold text-center font-serif uppercase mb-2">
                         Coming Soon...
-                      </h4>
-                    </CardHeader>
-                    <CardBody>
-                      <Avatar
+                  </h4>
+                  <Avatar
                         src={defaultSvgPath}
                         alt="Void Fren"
                         size="lg"
-                        className="mx-auto rounded-full w-32 h-32"
-                      />
-                    </CardBody>
-                  </Card>
+                        className="mx-auto rounded-full w-32 h-32 mb-2"
+                  />
                 </AccordionItem>
                 <AccordionItem
                   key="3"
@@ -99,21 +94,15 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
                   title="PASUIPORT"
                   className="font-serif"
                 >
-                  <Card isBlurred>
-                    <CardHeader>
-                      <h4 className="text-lg font-semibold text-center font-serif uppercase">
+                  <h4 className="text-lg font-semibold text-center font-serif uppercase mb-2">
                         Coming Soon...
-                      </h4>
-                    </CardHeader>
-                    <CardBody>
-                      <Avatar
+                  </h4>
+                  <Avatar
                         src={defaultSvgPath}
                         alt="Void Fren"
                         size="lg"
-                        className="mb-4 mx-auto rounded-full w-32 h-32"
-                      />
-                    </CardBody>
-                  </Card>
+                        className="mb-4 mx-auto rounded-full w-32 h-32 mb-2"
+                  />
                 </AccordionItem>
               </Accordion>
             </div>

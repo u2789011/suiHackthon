@@ -35,7 +35,7 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
         className={`fixed left-0 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-360 ease-in-out w-72 backdrop-blur-lg text-white p-4 shadow-lg rounded-r-2xl`}
-        style={{ maxHeight: '90vh', top: '50%', transform: `translateY(-50%) ${isOpen ? 'translateX(0)' : 'translateX(-100%)'}`, zIndex: 1000 }}
+        style={{ maxHeight: '90vh', top: '50%', transform: `translateY(-50%) ${isOpen ? 'translateX(0)' : 'translateX(-100%)'}`, zIndex: 1000, backgroundColor: 'rgba(0, 0, 0, 0.5)', willChange: 'transform', backfaceVisibility: 'hidden' }}
       >
         <div className="sui-fren-container overflow-auto w-full">
           {isError ? (

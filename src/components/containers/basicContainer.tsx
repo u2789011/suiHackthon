@@ -1352,7 +1352,7 @@ const BasicContainer = () => {
                 <Tab key="acceptedTasks" title="On Going Tasks">
                   <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
                     {!acceptedTasks.length && (
-                      <div className="flex justify-center items-center h-[660px] w-[1200px]">
+                      <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                         <Image
                           alt="voidfren"
                           src="/frens/voidfren.svg"
@@ -1446,7 +1446,7 @@ const BasicContainer = () => {
                 <Tab key="publishedTasks" title="Published by Me">
                   <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
                     {!publishedTasks.length && (
-                      <div className="flex justify-center items-center h-[660px] w-[1200px]">
+                      <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                         <Image
                           alt="voidfren"
                           src="/frens/voidfren.svg"

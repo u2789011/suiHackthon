@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
 import { checkWalletConnection } from "../../lib/transactionUtils";
 import SuifrensCard from "../ui/suifrensCard";
+import SuifrenCard2 from "../ui/foldSidebar";
 import {
   Card,
   CardBody,
@@ -1240,16 +1241,12 @@ const BasicContainer = () => {
   }, [selectedTask, selected]);
   return (
     <>
-      {/*<Divider className="my-3"></Divider>*/}
-      <div className="justify-center container flex flex-col sm:flex-col md:flex-row lg:flex-row">
-        <div className="mx-auto pt-[180px] p-4 md:pt-32 lg:pt-40">
-          <SuifrensCard suiFrenSvg={suiFrenSvg} isError={isError} />
-        </div>
+    <div className="relative">
+      <SuifrenCard2 suiFrenSvg={suiFrenSvg} isError={isError} />
+      <div className="justify-center container flex flex-col sm:flex-col md:flex-row lg:flex-row mt-40 md:mt-0">
         <div>
           {" "}
           <div className="mx-auto p-4 md:pt-32 lg:pt-40">
-            {/* here render suifren*/}
-
             <div className="flex justify-center">
               <Button
                 onPress={onOpenModal1}
@@ -1355,7 +1352,7 @@ const BasicContainer = () => {
                 <Tab key="acceptedTasks" title="On Going Tasks">
                   <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
                     {!acceptedTasks.length && (
-                      <div className="flex justify-center items-center h-[660px] w-[1200px]">
+                      <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                         <Image
                           alt="voidfren"
                           src="/frens/voidfren.svg"
@@ -1449,7 +1446,7 @@ const BasicContainer = () => {
                 <Tab key="publishedTasks" title="Published by Me">
                   <div className="max-w-[1200px] gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-10">
                     {!publishedTasks.length && (
-                      <div className="flex justify-center items-center h-[660px] w-[1200px]">
+                      <div className="flex justify-center items-center h-[660px] w-[320px] mx-auto col-span-full">
                         <Image
                           alt="voidfren"
                           src="/frens/voidfren.svg"
@@ -2009,6 +2006,7 @@ const BasicContainer = () => {
           )}
         </ModalContent>
       </Modal>
+    </div>
     </>
   );
 };

@@ -16,7 +16,7 @@ interface SuifrenCard2Props {
 }
 
 const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const defaultSvgPath = "/frens/voidfren.svg";
 
   return (

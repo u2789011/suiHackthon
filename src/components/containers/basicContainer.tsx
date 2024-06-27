@@ -13,12 +13,14 @@ import {
   PACKAGE_ID,
   TASK_MANAGER_ID,
   SUIFREN_DISPLAY_API,
-  SUIFRENS_ACCES_TYPE_TESTNET
+  SUIFRENS_ACCES_TYPE_TESTNET,
+  PUBLISH_PUBLIC_TASK_ITEM_NAME
 } from "../../constants/networkList";
 
 import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
 import { checkWalletConnection } from "../../lib/transactionUtils";
+import { isContentWithFields } from "../../lib/utils";
 // import SuifrensCard from "../ui/suifrensCard";
 import FoldableSideBar from "../ui/foldSidebar";
 import PublishTaskButton from "../ui/mainButtons";
@@ -1174,7 +1176,7 @@ const BasicContainer = () => {
 
 
   // TODO: here to add a kiosk hook to check if user has a relevant accessory to publish a task
-  useEffect(() => {
+useEffect(() => {
     const fetchSuiFrenAcces = async () => {
       if (!walletAddress) {
         setIsError(true);
@@ -1197,17 +1199,36 @@ const BasicContainer = () => {
         });
 
         const frenId = items[0].objectId;
-        const { data } = await client.getDynamicFields(
-          {
+        const { data } = await client.getDynamicFields({
             parentId: frenId,
-          }
-        );
+        });
 
-        // temp use palette to grant privillege to user to publish public tasks 
-        const hasPublicTaskAccessory = data.some(item =>
-          item.bcsName === "F9MGAPBas" &&
-          item.objectType === SUIFRENS_ACCES_TYPE_TESTNET
-        );
+        let hasPublicTaskAccessory = false;
+
+        for (const item of data) {
+          const acces_first = await client.getObject({
+            id: item.objectId,
+            options: {
+              showContent: true
+            }
+          });
+
+          const acces_content = acces_first.data?.content;
+          console.log("acces_content:", acces_content);
+
+          if (isContentWithFields(acces_content)) {
+            const name = acces_content.fields.name;
+            
+            if (name === PUBLISH_PUBLIC_TASK_ITEM_NAME && item.objectType === SUIFRENS_ACCES_TYPE_TESTNET) {
+              console.log("Matching item found:", item);
+              hasPublicTaskAccessory = true;
+              break;
+            }
+          }
+        }
+
+        //console.log("all dynamic fields:", data);
+        console.log("hasPublicTaskAccessory", hasPublicTaskAccessory);
 
         setPublicTaskGrant(hasPublicTaskAccessory);
       } catch (error) {

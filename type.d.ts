@@ -188,3 +188,11 @@ interface TaskSheetPendingReview {
     version: string;
   };
 }
+
+interface Fields {
+  name: string;
+}
+
+interface Content {
+  fields: Fields;
+}

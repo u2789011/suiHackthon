@@ -8,10 +8,10 @@ interface PublishTaskButtonProps {
     setSelectedTask: (task: any) => void;
 }
 
-// FIXME: 
+// FIXME: Tooltip Content to add a funcitonal button to trigger mint
 const PublishTaskButton: React.FC<PublishTaskButtonProps> = ({ publicTaskGrant, onOpenModal1, setSelectedTask }) => {
     return (
-      <TooltipProvider>
+      <TooltipProvider delayDuration={300}>
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
@@ -31,7 +31,8 @@ const PublishTaskButton: React.FC<PublishTaskButtonProps> = ({ publicTaskGrant, 
           </TooltipTrigger>
           {!publicTaskGrant && (
             <TooltipContent>
-              You need the appropriate accessory to publish tasks
+              You need the mystical Port Temple relics to publish tasks.
+              Pick one for your journey: Poseidon's Trident | Dragon King's Pearl
             </TooltipContent>
           )}
         </Tooltip>

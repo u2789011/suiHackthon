@@ -13,8 +13,8 @@ import { SUIFREN_DISPLAY_API } from "../../constants/networkList";
 import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
 import { checkWalletConnection } from "../../lib/transactionUtils";
-import SuifrensCard from "../ui/suifrensCard";
-import SuifrenCard2 from "../ui/foldSidebar";
+// import SuifrensCard from "../ui/suifrensCard";
+import FoldableSideBar from "../ui/foldSidebar";
 import {
   Card,
   CardBody,
@@ -1242,7 +1242,7 @@ const BasicContainer = () => {
   return (
     <>
     <div className="relative">
-      <SuifrenCard2 suiFrenSvg={suiFrenSvg} isError={isError} />
+      <FoldableSideBar suiFrenSvg={suiFrenSvg} isError={isError} />
       <div className="justify-center container flex flex-col sm:flex-col md:flex-row lg:flex-row mt-40 md:mt-0">
         <div>
           {" "}

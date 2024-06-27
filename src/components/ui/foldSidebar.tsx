@@ -15,7 +15,7 @@ interface SuifrenCard2Props {
   isError: boolean;
 }
 
-const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
+const FoldableSideBar: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
   const [isOpen, setIsOpen] = useState(true);
   const defaultSvgPath = "/frens/voidfren.svg";
 
@@ -113,4 +113,4 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
   );
 };
 
-export default SuifrenCard2;
+export default FoldableSideBar;

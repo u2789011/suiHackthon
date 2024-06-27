@@ -8,4 +8,4 @@ export const TASK_MANAGER_ID =
     //"0xd879ec6a7d5388d7ebffaea174827837ec1833f39137be2decad50dcc66139f0"; // Devnet
     "0x72870ade30d601c9367d22813940d5b584205b360307a4a65d268dbf12e31bbb"; // Testnet
 
-export const PUBLISH_PUBLIC_TASK_ITEM_NAME = "magic wand"
+export const PUBLISH_PUBLIC_TASK_ITEM_NAME = "magic wand" //TODO: change this to customize series

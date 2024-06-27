@@ -1,8 +1,5 @@
 import React, { useState } from "react";
 import {
-  Card,
-  CardHeader,
-  CardBody,
   Avatar,
   Accordion,
   AccordionItem,
@@ -74,10 +71,10 @@ const FoldableSideBar: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) =
                 </AccordionItem>
                 <AccordionItem
                   key="2"
-                  aria-label="SUIFREN ACCESSORIES"
-                  title="SUIFREN ACCESSORIES"
+                  aria-label="PORT TEMPLE RELICS"
+                  title="PORT TEMPLE RELICS"
                   className="font-serif"
-                >
+                > {/*TODO: here add relic items mint link display*/}
                   <h4 className="text-lg font-semibold text-center font-serif uppercase mb-2">
                         Coming Soon...
                   </h4>

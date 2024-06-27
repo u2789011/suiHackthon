@@ -21,7 +21,7 @@ const PublishTaskButton: React.FC<PublishTaskButtonProps> = ({ publicTaskGrant, 
                   onOpenModal1();
                 }}
                 size="lg"
-                className={`font-serif uppercase`}
+                className={"font-serif uppercase"}
                 color="secondary"
                 isDisabled={!publicTaskGrant}
               >
@@ -32,7 +32,7 @@ const PublishTaskButton: React.FC<PublishTaskButtonProps> = ({ publicTaskGrant, 
           {!publicTaskGrant && (
             <TooltipContent>
               You need the mystical Port Temple relics to publish tasks.
-              Pick one for your journey: Poseidon's Trident | Dragon King's Pearl
+              Pick one for your journey: Poseidon&apos;s Trident | Dragon King&apos;s Pearl
             </TooltipContent>
           )}
         </Tooltip>

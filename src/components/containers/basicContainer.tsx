@@ -3,18 +3,27 @@ import {
   useAccounts,
   useSignAndExecuteTransactionBlock,
   useSuiClient,
-  useSuiClientQuery,
 } from "@mysten/dapp-kit";
 import { AppContext } from "@/context/AppContext";
 import { KioskClient, Network } from "@mysten/kiosk";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
-import { SUIFREN_DISPLAY_API } from "../../constants/networkList";
+
+import { 
+  PACKAGE_ID,
+  TASK_MANAGER_ID,
+  SUIFREN_DISPLAY_API,
+  SUIFRENS_ACCES_TYPE_TESTNET,
+  PUBLISH_PUBLIC_TASK_ITEM_NAME
+} from "../../constants/networkList";
+
 import { toast } from "react-toastify";
 import { showToast } from "../ui/linkToast";
 import { checkWalletConnection } from "../../lib/transactionUtils";
-import SuifrensCard from "../ui/suifrensCard";
-import SuifrenCard2 from "../ui/foldSidebar";
+import { isContentWithFields } from "../../lib/utils";
+// import SuifrensCard from "../ui/suifrensCard";
+import FoldableSideBar from "../ui/foldSidebar";
+import PublishTaskButton from "../ui/mainButtons";
 import {
   Card,
   CardBody,
@@ -36,12 +45,8 @@ import {
   Link,
   Checkbox,
   Textarea,
-  Accordion,
-  AccordionItem,
 } from "@nextui-org/react";
-import { log } from "console";
 import "tailwindcss/tailwind.css";
-import { json } from "stream/consumers";
 import { useSuiQueries } from "../../hooks/useSuiQueries";
 //import { Network as IconNetwork } from "lucide-react";
 
@@ -66,13 +71,6 @@ const BasicContainer = () => {
     onOpen: onOpenModal4,
     onOpenChange: onOpenChangeModal4,
   } = useDisclosure();
-
-  const PACKAGE_ID =
-    //"0x442c18c27862e428edf50700541153f1ff430d240ff3e51df7952377198975e7"; // Devnet
-    "0xc8e76738b2a255fe5a093a39f1eaa3b3ab869efcd62e4705c8790ceb7a532f02"; // Testnet
-  const TASK_MANAGER_ID =
-    //"0xd879ec6a7d5388d7ebffaea174827837ec1833f39137be2decad50dcc66139f0"; // Devnet
-    "0x72870ade30d601c9367d22813940d5b584205b360307a4a65d268dbf12e31bbb"; // Testnet
 
   const FLOAT_SCALING = 1000000000;
   const DEVNET_EXPLORE = "https://suiscan.xyz/testnet/tx/";
@@ -142,6 +140,7 @@ const BasicContainer = () => {
   >([]);
   const [suiFrenSvg, setSuiFrenSvg] = useState<string | null>(null);
   const [isError, setIsError] = useState<boolean>(false);
+  const [publicTaskGrant, setPublicTaskGrant] = useState<boolean>(false);
 
   // Set Accepted Tasks Data From Task Sheets Owned by User
   const handleMatchAndSetAcceptedTasks = (
@@ -1140,7 +1139,6 @@ const BasicContainer = () => {
     }
   };
 
-  // suifrens svg hook
   useEffect(() => {
     const fetchSuiFrenSvg = async () => {
       if (!walletAddress) {
@@ -1157,7 +1155,7 @@ const BasicContainer = () => {
         });
 
         /// pass a constant while testing
-        //const suifrenId = `0xfb572d4b05aa5de7d9d3a1352f72d0957aa3cb4c2f2ac8a548af98c105ddad3a`;
+        // const suifrenId = `0xfb572d4b05aa5de7d9d3a1352f72d0957aa3cb4c2f2ac8a548af98c105ddad3a`;
         const response = await fetch(
           `https://${SUIFREN_DISPLAY_API}/suifrens/${itemIds[0]}/svg`
         );
@@ -1175,6 +1173,69 @@ const BasicContainer = () => {
 
     fetchSuiFrenSvg();
   }, [kioskClient, walletAddress, SUIFREN_DISPLAY_API]);
+
+
+  // TODO: here to add a kiosk hook to check if user has a relevant accessory to publish a task
+useEffect(() => {
+    const fetchSuiFrenAcces = async () => {
+      if (!walletAddress) {
+        setIsError(true);
+        setPublicTaskGrant(false);
+        return;
+      }
+
+      try {
+        const address = walletAddress;
+        const { kioskIds } = await kioskClient.getOwnedKiosks({ address });
+        const kioskId = kioskIds[0];
+        const { items } = await kioskClient.getKiosk({
+          id: kioskId,
+          options: {
+            objectOptions: {
+              showType: true,
+              showContent: true
+            }
+          }
+        });
+
+        const frenId = items[0].objectId;
+        const { data } = await client.getDynamicFields({ parentId: frenId });
+
+        let hasPublicTaskAccessory = false;
+
+        for (const item of data) {
+          const acces_first = await client.getObject({
+            id: item.objectId,
+            options: {
+              showContent: true
+            }
+          });
+
+          const acces_content = acces_first.data?.content;
+          console.log("acces_content:", acces_content);
+
+          if (isContentWithFields(acces_content)) {
+            const name = acces_content.fields.name;
+            
+            if (name === PUBLISH_PUBLIC_TASK_ITEM_NAME && item.objectType === SUIFRENS_ACCES_TYPE_TESTNET) {
+              console.log("Matching item found:", item);
+              hasPublicTaskAccessory = true;
+              break;
+            }
+          }
+        }
+
+        setPublicTaskGrant(hasPublicTaskAccessory);
+      } catch (error) {
+        console.error("Error fetching Relics Items", error);
+        setIsError(true);
+        setPublicTaskGrant(false);
+      }
+    };
+
+    fetchSuiFrenAcces();
+ }, [walletAddress]);
+
 
   useEffect(() => {
     fetchAllTaskData();
@@ -1242,21 +1303,17 @@ const BasicContainer = () => {
   return (
     <>
     <div className="relative">
-      <SuifrenCard2 suiFrenSvg={suiFrenSvg} isError={isError} />
+      <FoldableSideBar suiFrenSvg={suiFrenSvg} isError={isError} />
       <div className="justify-center container flex flex-col sm:flex-col md:flex-row lg:flex-row mt-40 md:mt-0">
         <div>
           {" "}
           <div className="mx-auto p-4 md:pt-32 lg:pt-40">
             <div className="flex justify-center">
-              <Button
-                onPress={onOpenModal1}
-                onClick={() => setSelectedTask(null)}
-                size="lg"
-                className="font-serif uppercase"
-                color="secondary"
-              >
-                Publish Task
-              </Button>
+              <PublishTaskButton
+                publicTaskGrant={publicTaskGrant}
+                onOpenModal1={onOpenModal1}
+                setSelectedTask={setSelectedTask}
+              />
             </div>
           </div>
           <div className="flex justify-center font-sans">
@@ -1646,7 +1703,7 @@ const BasicContainer = () => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader>Mint a Task</ModalHeader>
+              <ModalHeader>Public Task Info</ModalHeader>
               <ModalBody>
                 <Input
                   label="Reward Type"

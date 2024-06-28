@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Card,
-  CardHeader,
-  CardBody,
   Avatar,
   Accordion,
   AccordionItem,
+  Image,
   Link,
   Button,
 } from "@nextui-org/react";
@@ -15,9 +13,24 @@ interface SuifrenCard2Props {
   isError: boolean;
 }
 
-const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
+const FoldableSideBar: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
   const [isOpen, setIsOpen] = useState(true);
   const defaultSvgPath = "/frens/voidfren.svg";
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsOpen(false);
+      } else {
+        setIsOpen(true);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []); 
 
   return (
     <div>
@@ -74,19 +87,30 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
                 </AccordionItem>
                 <AccordionItem
                   key="2"
-                  aria-label="SUIFREN ACCESSORIES"
-                  title="SUIFREN ACCESSORIES"
+                  aria-label="PORT TEMPLE RELICS"
+                  title="PORT TEMPLE RELICS"
                   className="font-serif"
-                >
-                  <h4 className="text-lg font-semibold text-center font-serif uppercase mb-2">
-                        Coming Soon...
-                  </h4>
-                  <Avatar
-                        src={defaultSvgPath}
-                        alt="Void Fren"
-                        size="lg"
-                        className="mx-auto rounded-full w-32 h-32 mb-2"
-                  />
+                > {/*TODO: here add relic items mint link display*/}
+                  <div className="w-full flex flex-col items-center">
+                    <h3 className="text-md font-sans mb-2 mt-2 underline">
+                      Poseidon&apos;s Trident
+                    </h3>
+                    <Image
+                      removeWrapper
+                      alt="Trident"
+                      src="accessories/trident.svg"
+                    />
+                    <Button size="sm" className="mb-2">
+                      <Link
+                        href="https://suifrens-testnet-az1ho1jq2-mysten-labs.vercel.app/accessory/magic-wand"
+                        isExternal
+                        showAnchorIcon
+                        className="font-sans"
+                      >
+                      Get a Trident
+                      </Link>
+                    </Button>
+                  </div>
                 </AccordionItem>
                 <AccordionItem
                   key="3"
@@ -94,15 +118,22 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
                   title="PASUIPORT"
                   className="font-serif"
                 >
-                  <h4 className="text-lg font-semibold text-center font-serif uppercase mb-2">
+                <div className="w-full flex flex-col items-center">
+                  <h3 className="text-md font-sans mb-2 mt-2">
                         Coming Soon...
-                  </h4>
-                  <Avatar
+                  </h3>
+                  <Image
+                      removeWrapper
+                      alt="pasuiport_empty"
+                      src="accessories/pasuiport_empty.svg"
+                    />
+                </div>
+                  {/*<Avatar
                         src={defaultSvgPath}
                         alt="Void Fren"
                         size="lg"
                         className="mb-4 mx-auto rounded-full w-32 h-32 mb-2"
-                  />
+                  />*/}
                 </AccordionItem>
               </Accordion>
             </div>
@@ -113,4 +144,4 @@ const SuifrenCard2: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
   );
 };
 
-export default SuifrenCard2;
+export default FoldableSideBar;

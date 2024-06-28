@@ -1199,9 +1199,7 @@ useEffect(() => {
         });
 
         const frenId = items[0].objectId;
-        const { data } = await client.getDynamicFields({
-            parentId: frenId,
-        });
+        const { data } = await client.getDynamicFields({ parentId: frenId });
 
         let hasPublicTaskAccessory = false;
 
@@ -1226,9 +1224,6 @@ useEffect(() => {
             }
           }
         }
-
-        //console.log("all dynamic fields:", data);
-        console.log("hasPublicTaskAccessory", hasPublicTaskAccessory);
 
         setPublicTaskGrant(hasPublicTaskAccessory);
       } catch (error) {

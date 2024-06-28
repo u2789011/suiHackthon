@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button} from "@nextui-org/react";
+import { Button, Link } from "@nextui-org/react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./tooltip";
 
 interface PublishTaskButtonProps {
@@ -31,8 +31,16 @@ const PublishTaskButton: React.FC<PublishTaskButtonProps> = ({ publicTaskGrant, 
           </TooltipTrigger>
           {!publicTaskGrant && (
             <TooltipContent>
-              You need the mystical Port Temple relics to publish tasks.
-              Pick one for your journey: Poseidon&apos;s Trident | Dragon King&apos;s Pearl
+              You need a Suifren holding one of the mystical Port Temple relics to publish tasks.
+              Pick one for your journey: 
+              <Link 
+                href="https://suifrens-testnet-az1ho1jq2-mysten-labs.vercel.app/accessory/magic-wand"
+                isExternal
+                className="font-sans"
+              >
+              &nbsp;Poseidon&apos;s Trident
+              </Link>
+              &nbsp;| Dragon King&apos;s Pearl
             </TooltipContent>
           )}
         </Tooltip>

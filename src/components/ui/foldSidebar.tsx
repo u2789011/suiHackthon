@@ -3,6 +3,7 @@ import {
   Avatar,
   Accordion,
   AccordionItem,
+  Image,
   Link,
   Button,
 } from "@nextui-org/react";
@@ -75,15 +76,26 @@ const FoldableSideBar: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) =
                   title="PORT TEMPLE RELICS"
                   className="font-serif"
                 > {/*TODO: here add relic items mint link display*/}
-                  <h4 className="text-lg font-semibold text-center font-serif uppercase mb-2">
-                        Coming Soon...
-                  </h4>
-                  <Avatar
-                        src={defaultSvgPath}
-                        alt="Void Fren"
-                        size="lg"
-                        className="mx-auto rounded-full w-32 h-32 mb-2"
-                  />
+                  <div className="w-full flex flex-col items-center">
+                    <h3 className="text-sm font-sans mb-2">
+                          a Relic for publish tasks
+                    </h3>
+                    <Image
+                      removeWrapper
+                      alt="Trident"
+                      src="accessories/trident.svg"
+                    />
+                    <Button size="sm" className="">
+                      <Link
+                        href="https://suifrens-testnet-az1ho1jq2-mysten-labs.vercel.app/accessory/magic-wand"
+                        isExternal
+                        showAnchorIcon
+                        className="font-sans"
+                      >
+                      Get a Trident
+                      </Link>
+                    </Button>
+                  </div>
                 </AccordionItem>
                 <AccordionItem
                   key="3"

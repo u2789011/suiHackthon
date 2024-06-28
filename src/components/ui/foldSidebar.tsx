@@ -77,15 +77,15 @@ const FoldableSideBar: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) =
                   className="font-serif"
                 > {/*TODO: here add relic items mint link display*/}
                   <div className="w-full flex flex-col items-center">
-                    <h3 className="text-sm font-sans mb-2">
-                          a Relic for publish tasks
+                    <h3 className="text-md font-sans mb-2">
+                      Poseidon's Trident
                     </h3>
                     <Image
                       removeWrapper
                       alt="Trident"
                       src="accessories/trident.svg"
                     />
-                    <Button size="sm" className="">
+                    <Button size="sm" className="mb-2">
                       <Link
                         href="https://suifrens-testnet-az1ho1jq2-mysten-labs.vercel.app/accessory/magic-wand"
                         isExternal

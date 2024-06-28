@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Avatar,
   Accordion,
@@ -16,6 +16,21 @@ interface SuifrenCard2Props {
 const FoldableSideBar: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) => {
   const [isOpen, setIsOpen] = useState(true);
   const defaultSvgPath = "/frens/voidfren.svg";
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsOpen(false);
+      } else {
+        setIsOpen(true);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []); 
 
   return (
     <div>

@@ -103,15 +103,22 @@ const FoldableSideBar: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) =
                   title="PASUIPORT"
                   className="font-serif"
                 >
-                  <h4 className="text-lg font-semibold text-center font-serif uppercase mb-2">
+                <div className="w-full flex flex-col items-center">
+                  <h3 className="text-md font-sans mb-2 mt-2">
                         Coming Soon...
-                  </h4>
-                  <Avatar
+                  </h3>
+                  <Image
+                      removeWrapper
+                      alt="pasuiport_empty"
+                      src="accessories/pasuiport_empty.svg"
+                    />
+                </div>
+                  {/*<Avatar
                         src={defaultSvgPath}
                         alt="Void Fren"
                         size="lg"
                         className="mb-4 mx-auto rounded-full w-32 h-32 mb-2"
-                  />
+                  />*/}
                 </AccordionItem>
               </Accordion>
             </div>

@@ -78,7 +78,7 @@ const FoldableSideBar: React.FC<SuifrenCard2Props> = ({ suiFrenSvg, isError }) =
                 > {/*TODO: here add relic items mint link display*/}
                   <div className="w-full flex flex-col items-center">
                     <h3 className="text-md font-sans mb-2 mt-2 underline">
-                      Poseidon's Trident
+                      Poseidon&apos;s Trident
                     </h3>
                     <Image
                       removeWrapper

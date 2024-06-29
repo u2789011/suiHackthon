@@ -1,6 +1,6 @@
-# Fren Suipport dApp 
-![image](https://github.com/u2789011/suiHackthon/assets/153002627/f39d632e-60b0-4ef9-a0f4-95e6baa7699d)
+# Fren Suipport
 
+![image](https://github.com/do0x0ob/suiHackathon/assets/153002627/6a45a102-45a0-4168-968f-2d9f73e942c6)
 
 **Fren Suipport** is a platform themed around the **Suifrens** NFT universe.<br/>
 
@@ -37,15 +37,25 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 - ***Striving for Transparency and Openness:*** Anyone can submit their work without needing permission. Certified works will be frozen and preserved on the chain using Sui's Freeze Object function.
 - ***On-chain Contract with Direct Bonus Distribution:*** Participants can confirm the existence of the prize before starting the task. The automatic reward distribution mechanism via smart contracts ensures the accuracy of the distributed amount.
 
-#### The homepage has 4 tabs:
+#### The homepage has 3 tabs:
 - ***All Tasks:*** Displays all currently published tasks. Tasks can be accepted from the task card's bottom section.
 - ***On Going Tasks:*** Displays tasks that have been accepted. The task cards have a "Submit Task" button at the bottom, providing the ability to update task information and submit.
 - ***Published by Me:*** Displays tasks published by you or tasks where you have been assigned as the task MOD, providing access to manage tasks (for creators) and task list management (for task MODs).
-- ***Completed Tasks:*** Displays tasks/task lists that have been completed. (Currently, the frontend is still under construction)
 
-![image](https://github.com/u2789011/suiHackthon/assets/153002627/ff7239c5-447c-41de-9164-b3413c8b4656)
+![image](https://github.com/do0x0ob/suiHackathon/assets/153002627/b8a09a13-fc51-4bd8-b3b7-aca700ff23b2)
 
-### 1. Publish Task 
+#### The Foldable Sidebar :
+- ***My Suifren:*** Displays the Suifren associated with the current wallet address.
+- ***Port Temple Relics:*** "Relics" refer to a series of Suifren accessory NFTs that users can add to their Suifrens to utilize specific functions.
+  - User can publish tasks while the Suifren NFT is equipped with a "trident" item. 
+  - Currently, we use the existing Suifren accessory item "Magic Wand" to represent the "Trident" to demonstrate its functionality in Fren support. It will be replaced once the 
+  new contracts are ready.
+- ***PASUIPORT:*** This feature is still under construction. It will use the exclusive "Transfer to Object" concept in Sui to display the user's achievements, and users can decide which achievements they want to showcase.
+
+![image](https://github.com/do0x0ob/suiHackathon/assets/153002627/930f754c-b22a-4a18-af62-7711246fac68)
+
+### 1. Publish Task
+  - The creator needs to have a Suifren NFT equipped with a "Trident" item to publish tasks.
   - The creator needs to deposit a Coin object on the Sui chain as the funding source and set the reward amount for each piece.
   - The creator can assign a task MOD responsible for the subsequent certification of task submissions when publishing
     (currently, only one manager can be set, and you can designate yourself)
@@ -104,7 +114,6 @@ Fren Suipport aims to enable individuals without any web3 assets to seamlessly e
 ---
 
 ## Main Sui Object
-> Devnet Package: `0xd84bf8f814a797c2e04a31dba8d4ba276489dc835e6b3ee725059a756b0cfe14`
 > Testnet Package: `0xc8e76738b2a255fe5a093a39f1eaa3b3ab869efcd62e4705c8790ceb7a532f02`
 
 **0. Task Manager**
@@ -138,18 +147,16 @@ This object is minted and transferred to the completer's address when the task i
 ## Project - TODOS
 ### 0. General Functions
 - ~~Integrate SuiFren NFT Display~~ (Done By d0x0b, 20240615)
-- Add Mailbox component to manage tasksheets
-- Publish a Suifrens accessories collection
-  - to grant different privileges and roles within the Fren Suipport world
+- Publish a Suifrens relics accessories collection
+- ~~to grant different privileges and roles within the Fren Suipport world~~ (FrontEnd Done By d0x0b, 20240629)
 
 ### 1. Public Task Module
 **Bugs**
-- Fix Complete Tasks Listing
 - ~~Fix Approve Tasksheets Fuctions~~ (Done By d0x0b, 20240602)
 - ~~Fix Reject Tasksheets Fuctions~~ (Done By d0x0b, 20240604)
 - ~~Fix Submit Task Function~~ (Done By d0x0b, 20240531)
 - ~~Fix Edit Description Function~~ (Done By d0x0b, 20240531)
-- Fix multi-selection Tasks on Tasksheets Review Panel
+- ~~Fix multi-selection Tasks on Tasksheets Review Panel~~ (Done By Ashley, 20240616)
 
 **Features**
 - Add a switch for task status.

@@ -6,7 +6,7 @@ const HomePage = () => {
   const [isDappMode, setIsDappMode] = React.useState(false);
   const teamMembers = [
     {
-      name: "d0x0b.sui",
+      name: "Harper",
       role: "Move & Front-end",
       avatar: "https://i.postimg.cc/BQmgkhPs/Snipaste-2024-05-31-03-06-50.png",
     },
@@ -17,18 +17,18 @@ const HomePage = () => {
     },
     {
       name: "Zhi Xiang",
-      role: "Documentation & Case studies",
+      role: "Project Manager",
       avatar: "https://i.postimg.cc/sXPPcKCk/267748-0.jpg",
-    },
-    {
-      name: "OhYeah!",
-      role: "Presentation",
-      avatar: "https://i.postimg.cc/d342M11n/267747-0.jpg",
     },
     {
       name: "Sheng Yun",
       role: "Presentation",
       avatar: "https://i.postimg.cc/BZgcPhgD/267752-0.jpg",
+    },
+    {
+      name: "OhYeah!",
+      role: "Presentation",
+      avatar: "https://i.postimg.cc/d342M11n/267747-0.jpg",
     },
   ];
   return (
@@ -79,7 +79,7 @@ const HomePage = () => {
                   {teamMembers.map((member, index) => (
                     <Card
                       key={index}
-                      className="p-4 m-4 shadow-md w-60"
+                      className="p-4 m-4 shadow-md w-50"
                       isHoverable={true}
                     >
                       <Avatar
